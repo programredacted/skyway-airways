@@ -66,8 +66,23 @@
 </g>
 {# lamp standards along the embankment #}
 <g fill="{{ warm }}" opacity="0.8">
-  {% for x in [22, 76, 300, 356] %}
+  {% for x in [300, 356] %}
     <rect x="{{ x }}" y="404" width="4" height="34"/>
     <circle cx="{{ x + 2 }}" cy="400" r="5"/>
   {% endfor %}
+</g>
+
+{# a red double-decker crossing the bridge in front of the House #}
+<g transform="translate(18 384)">
+  <rect x="0" y="0" width="86" height="46" rx="5" fill="{{ warm }}"/>
+  <rect x="0" y="20" width="86" height="4" fill="#f7f0e1" opacity="0.6"/>
+  <g fill="{{ sky }}" opacity="0.55">
+    {% for x in [6, 26, 46, 66] %}<rect x="{{ x }}" y="5" width="14" height="12" rx="2"/>{% endfor %}
+    {% for x in [6, 26, 46] %}<rect x="{{ x }}" y="27" width="14" height="12" rx="2"/>{% endfor %}
+  </g>
+  <rect x="68" y="27" width="14" height="19" fill="{{ sky }}" opacity="0.4"/>
+  <g fill="#0e1a25" opacity="0.8">
+    <circle cx="18" cy="48" r="7"/>
+    <circle cx="70" cy="48" r="7"/>
+  </g>
 </g>

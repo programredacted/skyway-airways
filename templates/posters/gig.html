@@ -40,8 +40,18 @@
   <path d="M-10 506 Q90 494 190 506 T400 502"/>
 </g>
 
-{# Copacabana's wave pavement in the sand band #}
-<rect x="0" y="534" width="400" height="66" fill="{{ gold }}" opacity="0.45"/>
-<g stroke="#f7f0e1" stroke-width="8" fill="none" opacity="0.6">
-  <path d="M-10 560 Q30 538 70 560 T150 560 T230 560 T310 560 T410 560"/>
+{# Copacabana: the wave pavement, parasols and a football #}
+<rect x="0" y="500" width="400" height="100" fill="{{ gold }}" opacity="0.45"/>
+<g stroke="#f7f0e1" stroke-width="7" fill="none" opacity="0.55">
+  <path d="M-10 540 Q30 520 70 540 T150 540 T230 540 T310 540 T410 540"/>
 </g>
+{% for x, tilt in [(48, -8), (140, 5), (300, -4)] %}
+  <g transform="translate({{ x }} 512) rotate({{ tilt }})">
+    <rect x="-2" y="-38" width="4" height="38" fill="{{ warm }}"/>
+    <path d="M-34 -38 C -24 -54 24 -54 34 -38 Z" fill="#f7f0e1"/>
+    <path d="M-34 -38 C -28 -50 -14 -54 -2 -54 L-2 -38 Z" fill="{{ warm }}" opacity="0.7"/>
+    <path d="M12 -52 C 22 -50 30 -45 34 -38 L14 -38 Z" fill="{{ warm }}" opacity="0.7"/>
+  </g>
+{% endfor %}
+<circle cx="208" cy="516" r="7" fill="#f7f0e1"/>
+<circle cx="208" cy="516" r="7" fill="none" stroke="{{ warm }}" stroke-width="1.5"/>

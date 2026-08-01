@@ -52,6 +52,21 @@
   <rect x="212" y="494" width="26" height="14"/>
   <rect x="220" y="484" width="5" height="12"/>
 </g>
+
+{# a cable car coming over the hill in the foreground #}
+<g transform="translate(30 528)">
+  <rect x="0" y="0" width="82" height="34" rx="3" fill="{{ warm }}"/>
+  <rect x="0" y="12" width="82" height="4" fill="#f7f0e1" opacity="0.55"/>
+  <path d="M0 -4 L82 -4 L78 0 L4 0 Z" fill="#f7f0e1" opacity="0.85"/>
+  <g fill="{{ sky }}" opacity="0.5">
+    {% for x in [7, 26, 45, 64] %}<rect x="{{ x }}" y="3" width="13" height="9" rx="2"/>{% endfor %}
+  </g>
+  <g fill="#0e1a25" opacity="0.75">
+    <circle cx="16" cy="36" r="6"/>
+    <circle cx="66" cy="36" r="6"/>
+  </g>
+  <rect x="-4" y="34" width="92" height="3" fill="{{ warm }}" opacity="0.6"/>
+</g>
 <g stroke="#f7f0e1" stroke-width="3" fill="none" opacity="0.3">
   <path d="M-10 542 Q80 530 170 542 T350 540"/>
   <path d="M40 570 Q130 558 220 570 T400 566"/>

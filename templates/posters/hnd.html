@@ -30,12 +30,28 @@
   <rect x="72" y="448" width="40" height="22"/>
 </g>
 
-<rect x="0" y="452" width="400" height="148" fill="{{ gold }}" opacity="0.3"/>
-<rect x="0" y="452" width="400" height="5" fill="{{ warm }}"/>
-{# a few blossom sprigs along the base #}
-<g fill="{{ warm }}" opacity="0.55">
-  {% for x in [232, 258, 284, 310, 336] %}
-    <circle cx="{{ x }}" cy="{{ 470 + (x % 3) * 6 }}" r="4"/>
-    <circle cx="{{ x + 9 }}" cy="{{ 480 + (x % 2) * 5 }}" r="3"/>
+{# still water, with a torii standing out in it #}
+<rect x="0" y="452" width="400" height="148" fill="{{ sky }}" opacity="0.45"/>
+<g stroke="{{ sky }}" stroke-width="3" opacity="0.4">
+  {% for y in [470, 484, 498] %}<line x1="0" y1="{{ y }}" x2="400" y2="{{ y }}"/>{% endfor %}
+</g>
+<g fill="{{ warm }}">
+  <path d="M244 424 L352 424 L348 434 L248 434 Z"/>
+  <path d="M240 418 L356 418 L352 426 L244 426 Z"/>
+  <rect x="258" y="428" width="10" height="62"/>
+  <rect x="328" y="428" width="10" height="62"/>
+  <rect x="252" y="444" width="92" height="7"/>
+</g>
+<g fill="{{ warm }}" opacity="0.2">
+  <rect x="258" y="490" width="10" height="26"/>
+  <rect x="328" y="490" width="10" height="26"/>
+</g>
+
+{# cherry blossom drifting in from the left #}
+<g fill="{{ warm }}" opacity="0.6">
+  {% for x, y in [(28, 468), (44, 486), (66, 462), (84, 492), (104, 474),
+                  (128, 496), (150, 466), (172, 490)] %}
+    <circle cx="{{ x }}" cy="{{ y }}" r="4"/>
+    <circle cx="{{ x + 7 }}" cy="{{ y + 6 }}" r="2.5"/>
   {% endfor %}
 </g>
