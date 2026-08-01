@@ -13,6 +13,7 @@ from flask import (Flask, abort, current_app, flash, g, jsonify, redirect,
 
 import bookings
 import db
+import destinations
 import routemap
 import seatmap
 import seed
@@ -163,6 +164,22 @@ def register_routes(app):
             # rows: it is there to navigate by, so it should show what exists.
             map=routemap.build(db.get_routes(connection)),
         )
+
+    @app.route("/destinations")
+    def destination_list():
+        return render_template("destinations.html",
+                               destinations=destinations.all_destinations())
+
+    @app.route("/destinations/<code>")
+    def destination_detail(code):
+        guide = destinations.get(code)
+        if guide is None:
+            abort(404)
+        arrivals = [flight for flight in db.get_flights(get_db())
+                    if flight["dest_code"] == code.upper()]
+        return render_template("destination.html",
+                               destination=dict(guide, code=code.upper()),
+                               flights=arrivals)
 
     @app.route("/map")
     def route_map():

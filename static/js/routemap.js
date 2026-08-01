@@ -119,4 +119,37 @@
     // Only reset when focus leaves the map entirely, not on every hop.
     if (!svg.contains(event.relatedTarget)) reset();
   });
+
+  // --- the departure board drives the map too --------------------------------
+
+  /* Reading a row in the timetable and finding it on the map should not mean
+     hunting for the right arc: hovering the row lights it up. */
+  var board = document.getElementById("board");
+  if (!board) return;
+
+  function arcForRow(row) {
+    return svg.querySelector('.arc[data-flight-id="' + row.dataset.flightId + '"]');
+  }
+
+  function linkRow(event) {
+    var row = event.target.closest(".board__row");
+    if (!row) return;
+    var arc = arcForRow(row);
+    if (!arc) return;
+    row.classList.add("is-linked");
+    showRoute(arc, event.type === "mouseover");
+  }
+
+  function unlinkRows() {
+    board.querySelectorAll(".board__row.is-linked")
+         .forEach(function (row) { row.classList.remove("is-linked"); });
+    reset();
+  }
+
+  board.addEventListener("mouseover", linkRow);
+  board.addEventListener("focusin", linkRow);
+  board.addEventListener("mouseleave", unlinkRows);
+  board.addEventListener("focusout", function (event) {
+    if (!board.contains(event.relatedTarget)) unlinkRows();
+  });
 })();

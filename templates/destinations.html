@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Destinations &middot; Skyway Airways{% endblock %}
+{% block main_class %}site-main--wide{% endblock %}
+
+{% block content %}
+<p class="eyebrow">Where we fly</p>
+<h1 class="page-title">Destinations</h1>
+<p class="lede">
+  Seventeen cities on the Skyway system. Pick one for a few days' worth of
+  ideas and the flights that get you there.
+</p>
+
+<ul class="poster-grid">
+  {% for destination in destinations %}
+    <li>
+      <a class="poster-card" href="{{ url_for('destination_detail', code=destination.code) }}">
+        {% include "_poster.html" %}
+        <span class="poster-card__label">
+          <span class="poster-card__city">{{ destination.city }}</span>
+          <span class="poster-card__tag">{{ destination.tagline }}</span>
+        </span>
+      </a>
+    </li>
+  {% endfor %}
+</ul>
+{% endblock %}

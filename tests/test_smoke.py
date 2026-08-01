@@ -199,6 +199,32 @@ class RouteTests(unittest.TestCase):
         after = self.client.get("/api/flights").get_json()["flights"][0]
         self.assertEqual(before["seats_available"] - after["seats_available"], 1)
 
+    def test_destination_pages_render(self):
+        import destinations
+
+        self.assertEqual(self.client.get("/destinations").status_code, 200)
+        for code in destinations.DESTINATIONS:
+            with self.subTest(code=code):
+                self.assertEqual(self.client.get(f"/destinations/{code}").status_code, 200)
+        self.assertEqual(self.client.get("/destinations/ZZZ").status_code, 404)
+
+    def test_every_destination_has_a_poster_and_a_plan(self):
+        import destinations
+
+        for code, guide in destinations.DESTINATIONS.items():
+            with self.subTest(code=code):
+                self.assertIn(guide["motif"],
+                              {"peaks", "skyline", "bridge", "surf", "dome", "spire"})
+                self.assertEqual(len(guide["palette"]), 3)
+                self.assertGreaterEqual(len(guide["things"]), 3)
+
+    def test_every_airport_we_fly_to_has_a_guide(self):
+        import destinations
+
+        for airport in db.get_airports(self.connection):
+            with self.subTest(code=airport["code"]):
+                self.assertIsNotNone(destinations.get(airport["code"]))
+
     def test_map_page_draws_every_route(self):
         page = self.client.get("/map").get_data(as_text=True)
         self.assertEqual(page.count('class="arc '),

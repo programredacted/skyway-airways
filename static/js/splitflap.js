@@ -20,6 +20,10 @@
     return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   }
 
+  // Separators get no flap card of their own: a real board's colons and spaces
+  // are painted on the housing, not on a flap.
+  var SEPARATORS = " :-/";
+
   /* Replace an element's text with one fixed-width tile per character. */
   function render(element, text) {
     var content = text === undefined ? element.textContent : text;
@@ -28,7 +32,9 @@
     for (var i = 0; i < content.length; i++) {
       var character = content.charAt(i);
       var tile = document.createElement("span");
-      tile.className = character === " " ? "flap-char flap-char--blank" : "flap-char";
+      tile.className = SEPARATORS.indexOf(character) === -1
+        ? "flap-char"
+        : "flap-char flap-char--blank";
       tile.textContent = character;
       fragment.appendChild(tile);
     }
@@ -45,7 +51,7 @@
      `steps` controls how many decoys: the board can afford three, the clock
      wants one so the seconds stay readable at a glance. */
   function flip(tile, settled, delay, steps) {
-    if (settled === " ") {
+    if (SEPARATORS.indexOf(settled) !== -1) {
       tile.textContent = settled;
       return;
     }

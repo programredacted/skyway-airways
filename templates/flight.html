@@ -54,6 +54,11 @@
     {% else %}
       <p class="flight-card__note">This flight is sold out.</p>
     {% endif %}
+    <p class="flight-card__note">
+      <a href="{{ url_for('destination_detail', code=flight.dest_code) }}">
+        What to do in {{ flight.dest_city }} &rarr;
+      </a>
+    </p>
   </footer>
 </article>
 {% endblock %}

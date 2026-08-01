@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}{{ destination.city }} &middot; Skyway Airways{% endblock %}
+
+{% block content %}
+<p class="crumbs"><a href="{{ url_for('destination_list') }}">&larr; All destinations</a></p>
+
+<div class="guide">
+  <div class="guide__poster">
+    {% with poster_size = "poster--large" %}{% include "_poster.html" %}{% endwith %}
+  </div>
+
+  <div class="guide__body">
+    <p class="eyebrow">{{ destination.region }}</p>
+    <h1 class="page-title">{{ destination.city }}</h1>
+    <p class="lede">{{ destination.tagline }}.</p>
+
+    <h2 class="guide__heading">Four days, four things</h2>
+    <ol class="itinerary">
+      {% for title, detail in destination.things %}
+        <li class="itinerary__item">
+          <span class="itinerary__day">Day {{ loop.index }}</span>
+          <div>
+            <p class="itinerary__title">{{ title }}</p>
+            <p class="itinerary__detail">{{ detail }}</p>
+          </div>
+        </li>
+      {% endfor %}
+    </ol>
+
+    {% if flights %}
+      <h2 class="guide__heading">Getting there</h2>
+      <ul class="guide__flights">
+        {% for flight in flights %}
+          <li>
+            <a href="{{ url_for('flight_detail', flight_id=flight.id) }}">{{ flight.flight_number }}</a>
+            from {{ flight.origin_city }} &middot;
+            {{ flight.departs_at | daystamp }} {{ flight.departs_at | clock }} &middot;
+            {{ flight.duration_minutes | duration }} &middot;
+            from {{ flight.from_price_cents | fare }}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="guide__none">
+        No Skyway service into {{ destination.city }} this week.
+        <a href="{{ url_for('flight_list') }}">See every departure.</a>
+      </p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

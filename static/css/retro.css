@@ -139,7 +139,7 @@ a:hover { color: var(--orange-dk); }
   color: var(--paper-2);
 }
 
-.site-nav { display: flex; gap: 1.75rem; }
+.site-nav { display: flex; flex-wrap: wrap; gap: 0.6rem 1.5rem; }
 
 .site-nav a {
   color: var(--paper);
@@ -202,6 +202,9 @@ a:hover { color: var(--orange-dk); }
   margin: 0 auto;
   padding: 2.75rem 1.75rem 4.5rem;
 }
+
+/* The board and the map are wide by nature; prose pages stay narrow. */
+.site-main--wide { max-width: 88rem; }
 
 .page-title, .hero__title {
   margin: 0 0 1rem;
@@ -415,7 +418,9 @@ a:hover { color: var(--orange-dk); }
 }
 
 .board__table .num { text-align: right; }
-.board__row:hover td { background: rgba(217, 162, 39, 0.09); }
+.board__row:hover td,
+.board__row.is-linked td { background: rgba(217, 162, 39, 0.12); }
+.board__row.is-linked td:first-child { box-shadow: inset 3px 0 0 var(--orange); }
 
 .flap { color: var(--paper); font-family: var(--font-mono); font-size: 0.92rem; }
 .flap small { display: block; font-size: 0.68rem; color: var(--paper-2); opacity: 0.72; }
@@ -465,21 +470,30 @@ a:hover { color: var(--orange-dk); }
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem 1.5rem;
-  padding: 0.5rem 1.75rem;
+  gap: 0.6rem 2rem;
+  padding: 0.75rem 1.75rem;
   background: var(--board);
   border-bottom: 1px solid rgba(247, 240, 225, 0.18);
 }
 
-.clock__display { display: flex; align-items: baseline; gap: 0.55rem; }
+.clock__display { display: flex; align-items: baseline; gap: 0.7rem; }
 
 .clock__face {
   display: inline-flex;
   font-family: var(--font-mono);
-  font-size: 1.5rem;
+  font-size: 2.1rem;
   font-weight: 700;
   color: var(--gold);
   letter-spacing: 0;   /* tiles are 1ch wide; tracking would break the match */
+}
+
+/* Colons sit between the flaps rather than on one, so the readout is a row of
+   number cards instead of a solid block. */
+.clock__face .flap-char--blank {
+  padding-left: 0.05ch;
+  padding-right: 0.05ch;
+  color: var(--paper-2);
+  opacity: 0.8;
 }
 
 .clock__hour-note {
@@ -497,14 +511,14 @@ a:hover { color: var(--orange-dk); }
 
 .clock__city {
   font-family: var(--font-display);
-  font-size: 0.8rem;
+  font-size: 0.95rem;
   font-weight: 600;
   letter-spacing: var(--track-mid);
   text-transform: uppercase;
   color: var(--paper);
 }
 
-.clock__offset { font-family: var(--font-mono); font-size: 0.72rem; color: var(--paper-2); opacity: 0.75; }
+.clock__offset { font-family: var(--font-mono); font-size: 0.82rem; color: var(--paper-2); opacity: 0.75; }
 
 .clock__controls {
   display: flex;
@@ -545,7 +559,7 @@ a:hover { color: var(--orange-dk); }
   opacity: 0.7;
 }
 
-.clock__utc-time { font-family: var(--font-mono); font-size: 0.92rem; color: var(--paper); }
+.clock__utc-time { font-family: var(--font-mono); font-size: 1.1rem; color: var(--paper); }
 
 /* --------------------------------------------------- live board controls -- */
 
@@ -634,8 +648,8 @@ a:hover { color: var(--orange-dk); }
    in height so the timetable stays visible on the same screen. */
 /* A wider side column makes the map itself narrower, and therefore shorter --
    the only way to buy vertical space without distorting the projection. */
-.routemap--compact { grid-template-columns: minmax(0, 1fr) 19rem; gap: 1rem; margin-bottom: 0.9rem; }
-.routemap--compact .routemap__readout { min-height: 0; padding: 0.8rem 0.95rem; }
+.routemap--compact { grid-template-columns: minmax(0, 1fr) 17rem; gap: 1.1rem; margin-bottom: 0.9rem; }
+.routemap--compact .routemap__readout { height: 19rem; padding: 0.9rem 1rem; }
 .routemap--compact .routemap__number { font-size: 1.2rem; }
 .routemap--compact .routemap__route { margin-bottom: 0.6rem; }
 .routemap--compact .routemap__facts { font-size: 0.75rem; }
@@ -725,13 +739,20 @@ a:hover { color: var(--orange-dk); }
 .routemap__svg.is-focused .port.is-dimmed .port__code { opacity: 0.3; }
 .port:focus-visible .port__halo { fill: none; stroke: var(--orange); stroke-width: 2.5; }
 
+/* Fixed height on purpose. The panel swaps between a hint and a five-row
+   detail as you sweep across routes; if it resized, every hover would shunt
+   the departure board up and down underneath it. */
 .routemap__readout {
+  display: flex;
+  flex-direction: column;
+  height: 21rem;
   padding: 1.1rem 1.25rem;
   background: var(--paper-2);
   border: var(--rule);
   border-top: 8px solid var(--orange);
-  min-height: 11rem;
 }
+
+.routemap__readout .legend--map { margin-top: auto; }
 
 .routemap__hint { margin: 0; font-size: 0.85rem; color: var(--teal-dk); }
 
@@ -1123,6 +1144,115 @@ a:hover { color: var(--orange-dk); }
 .selection__detail { font-size: 0.84rem; color: var(--teal-dk); }
 .selection__price { margin-left: auto !important; font-family: var(--font-mono); font-size: 1.5rem; }
 
+/* ---------------------------------------------------- destination posters -- */
+
+.poster { display: block; width: 100%; height: auto; }
+.poster__airline, .poster__city, .poster__region { text-anchor: middle; fill: #14212e; }
+
+.poster__airline {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: 2.6px;
+  fill: #f7f0e1;
+}
+
+.poster__city {
+  font-family: var(--font-display);
+  font-size: 52px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+}
+
+.poster__region {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 4px;
+  fill: #42525f;
+}
+
+.poster-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 1.75rem;
+  margin: 2rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.poster-card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.12s ease;
+}
+
+.poster-card:hover { transform: translateY(-4px); }
+.poster-card .poster { box-shadow: var(--shadow); }
+.poster-card__label { display: block; padding-top: 0.7rem; }
+
+.poster-card__city {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: var(--track-mid);
+  text-transform: uppercase;
+}
+
+.poster-card__tag { display: block; font-size: 0.85rem; color: var(--ink-soft); }
+
+/* ------------------------------------------------------- destination guide -- */
+
+.guide {
+  display: grid;
+  grid-template-columns: minmax(0, 22rem) minmax(0, 1fr);
+  gap: 2.5rem;
+  align-items: start;
+}
+
+.guide__poster .poster { box-shadow: var(--shadow); }
+
+.guide__heading {
+  margin: 2rem 0 0.9rem;
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: var(--track-wide);
+  text-transform: uppercase;
+  color: var(--orange-dk);
+}
+
+.itinerary { margin: 0; padding: 0; list-style: none; }
+
+.itinerary__item {
+  display: flex;
+  gap: 1.1rem;
+  padding: 0.9rem 0;
+  border-top: 1px dotted var(--ink-soft);
+}
+
+.itinerary__item:last-child { border-bottom: 1px dotted var(--ink-soft); }
+
+.itinerary__day {
+  flex: 0 0 3.6rem;
+  font-family: var(--font-display);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: var(--track-mid);
+  text-transform: uppercase;
+  color: var(--teal);
+  padding-top: 0.2rem;
+}
+
+.itinerary__title { margin: 0; font-weight: 700; }
+.itinerary__detail { margin: 0.15rem 0 0; color: var(--ink-soft); font-size: 0.92rem; }
+
+.guide__flights { margin: 0; padding-left: 1.1rem; font-size: 0.92rem; }
+.guide__flights li { margin-bottom: 0.4rem; }
+.guide__none { padding: 1rem; background: var(--paper-2); border-left: 6px solid var(--gold); }
+
 /* --------------------------------------------------------- boarding pass -- */
 
 .pass {
@@ -1317,8 +1447,10 @@ a:hover { color: var(--orange-dk); }
 /* ----------------------------------------------------------- responsive -- */
 
 @media (max-width: 55rem) {
+  .guide { grid-template-columns: 1fr; gap: 1.5rem; }
+  .guide__poster { max-width: 20rem; }
   .routemap { grid-template-columns: 1fr; }
-  .routemap__readout { min-height: 0; }
+  .routemap__readout, .routemap--compact .routemap__readout { height: auto; min-height: 13rem; }
   .seatmap { grid-template-columns: 1fr; }
 
   /* Pinned to the bottom of the viewport, so it must stay shallow: the desktop
@@ -1382,6 +1514,8 @@ a:hover { color: var(--orange-dk); }
 
 @media (max-width: 40rem) {
   .site-header { padding: 0.9rem 1.1rem; }
+  .site-nav { gap: 0.5rem 1rem; }
+  .site-nav a { font-size: 0.72rem; letter-spacing: 0.14em; }
   .site-main { padding: 2rem 1.1rem 3.5rem; }
   .steps__list { padding: 0.6rem 1.1rem; gap: 0.3rem 1rem; }
   .steps__label { display: none; }
