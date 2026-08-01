@@ -45,7 +45,7 @@
   // --- emphasis --------------------------------------------------------------
 
   function clearEmphasis() {
-    svg.classList.remove("is-focused");
+    svg.classList.remove("is-focused", "is-single");
     arcs().forEach(function (arc) { arc.classList.remove("is-active", "is-dimmed"); });
     ports().forEach(function (port) { port.classList.remove("is-active", "is-dimmed"); });
     if (board) {
@@ -63,6 +63,10 @@
     });
 
     svg.classList.add("is-focused");
+    // One route chosen means "look here"; several means "these match a filter".
+    // Only the first grows its aircraft — see retro.css.
+    svg.classList.toggle("is-single", chosen.length === 1);
+
     arcs().forEach(function (arc) {
       var on = chosen.indexOf(arc) !== -1;
       arc.classList.toggle("is-active", on);

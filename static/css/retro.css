@@ -785,24 +785,24 @@ a:hover { color: var(--orange-dk); }
    from the middle of the map instead of growing it where it stands. */
 .arc__plane { pointer-events: none; }
 
-/* One stroke width for every state: a heavier outline on some routes made
+/* Each aircraft was filled with its own route's colour, which is 1.00:1
+   against the line it flies along — it dissolved into the route, leaving only
+   a hairline outline. These are pale tints of each route colour instead, over
+   a dark outline heavy enough to separate them from any line beneath.
+   One stroke width for every state: a heavier outline on some routes made
    those aircraft look bigger than the rest. */
 .arc__plane path {
-  fill: #4f9a86;
+  fill: #d9f2e8;
   stroke: var(--board);
-  stroke-width: 0.7;
+  stroke-width: 1;
   stroke-linejoin: round;
   transform-box: fill-box;
   transform-origin: center;
   transition: transform 0.15s ease, fill 0.15s ease;
 }
 
-.arc--filling .arc__plane path { fill: var(--gold); }
-
-/* Not --orange: at 3.5:1 against the sea the aircraft on the busiest routes
-   were the hardest to see. This tint clears 5:1 while still reading as the
-   warm end of the scale. */
-.arc--full .arc__plane path { fill: #f4a273; }
+.arc--filling .arc__plane path { fill: #fbeccd; }
+.arc--full .arc__plane path { fill: #ffe4d4; }
 
 .routemap__svg.is-focused .arc.is-dimmed .arc__plane { opacity: 0.18; }
 
@@ -812,9 +812,14 @@ a:hover { color: var(--orange-dk); }
 .arc:focus-visible .arc__plane path {
   fill: var(--paper);
   stroke: #000;
-  stroke-width: 0.7;
-  transform: scale(1.55);
+  stroke-width: 1;
 }
+
+/* Growing them is reserved for a single chosen route. A From/To filter lights
+   several at once, and scaling those left permanently bigger aircraft sitting
+   beside normal ones — which read as an inconsistency, not as emphasis. */
+.routemap__svg.is-single .arc.is-active .arc__plane path,
+.arc:focus-visible .arc__plane path { transform: scale(1.5); }
 
 .routemap__svg.is-focused .arc.is-dimmed .arc__line { opacity: 0.18; }
 .arc.is-active .arc__line { stroke: var(--paper); stroke-width: 3.2; stroke-dasharray: none; }
