@@ -785,10 +785,12 @@ a:hover { color: var(--orange-dk); }
    from the middle of the map instead of growing it where it stands. */
 .arc__plane { pointer-events: none; }
 
+/* One stroke width for every state: a heavier outline on some routes made
+   those aircraft look bigger than the rest. */
 .arc__plane path {
   fill: #4f9a86;
   stroke: var(--board);
-  stroke-width: 0.6;
+  stroke-width: 0.7;
   stroke-linejoin: round;
   transform-box: fill-box;
   transform-origin: center;
@@ -796,7 +798,11 @@ a:hover { color: var(--orange-dk); }
 }
 
 .arc--filling .arc__plane path { fill: var(--gold); }
-.arc--full .arc__plane path { fill: var(--orange); stroke-width: 0.9; }
+
+/* Not --orange: at 3.5:1 against the sea the aircraft on the busiest routes
+   were the hardest to see. This tint clears 5:1 while still reading as the
+   warm end of the scale. */
+.arc--full .arc__plane path { fill: #f4a273; }
 
 .routemap__svg.is-focused .arc.is-dimmed .arc__plane { opacity: 0.18; }
 
