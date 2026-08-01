@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}{{ code }} &middot; Skyway Airways{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <p class="hero__eyebrow">{{ code }}</p>
+  <h1 class="hero__title">{{ message }}</h1>
+  <p class="hero__lede"><a href="{{ url_for('index') }}">Back to departures</a></p>
+</section>
+{% endblock %}

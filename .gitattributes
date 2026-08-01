@@ -1,0 +1,6 @@
+# Normalise to LF in the repository. Render builds on Linux, and a CRLF
+# Procfile or shell command can fail there.
+* text=auto eol=lf
+
+*.png binary
+*.db binary

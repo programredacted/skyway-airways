@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}Departures &middot; Skyway Airways{% endblock %}
+{% block steps %}{% with step = 1 %}{% include "_steps.html" %}{% endwith %}{% endblock %}
+
+{% block content %}
+<p class="eyebrow">Skyway timetable</p>
+<h1 class="page-title">Departures</h1>
+
+<form class="search search--inline" method="get" action="{{ url_for('flight_list') }}">
+  <div class="search__field">
+    <label for="origin">From</label>
+    <select id="origin" name="origin">
+      <option value="">Anywhere</option>
+      {% for airport in airports %}
+        <option value="{{ airport.code }}" {{ 'selected' if criteria.origin == airport.code }}>
+          {{ airport.city }} ({{ airport.code }})
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="search__field">
+    <label for="dest">To</label>
+    <select id="dest" name="dest">
+      <option value="">Anywhere</option>
+      {% for airport in airports %}
+        <option value="{{ airport.code }}" {{ 'selected' if criteria.dest == airport.code }}>
+          {{ airport.city }} ({{ airport.code }})
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="search__field">
+    <label for="date">Date</label>
+    <input type="date" id="date" name="date" value="{{ criteria.date or '' }}">
+  </div>
+  <button class="btn" type="submit">Filter</button>
+  {% if criteria.origin or criteria.dest or criteria.date %}
+    <a class="btn btn--ghost" href="{{ url_for('flight_list') }}">Clear</a>
+  {% endif %}
+</form>
+
+{% if flights %}
+<div class="board">
+  <table class="board__table">
+    <caption class="board__caption">
+      Departures &middot; {{ flights | length }} flights &middot; all times local to each airport
+    </caption>
+    <thead>
+      <tr>
+        <th scope="col">Flight</th>
+        <th scope="col">Departs</th>
+        <th scope="col">From</th>
+        <th scope="col">To</th>
+        <th scope="col">Arrives</th>
+        <th scope="col" class="num">Fare</th>
+        <th scope="col" class="num">Seats</th>
+        <th scope="col">Status</th>
+        <th scope="col"><span class="visually-hidden">Book</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for flight in flights %}
+      <tr class="board__row">
+        <td class="flap flap--key">
+          <a href="{{ url_for('flight_detail', flight_id=flight.id) }}"
+             ><span data-flap>{{ flight.flight_number }}</span></a>
+          <small>{{ flight.aircraft_model }}</small>
+        </td>
+        <td class="flap">
+          <span data-flap>{{ flight.departs_at | clock }}</span>
+          <span class="flap__day">{{ flight.departs_at | daystamp }}</span>
+        </td>
+        <td class="flap">
+          <span data-flap>{{ flight.origin_code }}</span>
+          <small>{{ flight.origin_city }}</small>
+        </td>
+        <td class="flap">
+          <span data-flap>{{ flight.dest_code }}</span>
+          <small>{{ flight.dest_city }}</small>
+        </td>
+        <td class="flap">
+          <span data-flap>{{ flight.arrives_at | clock }}</span>
+          <span class="flap__day">{{ flight.duration_minutes | duration }}</span>
+        </td>
+        <td class="flap num">{{ flight.from_price_cents | fare }}</td>
+        <td class="flap num">
+          {% if flight.seats_available == 0 %}
+            <span class="tag tag--full">Sold out</span>
+          {% elif flight.seats_available < 25 %}
+            <span class="tag tag--low">{{ flight.seats_available }} left</span>
+          {% else %}
+            {{ flight.seats_available }} left
+          {% endif %}
+        </td>
+        <td class="flap">
+          <span class="tag tag--{{ flight.status | lower }}">{{ flight.status | title }}</span>
+        </td>
+        <td class="flap">
+          <a class="btn btn--small" href="{{ url_for('flight_detail', flight_id=flight.id) }}">Select</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+  <p class="empty">
+    No departures match that search.
+    <a href="{{ url_for('flight_list') }}">Show every flight.</a>
+  </p>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/splitflap.js') }}" defer></script>
+{% endblock %}

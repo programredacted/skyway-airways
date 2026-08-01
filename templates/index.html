@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Skyway Airways &middot; Fly the jet age{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <p class="hero__eyebrow">Now boarding</p>
+  <h1 class="hero__title">Fly the jet age</h1>
+  <div class="hero__rule" aria-hidden="true"></div>
+  <p class="hero__lede">
+    Fifteen departures across three continents. Pick your seat on the map,
+    from Economy to First — and see the fare change as you choose.
+  </p>
+</section>
+
+<form class="search" method="get" action="{{ url_for('flight_list') }}">
+  <div class="search__field">
+    <label for="origin">From</label>
+    <select id="origin" name="origin">
+      <option value="">Anywhere</option>
+      {% for airport in airports %}
+        <option value="{{ airport.code }}">{{ airport.city }} ({{ airport.code }})</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="search__field">
+    <label for="dest">To</label>
+    <select id="dest" name="dest">
+      <option value="">Anywhere</option>
+      {% for airport in airports %}
+        <option value="{{ airport.code }}">{{ airport.city }} ({{ airport.code }})</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="search__field">
+    <label for="date">Date</label>
+    <input type="date" id="date" name="date">
+  </div>
+
+  <button class="btn btn--primary" type="submit">Search departures</button>
+</form>
+{% endblock %}

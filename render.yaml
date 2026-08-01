@@ -1,0 +1,22 @@
+# Render blueprint. Import this repo as a Blueprint and Render reads every
+# setting from here, or create the Web Service by hand using the same values.
+services:
+  - type: web
+    name: skyway-airways
+    runtime: python
+    plan: free
+    region: oregon
+
+    buildCommand: pip install -r requirements.txt
+
+    # One worker on purpose: several processes would each race to seed the same
+    # SQLite file at startup. Threads give concurrency without that risk.
+    startCommand: gunicorn --workers 1 --threads 4 --timeout 60 --bind 0.0.0.0:$PORT "app:create_app()"
+
+    healthCheckPath: /healthz
+
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true      # Render generates a strong value on first deploy
+      - key: PYTHON_VERSION
+        value: 3.13.4

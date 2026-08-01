@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}{{ flight.flight_number }} &middot; Skyway Airways{% endblock %}
+{% block steps %}{% with step = 1 %}{% include "_steps.html" %}{% endwith %}{% endblock %}
+
+{% block content %}
+<p class="crumbs"><a href="{{ url_for('flight_list') }}">&larr; All departures</a></p>
+
+<article class="flight-card">
+  <header class="flight-card__head">
+    <div>
+      <p class="flight-card__number">{{ flight.flight_number }}</p>
+      <p class="flight-card__airline">{{ flight.airline }} &middot; {{ flight.aircraft_model }}</p>
+    </div>
+    <span class="tag tag--{{ flight.status | lower }}">{{ flight.status | title }}</span>
+  </header>
+
+  <div class="route">
+    <div class="route__end">
+      <p class="route__code">{{ flight.origin_code }}</p>
+      <p class="route__city">{{ flight.origin_city }}</p>
+      <p class="route__time">{{ flight.departs_at | clock }}</p>
+      <p class="route__day">{{ flight.departs_at | daystamp }}</p>
+    </div>
+
+    <div class="route__middle">
+      <p class="route__duration">{{ flight.duration_minutes | duration }}</p>
+      <div class="route__line"><span class="route__plane">✈</span></div>
+      <p class="route__nonstop">Nonstop</p>
+    </div>
+
+    <div class="route__end">
+      <p class="route__code">{{ flight.dest_code }}</p>
+      <p class="route__city">{{ flight.dest_city }}</p>
+      <p class="route__time">{{ flight.arrives_at | clock }}</p>
+      <p class="route__day">{{ flight.arrives_at | daystamp }}</p>
+    </div>
+  </div>
+
+  <ul class="cabin-list">
+    {% for cabin in cabins %}
+    <li class="cabin-list__item cabin--{{ cabin.cabin_class | lower }}">
+      <p class="cabin-list__name">{{ cabin.label }}</p>
+      <p class="cabin-list__price">{{ cabin.price_cents | fare }}</p>
+      <p class="cabin-list__seats">{{ cabin.available }} of {{ cabin.total }} seats free</p>
+    </li>
+    {% endfor %}
+  </ul>
+
+  <footer class="flight-card__foot">
+    {% if flight.seats_available > 0 %}
+      <a class="btn btn--primary btn--large"
+         href="{{ url_for('seat_selection', flight_id=flight.id) }}">Choose your seat</a>
+      <p class="flight-card__note">{{ flight.seats_available }} of {{ flight.total_seats }} seats still available.</p>
+    {% else %}
+      <p class="flight-card__note">This flight is sold out.</p>
+    {% endif %}
+  </footer>
+</article>
+{% endblock %}

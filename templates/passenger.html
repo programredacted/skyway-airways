@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Passenger details &middot; {{ flight.flight_number }}{% endblock %}
+{% block steps %}{% with step = 3 %}{% include "_steps.html" %}{% endwith %}{% endblock %}
+
+{% block content %}
+<p class="crumbs">
+  <a href="{{ url_for('seat_selection', flight_id=flight.id) }}">&larr; Back to the seat map</a>
+</p>
+
+<h1 class="page-title">Passenger details</h1>
+
+<aside class="selection">
+  <p class="selection__seat">{{ seat.row_number }}{{ seat.seat_letter }}</p>
+  <div>
+    <p class="selection__flight">
+      {{ flight.flight_number }} &middot; {{ flight.origin_code }} &rarr; {{ flight.dest_code }}
+    </p>
+    <p class="selection__detail">
+      {{ flight.departs_at | daystamp }} {{ flight.departs_at | clock }} &middot;
+      {{ cabin_label(seat.cabin_class) }}
+    </p>
+  </div>
+  <p class="selection__price">{{ seat.price_cents | fare }}</p>
+</aside>
+
+<form class="form" method="post" action="{{ url_for('confirm_booking') }}" novalidate>
+  <input type="hidden" name="flight_id" value="{{ flight.id }}">
+  <input type="hidden" name="seat_id" value="{{ seat.id }}">
+
+  <div class="form__field {{ 'form__field--error' if errors.full_name }}">
+    <label for="full_name">Full name <span class="req">required</span></label>
+    <input type="text" id="full_name" name="full_name" maxlength="80"
+           value="{{ values.full_name }}" autocomplete="name">
+    {% if errors.full_name %}<p class="form__error">{{ errors.full_name }}</p>{% endif %}
+  </div>
+
+  <div class="form__field {{ 'form__field--error' if errors.email }}">
+    <label for="email">Email <span class="req">required</span></label>
+    <input type="email" id="email" name="email" value="{{ values.email }}" autocomplete="email">
+    {% if errors.email %}<p class="form__error">{{ errors.email }}</p>{% endif %}
+  </div>
+
+  <div class="form__field {{ 'form__field--error' if errors.phone }}">
+    <label for="phone">Telephone <span class="opt">optional</span></label>
+    <input type="tel" id="phone" name="phone" value="{{ values.phone }}" autocomplete="tel">
+    {% if errors.phone %}<p class="form__error">{{ errors.phone }}</p>{% endif %}
+  </div>
+
+  <button class="btn btn--primary btn--large" type="submit">
+    Confirm booking &middot; {{ seat.price_cents | fare }}
+  </button>
+  <p class="form__note">No payment is taken. This is a student project.</p>
+</form>
+{% endblock %}

@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}Seat map &middot; {{ flight.flight_number }}{% endblock %}
+{% block steps %}{% with step = 2 %}{% include "_steps.html" %}{% endwith %}{% endblock %}
+
+{% block content %}
+<p class="crumbs">
+  <a href="{{ url_for('flight_detail', flight_id=flight.id) }}">&larr; {{ flight.flight_number }}</a>
+</p>
+
+<header class="seatmap__head">
+  <h1 class="page-title">Choose your seat</h1>
+  <p class="seatmap__sub">
+    {{ flight.origin_code }} &rarr; {{ flight.dest_code }} &middot;
+    {{ flight.departs_at | daystamp }} {{ flight.departs_at | clock }} &middot;
+    {{ flight.aircraft_model }}
+  </p>
+</header>
+
+<div class="seatmap">
+
+  {# ---- the cabin ---- #}
+  <form class="seatmap__cabin" id="seat-form" method="get"
+        action="{{ url_for('passenger_form', flight_id=flight.id) }}">
+    <input type="hidden" name="seat_id" id="chosen-seat-id" value="">
+
+    <div class="legend">
+      {% for cabin in cabins %}
+      <span class="legend__item">
+        <span class="legend__swatch cabin--{{ cabin.cabin_class | lower }}"></span>
+        {{ cabin.label }} &middot; {{ cabin.price_cents | fare }}
+      </span>
+      {% endfor %}
+      <span class="legend__item">
+        <span class="legend__swatch legend__swatch--taken"></span> Sold
+      </span>
+      <span class="legend__item">
+        <span class="legend__swatch legend__swatch--selected"></span> Your seat
+      </span>
+    </div>
+
+    <div class="seatmap__toolbar">
+      <p class="seatmap__count">
+        <strong id="seats-free">{{ flight.seats_available }}</strong> of
+        {{ flight.total_seats }} seats free
+      </p>
+      <button type="button" class="btn btn--small" id="refresh-seats" hidden>
+        Refresh availability
+      </button>
+      <span class="seatmap__stamp" id="refresh-stamp" aria-hidden="true"></span>
+    </div>
+
+    <div class="cabin-shell" id="seat-grid"
+         data-flight-id="{{ flight.id }}"
+         data-base-fare="{{ flight.base_fare_cents }}"
+         role="group" aria-label="Seat map for flight {{ flight.flight_number }}">
+      <p class="cabin-shell__nose">Nose</p>
+
+      {% for row in rows %}
+        {% if loop.first or row.cabin_class != rows[loop.index0 - 1].cabin_class %}
+          <p class="cabin-shell__divider">{{ cabin_label(row.cabin_class) }}</p>
+        {% endif %}
+        <div class="seat-row" data-row="{{ row.row_number }}">
+          <span class="seat-row__number" aria-hidden="true">{{ row.row_number }}</span>
+          {% for seat in row.seats %}
+            <button type="submit"
+                    name="seat_id"
+                    value="{{ seat.id }}"
+                    class="seat cabin--{{ seat.cabin_class | lower }} {{ 'seat--taken' if not seat.available }}"
+                    {{ 'disabled' if not seat.available }}
+                    aria-pressed="false"
+                    data-seat-id="{{ seat.id }}"
+                    data-label="{{ seat.label }}"
+                    data-cabin="{{ seat.cabin_class }}"
+                    data-cabin-label="{{ cabin_label(seat.cabin_class) }}"
+                    data-price="{{ seat.price_cents }}"
+                    title="{{ seat.label }} · {{ cabin_label(seat.cabin_class) }} · {{ seat.price_cents | fare }}{{ ' · Sold' if not seat.available }}"
+                    aria-label="Seat {{ seat.label }}, {{ cabin_label(seat.cabin_class) }}, {{ seat.price_cents | fare }}{{ ', sold' if not seat.available }}">
+              <span class="seat__letter" aria-hidden="true">{{ seat.letter }}</span>
+              <span class="seat__code" aria-hidden="true">{{ seat.label }}</span>
+            </button>
+            {% if seat.aisle_after %}<span class="seat-aisle" aria-hidden="true"></span>{% endif %}
+          {% endfor %}
+          <span class="seat-row__number" aria-hidden="true">{{ row.row_number }}</span>
+        </div>
+      {% endfor %}
+
+      <p class="cabin-shell__tail">Tail</p>
+    </div>
+  </form>
+
+  {# ---- live selection summary; revealed by JS, since without it a seat click
+         goes straight to the passenger form ---- #}
+  <aside class="summary" id="seat-summary" hidden>
+    <h2 class="summary__title">Your selection</h2>
+
+    <p class="summary__empty" id="summary-empty">
+      Pick any seat on the map. Prices vary by cabin.
+    </p>
+
+    <div class="summary__chosen" id="summary-chosen" hidden>
+      <p class="summary__seat" id="summary-seat">--</p>
+      <p class="summary__cabin" id="summary-cabin"></p>
+
+      <dl class="summary__maths">
+        <div>
+          <dt>Base fare</dt>
+          <dd id="summary-base">{{ flight.base_fare_cents | fare }}</dd>
+        </div>
+        <div>
+          <dt>Cabin multiplier</dt>
+          <dd id="summary-multiplier"></dd>
+        </div>
+        <div class="summary__total">
+          <dt>Total</dt>
+          <dd id="summary-total"></dd>
+        </div>
+      </dl>
+    </div>
+
+    <button type="submit" form="seat-form" class="btn btn--primary btn--large"
+            id="continue-btn" disabled>
+      Continue
+    </button>
+
+    <p class="summary__hint" id="summary-hover" aria-hidden="true"></p>
+  </aside>
+</div>
+
+<p class="seatmap__nojs" id="nojs-hint">Click any available seat to continue.</p>
+
+{# Screen-reader announcements for selection and availability changes. #}
+<p class="visually-hidden" id="seat-live" role="status" aria-live="polite"></p>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/seatmap.js') }}" defer></script>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Find your booking &middot; Skyway Airways{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Find your booking</h1>
+<p class="lede">Enter the six-character reference from your boarding pass.</p>
+
+<form class="form form--narrow" method="post" action="{{ url_for('lookup') }}">
+  <div class="form__field">
+    <label for="reference">Booking reference</label>
+    <input type="text" id="reference" name="reference" maxlength="6"
+           class="input--reference" autocomplete="off" spellcheck="false" required>
+  </div>
+  <button class="btn btn--primary" type="submit">Retrieve booking</button>
+</form>
+{% endblock %}

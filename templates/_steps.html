@@ -1,0 +1,15 @@
+{# Four-step booking progress. `step` is set by the including template. #}
+<nav class="steps" aria-label="Booking progress">
+  <ol class="steps__list">
+    {% for label in ["Choose flight", "Choose seat", "Passenger", "Confirmed"] %}
+      {% set number = loop.index %}
+      <li class="steps__item
+                 {{ 'is-done' if number < step }}
+                 {{ 'is-current' if number == step }}"
+          {{ 'aria-current=step' if number == step }}>
+        <span class="steps__number" aria-hidden="true">{{ '✓' if number < step else number }}</span>
+        <span class="steps__label">{{ label }}</span>
+      </li>
+    {% endfor %}
+  </ol>
+</nav>

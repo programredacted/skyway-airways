@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}{{ booking.reference }} &middot; Boarding pass{% endblock %}
+{% block steps %}{% with step = 4 %}{% include "_steps.html" %}{% endwith %}{% endblock %}
+
+{% block content %}
+{% set cancelled = booking.status == 'CANCELLED' %}
+
+<p class="eyebrow">{{ "Cancelled" if cancelled else "Confirmed" }}</p>
+<h1 class="page-title">{{ "Booking cancelled" if cancelled else "You're booked" }}</h1>
+
+<article class="pass {{ 'pass--void' if cancelled }}">
+  <div class="pass__main">
+    <header class="pass__head">
+      <span class="pass__airline">{{ booking.airline }}</span>
+      <span class="pass__kind">Boarding Pass</span>
+    </header>
+
+    <div class="pass__route">
+      <div>
+        <p class="pass__code">{{ booking.origin_code }}</p>
+        <p class="pass__city">{{ booking.origin_city }}</p>
+      </div>
+      <span class="pass__plane" aria-hidden="true">✈</span>
+      <div>
+        <p class="pass__code">{{ booking.dest_code }}</p>
+        <p class="pass__city">{{ booking.dest_city }}</p>
+      </div>
+    </div>
+
+    <dl class="pass__grid">
+      <div><dt>Passenger</dt><dd>{{ booking.full_name }}</dd></div>
+      <div><dt>Flight</dt><dd>{{ booking.flight_number }}</dd></div>
+      <div><dt>Date</dt><dd>{{ booking.departs_at | daystamp }}</dd></div>
+      <div><dt>Departs</dt><dd>{{ booking.departs_at | clock }}</dd></div>
+      <div><dt>Arrives</dt><dd>{{ booking.arrives_at | clock }}</dd></div>
+      <div><dt>Class</dt><dd>{{ cabin_label(booking.cabin_class) }}</dd></div>
+      <div class="pass__grid-wide"><dt>Aircraft</dt><dd>{{ booking.aircraft_model }}</dd></div>
+      <div><dt>Fare paid</dt><dd>{{ booking.price_paid_cents | fare }}</dd></div>
+    </dl>
+
+    <div class="pass__barcode" aria-hidden="true"></div>
+    <p class="pass__barcode-text" aria-hidden="true">
+      {{ booking.reference }} {{ booking.flight_number | replace(' ', '') }}
+    </p>
+  </div>
+
+  <aside class="pass__stub">
+    <p class="pass__stub-label">Seat</p>
+    <p class="pass__seat">{{ booking.row_number }}{{ booking.seat_letter }}</p>
+    <p class="pass__stub-label">Booking reference</p>
+    <p class="pass__ref">{{ booking.reference }}</p>
+    {% if cancelled %}<p class="pass__void-stamp">Void</p>{% endif %}
+  </aside>
+</article>
+
+<div class="pass__actions">
+  <p class="pass__sent">A copy has been noted for {{ booking.email }}.</p>
+  {% if not cancelled %}
+    <form method="post" action="{{ url_for('cancel', reference=booking.reference) }}">
+      <button class="btn btn--ghost" type="submit">Cancel this booking</button>
+    </form>
+  {% endif %}
+  <a class="btn" href="{{ url_for('flight_list') }}">Book another flight</a>
+</div>
+{% endblock %}
