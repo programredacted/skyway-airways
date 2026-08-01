@@ -800,12 +800,14 @@ a:hover { color: var(--orange-dk); }
 
 .routemap__svg.is-focused .arc.is-dimmed .arc__plane { opacity: 0.18; }
 
+/* Picked out: cream body, black outline, so the aircraft on the chosen route
+   reads at a glance against the dark map. */
 .arc.is-active .arc__plane path,
 .arc:focus-visible .arc__plane path {
   fill: var(--paper);
-  stroke: var(--teal-dk);
-  stroke-width: 0.75;
-  transform: scale(1.7);
+  stroke: #000;
+  stroke-width: 0.7;
+  transform: scale(1.55);
 }
 
 .routemap__svg.is-focused .arc.is-dimmed .arc__line { opacity: 0.18; }

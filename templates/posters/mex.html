@@ -1,39 +1,60 @@
-{# Mexico City — the stepped pyramid at Teotihuacan under two volcanoes #}
-<circle cx="306" cy="140" r="38" fill="{{ gold }}" opacity="0.75"/>
-
-{# volcanoes on the horizon #}
-<path d="M0 372 L74 268 L134 372 Z" fill="{{ sky }}" opacity="0.45"/>
-<path d="M96 372 L164 292 L226 372 Z" fill="{{ sky }}" opacity="0.32"/>
-<path d="M52 300 L74 268 L98 302 L86 296 L74 306 L62 296 Z" fill="#f7f0e1" opacity="0.8"/>
-
-{# pyramid: five terraces with a central stair #}
-<g fill="#f7f0e1">
-  {% for y, half in [(288, 40), (320, 62), (352, 84), (384, 106), (416, 128)] %}
-    <path d="M{{ 200 - half }} {{ y + 32 }} L{{ 200 - half + 14 }} {{ y }}
-             L{{ 200 + half - 14 }} {{ y }} L{{ 200 + half }} {{ y + 32 }} Z"/>
-  {% endfor %}
-</g>
-<g fill="{{ warm }}" opacity="0.55">
-  {% for y, half in [(288, 40), (320, 62), (352, 84), (384, 106), (416, 128)] %}
-    <rect x="{{ 200 - half + 6 }}" y="{{ y + 26 }}" width="{{ half * 2 - 12 }}" height="6"/>
-  {% endfor %}
-</g>
-{# stairway #}
-<path d="M182 448 L190 288 L210 288 L218 448 Z" fill="{{ warm }}" opacity="0.75"/>
-<g stroke="#f7f0e1" stroke-width="1.8" opacity="0.7">
-  {% for y in range(9) %}
-    <line x1="{{ 184 + y }}" y1="{{ 440 - y * 17 }}" x2="{{ 216 - y }}" y2="{{ 440 - y * 17 }}"/>
+{# Mexico City — the Pyramid of the Sun on the Avenue of the Dead, with the
+   two volcanoes behind and agave along the roadside #}
+<circle cx="308" cy="138" r="40" fill="{{ gold }}" opacity="0.8"/>
+<g stroke="{{ gold }}" stroke-width="4" opacity="0.35" stroke-linecap="round">
+  {% for angle in [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330] %}
+    <line x1="308" y1="138" x2="308" y2="88" transform="rotate({{ angle }} 308 138)"/>
   {% endfor %}
 </g>
 
-<rect x="0" y="448" width="400" height="152" fill="{{ gold }}" opacity="0.35"/>
-<rect x="0" y="448" width="400" height="6" fill="{{ warm }}"/>
-{# agave along the causeway #}
-<g fill="{{ sky }}" opacity="0.5">
-  {% for x in [36, 88, 320, 368] %}
-    {% for angle in [-40, -14, 14, 40] %}
-      <ellipse cx="{{ x }}" cy="{{ 480 }}" rx="5" ry="20"
-               transform="rotate({{ angle }} {{ x }} 490)"/>
+{# Popocatepetl and Iztaccihuatl, one smoking #}
+<path d="M0 372 L28 330 L74 262 L108 320 L134 372 Z" fill="{{ sky }}" opacity="0.5"/>
+<path d="M96 372 L136 306 L168 288 L204 336 L232 372 Z" fill="{{ sky }}" opacity="0.34"/>
+<path d="M54 296 L74 262 L96 300 L84 292 L74 304 L64 292 Z" fill="#f7f0e1" opacity="0.85"/>
+<path d="M150 300 L168 288 L188 314 L176 308 L166 316 L158 306 Z" fill="#f7f0e1" opacity="0.6"/>
+<g fill="#f7f0e1" opacity="0.22">
+  <circle cx="78" cy="248" r="9"/><circle cx="88" cy="234" r="7"/><circle cx="96" cy="222" r="5"/>
+</g>
+
+{# the pyramid: five terraces, each with a battered face and a cornice #}
+{% set tiers = [(292, 42), (322, 64), (352, 86), (382, 108), (412, 130)] %}
+<g>
+  {% for y, half in tiers %}
+    <path d="M{{ 200 - half }} {{ y + 30 }} L{{ 200 - half + 13 }} {{ y }}
+             L{{ 200 + half - 13 }} {{ y }} L{{ 200 + half }} {{ y + 30 }} Z"
+          fill="#f7f0e1"/>
+    <rect x="{{ 200 - half + 4 }}" y="{{ y + 24 }}" width="{{ half * 2 - 8 }}" height="7"
+          fill="{{ warm }}" opacity="0.6"/>
+    {# the right face falls into shade #}
+    <path d="M200 {{ y }} L{{ 200 + half - 13 }} {{ y }} L{{ 200 + half }} {{ y + 30 }} L200 {{ y + 30 }} Z"
+          fill="{{ sky }}" opacity="0.16"/>
+  {% endfor %}
+</g>
+{# the great stair up the middle, with a shrine at the top #}
+<path d="M180 442 L188 292 L212 292 L220 442 Z" fill="{{ warm }}" opacity="0.72"/>
+<g stroke="#f7f0e1" stroke-width="1.6" opacity="0.65">
+  {% for i in range(12) %}
+    <line x1="{{ 181 + i * 0.7 }}" y1="{{ 436 - i * 12 }}" x2="{{ 219 - i * 0.7 }}" y2="{{ 436 - i * 12 }}"/>
+  {% endfor %}
+</g>
+<path d="M188 292 L188 278 L212 278 L212 292 Z" fill="#f7f0e1"/>
+<path d="M184 278 L216 278 L212 268 L188 268 Z" fill="{{ warm }}"/>
+
+<rect x="0" y="442" width="400" height="158" fill="{{ gold }}" opacity="0.36"/>
+<rect x="0" y="442" width="400" height="6" fill="{{ warm }}"/>
+
+{# agave: stiff spined leaves fanning from a single crown, not rotated blobs #}
+{% for x, s in [(34, 1.0), (86, 0.78), (322, 0.86), (368, 1.06)] %}
+  <g transform="translate({{ x }} {{ 498 }}) scale({{ s }})" fill="{{ sky }}" opacity="0.55">
+    {% for tip_x, tip_y in [(-30, -26), (-20, -42), (-7, -50), (7, -50),
+                            (20, -42), (30, -26), (-14, -14), (14, -14)] %}
+      <path d="M0 0 C {{ tip_x * 0.35 }} {{ tip_y * 0.5 }} {{ tip_x * 0.8 }} {{ tip_y * 0.85 }} {{ tip_x }} {{ tip_y }}
+               C {{ tip_x * 0.7 }} {{ tip_y * 0.8 }} {{ tip_x * 0.3 }} {{ tip_y * 0.45 }} {{ 5 if tip_x > 0 else -5 }} 0 Z"/>
     {% endfor %}
-  {% endfor %}
+  </g>
+{% endfor %}
+
+{# paving of the avenue, receding #}
+<g stroke="{{ warm }}" stroke-width="2" opacity="0.22">
+  {% for y in [468, 486, 508, 534, 566] %}<line x1="0" y1="{{ y }}" x2="400" y2="{{ y }}"/>{% endfor %}
 </g>

@@ -1,62 +1,106 @@
 {# New York — Liberty against the skyline at night.
-   The figure is one continuous silhouette: pedestal, robe, torso, raised arm
-   and torch all in a single path, so nothing reads as a stack of parts. #}
+
+   Proportions matter more than detail here: the raised arm has to clear the
+   head by a good margin, the robe has to widen towards the hem, and the
+   tablet has to sit in the crook of the lowered arm. Anything else reads as
+   a person holding a torch rather than as the statue. #}
+
 <g fill="{{ sky }}" opacity="0.55">
   <path d="M0 470 L0 300 L26 300 L26 288 L44 288 L44 300 L62 300 L62 342 L86 342 L86 470 Z"/>
-  <path d="M282 470 L282 316 L300 316 L300 292 L318 292 L318 274 L332 274 L332 292 L348 292
-           L348 330 L372 330 L372 306 L400 306 L400 470 Z"/>
+  <path d="M286 470 L286 316 L304 316 L304 292 L322 292 L322 268 L336 268 L336 292
+           L352 292 L352 330 L376 330 L376 306 L400 306 L400 470 Z"/>
 </g>
-<g fill="{{ warm }}" opacity="0.4">
+<g fill="{{ warm }}" opacity="0.42">
   {% for i in range(36) %}
     <rect x="{{ 6 + (i % 6) * 13 }}" y="{{ 318 + (i // 6) * 24 }}" width="4" height="6"/>
   {% endfor %}
   {% for i in range(30) %}
-    <rect x="{{ 290 + (i % 6) * 18 }}" y="{{ 330 + (i // 6) * 24 }}" width="4" height="6"/>
+    <rect x="{{ 294 + (i % 6) * 18 }}" y="{{ 330 + (i // 6) * 24 }}" width="4" height="6"/>
   {% endfor %}
 </g>
 
 {# the searchlight beam, as on the 1927 poster #}
-<path d="M338 92 L188 186 L204 214 L364 124 Z" fill="#f7f0e1" opacity="0.14"/>
+<path d="M348 96 L196 196 L212 226 L372 128 Z" fill="#f7f0e1" opacity="0.13"/>
 
-{# pedestal and star-fort base #}
-<g fill="#f7f0e1" opacity="0.82">
-  <path d="M150 470 L158 428 L242 428 L250 470 Z"/>
-  <path d="M162 428 L166 392 L234 392 L238 428 Z"/>
+{# pedestal: star fort, plinth, and the balcony she stands on #}
+<g fill="#f7f0e1" opacity="0.8">
+  <path d="M138 470 L146 452 L254 452 L262 470 Z"/>
+  <path d="M150 452 L154 414 L246 414 L250 452 Z"/>
+  <path d="M158 414 L162 398 L238 398 L242 414 Z"/>
 </g>
-<g stroke="{{ sky }}" stroke-width="2" opacity="0.3">
-  <line x1="166" y1="404" x2="234" y2="404"/>
-  <line x1="160" y1="446" x2="240" y2="446"/>
+<g stroke="{{ sky }}" stroke-width="2" opacity="0.28">
+  <line x1="156" y1="432" x2="244" y2="432"/>
+  <line x1="146" y1="462" x2="254" y2="462"/>
 </g>
 
-{# the statue itself, one path: hem, robe, shoulder, raised arm, torch handle #}
-<path d="M176 392
-         L182 348 Q185 322 193 306
-         L193 288 Q188 282 190 274 L200 268
-         L206 240 Q208 228 216 226
-         L228 224 L232 234 L221 240 L214 268
-         L221 272 Q225 280 220 288
-         L220 300 Q231 316 233 344
-         L238 392 Z"
+{# ROBE: shoulders narrow, hem wide, with the trailing fold behind her #}
+<path d="M168 398
+         C 172 362 178 330 186 306
+         C 190 292 192 284 194 278
+         L 218 278
+         C 221 288 224 300 228 314
+         C 234 342 238 372 240 398 Z"
       fill="{{ gold }}"/>
-{# folds in the robe, which is what makes it read as cloth #}
-<g stroke="{{ warm }}" stroke-width="1.6" opacity="0.5" fill="none">
-  <path d="M196 316 Q198 352 194 390"/>
-  <path d="M208 312 Q210 350 209 390"/>
-  <path d="M220 316 Q224 352 224 390"/>
+{# the drape that falls behind the forward leg #}
+<path d="M206 300 C 210 336 216 368 220 398 L240 398 C 238 366 232 330 224 302 Z"
+      fill="{{ warm }}" opacity="0.24"/>
+<g stroke="{{ warm }}" stroke-width="1.7" opacity="0.5" fill="none">
+  <path d="M190 296 C 184 330 178 364 175 396"/>
+  <path d="M200 292 C 197 328 194 362 192 396"/>
+  <path d="M211 294 C 214 330 218 364 221 396"/>
 </g>
 
-{# head, crown and tablet, joined to the body above #}
-<circle cx="205" cy="256" r="14" fill="{{ gold }}"/>
-<path d="M205 250 L191 244 L193 232 L199 240 L201 226 L207 226 L210 240 L216 232 L218 244 Z"
+{# SHOULDERS and NECK, so the head sits on a body rather than on a cone #}
+<path d="M182 288 C 186 272 192 266 200 265 C 210 266 216 272 220 288 Z" fill="{{ gold }}"/>
+<rect x="196" y="252" width="11" height="16" fill="{{ gold }}"/>
+
+{# LOWERED LEFT ARM holding the tablet in against her side #}
+<path d="M218 284 C 226 298 232 314 234 332 L221 336 C 218 318 213 300 208 288 Z"
       fill="{{ gold }}"/>
-<path d="M186 300 L172 318 L182 330 L196 312 Z" fill="{{ gold }}"/>
+<g transform="rotate(-20 244 336)">
+  <rect x="222" y="304" width="44" height="60" rx="2" fill="{{ gold }}"/>
+  <rect x="228" y="311" width="32" height="46" rx="1" fill="{{ warm }}" opacity="0.32"/>
+</g>
 
-{# torch: the arm above ends in a handle, bowl and flame #}
-<path d="M229 226 L236 208 L248 212 L242 230 Z" fill="{{ gold }}"/>
-<path d="M234 208 L252 212 L250 200 L236 196 Z" fill="{{ gold }}"/>
-<path d="M243 196 Q234 174 243 158 Q252 174 243 196 Z" fill="#f7f0e1"/>
+{# RAISED RIGHT ARM: slender and steep, held well out from the head. A thick
+   arm close in merges with the crown and she stops reading as the statue. #}
+<path d="M180 292
+         C 170 262 161 226 149 194
+         L 161 190
+         C 172 224 181 260 191 288 Z"
+      fill="{{ gold }}"/>
+<path d="M180 292 C 172 264 165 234 156 202 L161 200 C 170 232 178 262 186 290 Z"
+      fill="{{ warm }}" opacity="0.24"/>
+{# the sleeve gathering at the shoulder, which is where an arm meets a body #}
+<path d="M178 296 C 182 284 190 280 196 282 L194 296 Z" fill="{{ warm }}" opacity="0.28"/>
 
-<rect x="0" y="470" width="400" height="130" fill="{{ sky }}" opacity="0.4"/>
-<g stroke="#f7f0e1" stroke-width="2" opacity="0.22" fill="none">
-  <path d="M24 494 H152"/><path d="M248 512 H376"/><path d="M64 530 H208"/>
+{# HEAD and CROWN, set to the right of the arm with clear sky between them #}
+<ellipse cx="207" cy="238" rx="13" ry="14.5" fill="{{ gold }}"/>
+<path d="M208 226 L204 204 L212 220 L214 200 L220 202 L218 222 L230 208 L226 228 Z"
+      fill="{{ gold }}"/>
+<path d="M220 234 L236 230 L232 240 Z" fill="{{ gold }}"/>
+<path d="M197 240 C 200 248 210 249 214 243 L212 252 L200 252 Z"
+      fill="{{ warm }}" opacity="0.28"/>
+
+{# TORCH: fist, ribbed handle, bowl, flame #}
+<path d="M147 198 L165 191 L169 200 L152 207 Z" fill="{{ warm }}" opacity="0.55"/>
+<path d="M149 194 L167 187 L162 172 L144 179 Z" fill="{{ gold }}"/>
+<g stroke="{{ warm }}" stroke-width="1.4" opacity="0.5">
+  <line x1="147" y1="188" x2="164" y2="181"/>
+  <line x1="150" y1="194" x2="167" y2="187"/>
+</g>
+<path d="M139 178 L169 167 L171 156 L137 168 Z" fill="{{ gold }}"/>
+<path d="M153 158 C 142 134 150 114 155 102 C 161 118 171 134 161 158 Z" fill="#f7f0e1"/>
+<path d="M155 156 C 149 140 153 126 156 116 C 160 128 164 141 160 156 Z"
+      fill="{{ gold }}" opacity="0.8"/>
+
+<rect x="0" y="470" width="400" height="130" fill="{{ sky }}" opacity="0.42"/>
+{# harbour traffic below her #}
+<g fill="{{ warm }}" opacity="0.7">
+  <path d="M40 504 L104 504 L98 514 L46 514 Z"/>
+  <rect x="62" y="496" width="20" height="8"/>
+  <path d="M292 526 L344 526 L339 534 L297 534 Z"/>
+</g>
+<g stroke="#f7f0e1" stroke-width="2" opacity="0.2" fill="none">
+  <path d="M24 492 H150"/><path d="M244 512 H376"/><path d="M64 540 H208"/>
 </g>

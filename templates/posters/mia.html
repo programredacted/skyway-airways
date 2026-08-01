@@ -1,47 +1,75 @@
-{# Miami — an art deco hotel front, palms and a flat evening sea #}
-<circle cx="312" cy="164" r="40" fill="{{ gold }}" opacity="0.8"/>
+{# Miami — an Ocean Drive deco hotel at dusk, neon on, convertible at the kerb #}
+<circle cx="318" cy="168" r="42" fill="{{ gold }}" opacity="0.82"/>
 
-{# the hotel: stepped centre, eyebrow ledges, a finial #}
-<g fill="#f7f0e1">
-  <rect x="96" y="292" width="208" height="164"/>
-  <path d="M156 292 L156 250 L244 250 L244 292 Z"/>
-  <path d="M178 250 L178 222 L222 222 L222 250 Z"/>
-  <rect x="196" y="196" width="8" height="28"/>
-  <circle cx="200" cy="192" r="7"/>
+{# a second, lower hotel set back on the left, so the street has depth #}
+<g fill="#f7f0e1" opacity="0.55">
+  <rect x="18" y="326" width="88" height="130"/>
+  <rect x="30" y="306" width="64" height="22"/>
+  <rect x="56" y="288" width="12" height="20"/>
 </g>
+<g fill="{{ sky }}" opacity="0.35">
+  {% for y in [340, 376, 412] %}{% for x in [28, 54, 80] %}
+    <rect x="{{ x }}" y="{{ y }}" width="16" height="22" rx="2"/>
+  {% endfor %}{% endfor %}
+</g>
+
+{# the main hotel: stepped centre bay, eyebrow ledges, finial #}
+<g fill="#f7f0e1">
+  <rect x="112" y="292" width="196" height="164"/>
+  <path d="M168 292 L168 250 L252 250 L252 292 Z"/>
+  <path d="M190 250 L190 220 L230 220 L230 250 Z"/>
+  <rect x="206" y="192" width="8" height="30"/>
+  <circle cx="210" cy="188" r="7"/>
+</g>
+{# the eyebrows that shade every window on the strip #}
 <g fill="{{ warm }}" opacity="0.85">
-  {% for y in [312, 356, 400] %}
-    <rect x="90" y="{{ y }}" width="220" height="7"/>
-  {% endfor %}
-  <rect x="150" y="268" width="100" height="6"/>
+  {% for y in [312, 356, 400] %}<rect x="106" y="{{ y }}" width="208" height="7"/>{% endfor %}
+  <rect x="162" y="268" width="96" height="6"/>
+  <rect x="186" y="238" width="48" height="5"/>
+</g>
+{# vertical fluting on the centre bay #}
+<g stroke="{{ warm }}" stroke-width="2" opacity="0.4">
+  {% for x in [196, 204, 212, 220, 228] %}<line x1="{{ x }}" y1="250" x2="{{ x }}" y2="292"/>{% endfor %}
 </g>
 <g fill="{{ sky }}" opacity="0.5">
   {% for row_y in [324, 368, 412] %}
-    {% for x in [112, 148, 184, 220, 256] %}
+    {% for x in [124, 158, 192, 226, 260] %}
       <rect x="{{ x }}" y="{{ row_y }}" width="24" height="26" rx="3"/>
     {% endfor %}
   {% endfor %}
 </g>
-{# neon script over the door #}
-<rect x="168" y="428" width="64" height="28" fill="{{ warm }}" opacity="0.8"/>
-<rect x="176" y="436" width="48" height="4" fill="#f7f0e1"/>
-<rect x="182" y="444" width="36" height="4" fill="#f7f0e1"/>
 
-{# palms flanking #}
-<g fill="{{ warm }}">
-  {% for x, top in [(44, 300), (348, 288)] %}
-    <path d="M{{ x }} 456 Q{{ x + 6 }} {{ (456 + top) / 2 }} {{ x }} {{ top }}
-             L{{ x + 9 }} {{ top }} Q{{ x + 15 }} {{ (456 + top) / 2 }} {{ x + 9 }} 456 Z"/>
-    {% for angle in [-56, -20, 20, 56] %}
-      <ellipse cx="{{ x + 28 }}" cy="{{ top - 2 }}" rx="28" ry="7" opacity="0.9"
-               transform="rotate({{ angle }} {{ x + 4 }} {{ top - 2 }})"/>
-    {% endfor %}
-  {% endfor %}
+{# neon sign and the lit canopy over the door #}
+<rect x="176" y="424" width="72" height="26" rx="3" fill="{{ warm }}" opacity="0.9"/>
+<g fill="#f7f0e1">
+  <rect x="184" y="431" width="56" height="4" rx="2"/>
+  <rect x="192" y="440" width="40" height="4" rx="2"/>
 </g>
+<path d="M160 456 L264 456 L258 442 L166 442 Z" fill="{{ gold }}" opacity="0.75"/>
 
-<rect x="0" y="456" width="400" height="60" fill="{{ gold }}" opacity="0.5"/>
-<rect x="0" y="516" width="400" height="84" fill="{{ sky }}" opacity="0.6"/>
-<g stroke="#f7f0e1" stroke-width="3.5" fill="none" opacity="0.4">
-  <path d="M-10 540 Q80 528 170 540 T350 538"/>
-  <path d="M40 570 Q140 558 240 570 T440 566"/>
+{# palms flanking, and a car pulled up at the kerb #}
+{% for x, top, flip in [(60, 300, 1), (340, 286, -1)] %}
+  <g transform="translate({{ x }} 456)" fill="{{ warm }}">
+    <path d="M0 0 C 3 -50 8 -100 5 {{ top - 456 }} L15 {{ top - 456 }} C 18 -100 15 -50 14 0 Z"/>
+    <g transform="translate(0 {{ top - 456 }}) scale({{ flip }} 1)">
+      <path d="M8 -4 C -12 -22 -38 -28 -58 -18 C -38 -16 -16 -8 4 6 Z"/>
+      <path d="M9 -4 C 29 -24 55 -30 74 -20 C 54 -18 32 -10 14 6 Z"/>
+      <path d="M8 -6 C -4 -32 -18 -50 -36 -58 C -22 -40 -14 -22 -2 0 Z"/>
+      <path d="M10 -6 C 24 -34 40 -52 58 -58 C 42 -40 32 -22 20 0 Z"/>
+      <path d="M9 -8 C 3 -32 5 -52 12 -70 C 20 -50 21 -30 18 -4 Z"/>
+    </g>
+  </g>
+{% endfor %}
+
+<rect x="0" y="456" width="400" height="52" fill="{{ gold }}" opacity="0.5"/>
+<g fill="{{ warm }}" opacity="0.9">
+  <path d="M104 496 C 108 480 120 476 140 476 L176 476 C 194 476 206 482 214 496 Z"/>
+  <path d="M136 478 L172 478 L180 490 L128 490 Z" fill="{{ sky }}" opacity="0.45"/>
+  <circle cx="128" cy="497" r="8"/>
+  <circle cx="196" cy="497" r="8"/>
+</g>
+<rect x="0" y="508" width="400" height="92" fill="{{ sky }}" opacity="0.6"/>
+<g stroke="#f7f0e1" stroke-width="3.5" fill="none" opacity="0.35">
+  <path d="M-10 532 Q80 520 170 532 T350 530"/>
+  <path d="M40 562 Q140 550 240 562 T440 558"/>
 </g>
