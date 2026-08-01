@@ -6,6 +6,8 @@
 <p class="eyebrow">Skyway timetable</p>
 <h1 class="page-title">Departures</h1>
 
+{% include "_clock.html" %}
+
 <form class="search search--inline" method="get" action="{{ url_for('flight_list') }}">
   <div class="search__field">
     <label for="origin">From</label>
@@ -40,7 +42,17 @@
 </form>
 
 {% if flights %}
-<div class="board">
+{# Live-board controls. Hidden until the script runs, so nothing on screen
+   promises a refresh that will not happen. #}
+<div class="boardbar">
+  <span class="boardbar__pulse" id="board-pulse" hidden aria-hidden="true"></span>
+  <p class="boardbar__status" id="board-status" hidden>Updating automatically</p>
+  <button type="button" class="btn btn--small" id="board-refresh" hidden>
+    Refresh now
+  </button>
+</div>
+
+<div class="board" id="board">
   <table class="board__table">
     <caption class="board__caption">
       Departures &middot; {{ flights | length }} flights &middot; all times local to each airport
@@ -60,7 +72,7 @@
     </thead>
     <tbody>
       {% for flight in flights %}
-      <tr class="board__row">
+      <tr class="board__row" data-flight-id="{{ flight.id }}">
         <td class="flap flap--key">
           <a href="{{ url_for('flight_detail', flight_id=flight.id) }}"
              ><span data-flap>{{ flight.flight_number }}</span></a>
@@ -82,18 +94,14 @@
           <span data-flap>{{ flight.arrives_at | clock }}</span>
           <span class="flap__day">{{ flight.duration_minutes | duration }}</span>
         </td>
-        <td class="flap num">{{ flight.from_price_cents | fare }}</td>
-        <td class="flap num">
-          {% if flight.seats_available == 0 %}
-            <span class="tag tag--full">Sold out</span>
-          {% elif flight.seats_available < 25 %}
-            <span class="tag tag--low">{{ flight.seats_available }} left</span>
-          {% else %}
-            {{ flight.seats_available }} left
-          {% endif %}
+        <td class="flap num" data-cell-fare>{{ flight.from_price_cents | fare }}</td>
+        <td class="flap num" data-cell-seats>
+          {% if flight.seats_available == 0 %}<span class="tag tag--full">Sold out</span>
+          {% elif flight.seats_available < 25 %}<span class="tag tag--low">{{ flight.seats_available }} left</span>
+          {% else %}{{ flight.seats_available }} left{% endif %}
         </td>
         <td class="flap">
-          <span class="tag tag--{{ flight.status | lower }}">{{ flight.status | title }}</span>
+          <span class="tag tag--{{ flight.status | lower }}" data-cell-status>{{ flight.status | title }}</span>
         </td>
         <td class="flap">
           <a class="btn btn--small" href="{{ url_for('flight_detail', flight_id=flight.id) }}">Select</a>
@@ -113,4 +121,6 @@
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/splitflap.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/clock.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/departures.js') }}" defer></script>
 {% endblock %}

@@ -1,8 +1,10 @@
-/* Solari split-flap animation for the departure board.
+/* Solari split-flap tiles.
+ *
+ * Exposes window.SplitFlap so the departure board and the clock share one
+ * implementation, then animates the board on load.
  *
  * No layout shift: we wait for the webfonts to settle, lock each cell to the
  * width it already occupies, and only then swap the text for fixed-width tiles.
- * Skipped entirely for anyone who asked for reduced motion.
  */
 
 (function () {
@@ -14,49 +16,87 @@
   var ROW_STAGGER_MS = 65;   // each board row starts shortly after the one above
   var CHAR_STAGGER_MS = 18;  // and ripples left to right within a row
 
-  var targets = document.querySelectorAll("[data-flap]");
-  if (!targets.length) return;
+  function prefersStillness() {
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }
 
-  var stillWants = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  function tileUp(element) {
-    var text = element.textContent;
+  /* Replace an element's text with one fixed-width tile per character. */
+  function render(element, text) {
+    var content = text === undefined ? element.textContent : text;
     var fragment = document.createDocumentFragment();
 
-    for (var i = 0; i < text.length; i++) {
+    for (var i = 0; i < content.length; i++) {
+      var character = content.charAt(i);
       var tile = document.createElement("span");
-      var character = text.charAt(i);
       tile.className = character === " " ? "flap-char flap-char--blank" : "flap-char";
       tile.textContent = character;
       fragment.appendChild(tile);
     }
 
     element.textContent = "";
-    element.className += " flap-text";
+    if (element.className.indexOf("flap-text") === -1) {
+      element.className += " flap-text";
+    }
     element.appendChild(fragment);
     return Array.prototype.slice.call(element.children);
   }
 
-  function flip(tile, delay) {
-    var settled = tile.textContent;
-    if (settled === " ") return;
+  /* Flip one tile to `settled`, cycling through decoys on the way.
+     `steps` controls how many decoys: the board can afford three, the clock
+     wants one so the seconds stay readable at a glance. */
+  function flip(tile, settled, delay, steps) {
+    if (settled === " ") {
+      tile.textContent = settled;
+      return;
+    }
+    if (steps === undefined) steps = FLIP_STEPS;
 
+    tile.classList.remove("flap-flip");
+    void tile.offsetWidth;            // restart the animation
     tile.style.animationDelay = delay + "ms";
-    tile.className += " flap-flip";
+    tile.classList.add("flap-flip");
 
-    for (var step = 0; step < FLIP_STEPS; step++) {
+    for (var step = 0; step < steps; step++) {
       window.setTimeout(function (node) {
         node.textContent = GLYPHS.charAt(Math.floor(Math.random() * GLYPHS.length));
       }, delay + step * STEP_MS, tile);
     }
     window.setTimeout(function (node, character) {
       node.textContent = character;
-    }, delay + FLIP_STEPS * STEP_MS, tile, settled);
+    }, delay + steps * STEP_MS, tile, settled);
   }
 
-  function run() {
-    // Delay is driven by the board row, not by a running tile count: with ~19
-    // characters per row a global counter would take eight seconds to finish.
+  /* Update an already-rendered element, flipping only the characters that
+     changed. The clock relies on this: seconds flip every tick, hours rarely. */
+  function setText(element, text, options) {
+    var tiles = element.querySelectorAll(".flap-char");
+    if (tiles.length !== text.length) {
+      return render(element, text);
+    }
+
+    var steps = options && options.steps;
+    var still = prefersStillness();
+    for (var i = 0; i < tiles.length; i++) {
+      var character = text.charAt(i);
+      if (tiles[i].textContent === character) continue;
+      if (still) {
+        tiles[i].textContent = character;
+      } else {
+        flip(tiles[i], character, 0, steps);
+      }
+    }
+    return Array.prototype.slice.call(tiles);
+  }
+
+  window.SplitFlap = { render: render, setText: setText, flip: flip };
+
+  // --- the departure board -------------------------------------------------
+
+  function runBoard() {
+    var targets = document.querySelectorAll("[data-flap]");
+    if (!targets.length) return;
+
+    var animate = !prefersStillness();
     var rowOrder = new Map();
 
     Array.prototype.forEach.call(targets, function (element) {
@@ -64,23 +104,26 @@
       element.style.display = "inline-flex";
       element.style.minWidth = element.getBoundingClientRect().width + "px";
 
-      var tiles = tileUp(element);
-      if (!stillWants) return;
+      var settled = element.textContent;
+      var tiles = render(element);
+      if (!animate) return;
 
+      // Delay is driven by the board row, not by a running tile count: with ~19
+      // characters per row a global counter would take eight seconds to finish.
       var row = element.closest("tr") || element;
       if (!rowOrder.has(row)) rowOrder.set(row, rowOrder.size);
       var rowDelay = rowOrder.get(row) * ROW_STAGGER_MS;
 
       tiles.forEach(function (tile, index) {
-        flip(tile, rowDelay + index * CHAR_STAGGER_MS);
+        flip(tile, settled.charAt(index), rowDelay + index * CHAR_STAGGER_MS);
       });
     });
   }
 
   // Fonts first: measuring before they load would lock in the wrong width.
   if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(run);
+    document.fonts.ready.then(runBoard);
   } else {
-    run();
+    runBoard();
   }
 })();

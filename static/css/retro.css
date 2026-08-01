@@ -441,6 +441,151 @@ a:hover { color: var(--orange-dk); }
   100% { transform: rotateX(0); }
 }
 
+/* ------------------------------------------------------------- hall clock -- */
+
+.clock {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 1.75rem;
+  margin: 0 0 1.75rem;
+  padding: 1rem 1.35rem;
+  background: var(--board);
+  border: var(--rule);
+  box-shadow: var(--shadow);
+}
+
+.clock__display { display: flex; align-items: baseline; gap: 0.6rem; }
+
+.clock__face {
+  display: inline-flex;
+  font-family: var(--font-mono);
+  font-size: 2.1rem;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 0.02em;
+}
+
+.clock__hour-note {
+  font-family: var(--font-display);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: var(--track-mid);
+  text-transform: uppercase;
+  color: var(--paper-2);
+  opacity: 0.6;
+}
+
+.clock__where p { margin: 0; }
+
+.clock__city {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: var(--track-mid);
+  text-transform: uppercase;
+  color: var(--paper);
+}
+
+.clock__offset { font-family: var(--font-mono); font-size: 0.78rem; color: var(--paper-2); opacity: 0.75; }
+
+.clock__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1.1rem;
+  margin-left: auto;
+}
+
+.clock__controls label {
+  font-family: var(--font-display);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: var(--track-mid);
+  text-transform: uppercase;
+  color: var(--paper-2);
+}
+
+.clock__controls select {
+  padding: 0.4rem 0.5rem;
+  background: var(--board-tile);
+  color: var(--paper);
+  border: 1px solid rgba(247, 240, 225, 0.35);
+  border-radius: var(--radius);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+}
+
+.clock__utc { display: flex; align-items: baseline; gap: 0.45rem; margin: 0; }
+
+.clock__utc-label {
+  font-family: var(--font-display);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: var(--track-wide);
+  color: var(--paper-2);
+  opacity: 0.7;
+}
+
+.clock__utc-time { font-family: var(--font-mono); font-size: 1rem; color: var(--paper); }
+
+/* --------------------------------------------------- live board controls -- */
+
+/* Height is reserved up front: the controls inside are revealed by script, and
+   without the reservation the board would jump down when they appear. */
+.boardbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.7rem;
+  min-height: 2.4rem;
+  margin-bottom: 0.6rem;
+}
+
+/* A ring that quietly drains over the refresh interval, so the board's
+   liveness is visible without anything blinking for attention. */
+.boardbar__pulse {
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 50%;
+  background: var(--teal);
+  box-shadow: 0 0 0 0 rgba(16, 86, 90, 0.5);
+}
+
+.boardbar__pulse.is-counting { animation: board-countdown 60s linear forwards; }
+.boardbar__pulse.is-checking { background: var(--orange); animation: board-checking 0.9s ease-in-out infinite; }
+
+@keyframes board-countdown {
+  0%   { box-shadow: 0 0 0 6px rgba(16, 86, 90, 0.28); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 86, 90, 0); }
+}
+
+@keyframes board-checking {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%      { transform: scale(1.35); opacity: 0.65; }
+}
+
+.boardbar__status {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: var(--track-mid);
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.boardbar__status[data-tone="changed"] { color: var(--orange-dk); }
+.boardbar__status[data-tone="error"] { color: var(--oxblood); }
+
+/* A cell that just changed glows briefly, then settles. */
+.cell--changed { animation: cell-changed 1.6s ease-out; }
+
+@keyframes cell-changed {
+  0%   { background: rgba(217, 162, 39, 0.45); }
+  100% { background: transparent; }
+}
+
 .tag {
   display: inline-block;
   padding: 0.2rem 0.55rem;
@@ -457,6 +602,126 @@ a:hover { color: var(--orange-dk); }
 .tag--delayed { background: var(--gold); color: var(--ink); }
 .tag--full { background: var(--oxblood); color: var(--paper); }
 .tag--low { background: var(--orange); color: var(--paper); }
+
+/* ------------------------------------------------------------ route map -- */
+
+.routemap {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 15rem;
+  gap: 1.5rem;
+  align-items: start;
+  margin-bottom: 1.25rem;
+}
+
+.routemap__svg {
+  width: 100%;
+  height: auto;
+  border: var(--rule);
+  box-shadow: var(--shadow);
+  display: block;
+}
+
+.routemap__sea { fill: var(--board); }
+
+.routemap__grid line { stroke: rgba(247, 240, 225, 0.13); stroke-width: 1; }
+.routemap__grid line.is-equator { stroke: rgba(217, 162, 39, 0.3); stroke-dasharray: 6 5; }
+
+/* Arcs: an invisible hit path widens the thin line into something grabbable.
+   Kept modest at 8 — routes sharing an airport converge, and a fat hit stroke
+   there would let one arc swallow its neighbours' pointer events. */
+.arc { cursor: pointer; }
+.arc__hit { fill: none; stroke: transparent; stroke-width: 8; pointer-events: stroke; }
+
+.arc__line {
+  fill: none;
+  stroke: var(--teal);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  transition: stroke 0.15s ease, stroke-width 0.15s ease, opacity 0.15s ease;
+}
+
+.arc--open .arc__line { stroke: #4f9a86; }
+.arc--filling .arc__line { stroke: var(--gold); }
+.arc--full .arc__line { stroke: var(--orange); stroke-dasharray: 5 4; }
+
+.routemap__svg.is-focused .arc.is-dimmed .arc__line { opacity: 0.18; }
+.arc.is-active .arc__line { stroke: var(--paper); stroke-width: 3.2; stroke-dasharray: none; }
+.arc:focus-visible { outline: none; }
+.arc:focus-visible .arc__line { stroke: var(--paper); stroke-width: 3.6; }
+
+.port { cursor: pointer; }
+.port__halo { fill: transparent; }
+.port__dot { fill: var(--paper-2); stroke: var(--board); stroke-width: 1.5; transition: fill 0.15s ease, r 0.15s ease; }
+
+.port__code {
+  fill: var(--paper-2);
+  font-family: "Space Mono", monospace;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  pointer-events: none;   /* anchor is set per label, see routemap.py */
+  transition: fill 0.15s ease;
+}
+
+.port:hover .port__dot, .port.is-active .port__dot { fill: var(--gold); r: 6; }
+.port:hover .port__code, .port.is-active .port__code { fill: var(--gold); }
+.routemap__svg.is-focused .port.is-dimmed .port__dot,
+.routemap__svg.is-focused .port.is-dimmed .port__code { opacity: 0.3; }
+.port:focus-visible .port__halo { fill: none; stroke: var(--orange); stroke-width: 2.5; }
+
+.routemap__readout {
+  padding: 1.1rem 1.25rem;
+  background: var(--paper-2);
+  border: var(--rule);
+  border-top: 8px solid var(--orange);
+  min-height: 11rem;
+}
+
+.routemap__hint { margin: 0; font-size: 0.85rem; color: var(--teal-dk); }
+
+.routemap__number {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--oxblood);
+}
+
+.routemap__route {
+  margin: 0.1rem 0 0.9rem;
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: var(--track-mid);
+  text-transform: uppercase;
+  color: var(--teal-dk);
+}
+
+.routemap__facts { margin: 0; font-size: 0.82rem; }
+
+.routemap__facts > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+  border-bottom: 1px dotted var(--ink-soft);
+}
+
+.routemap__facts dt { color: var(--teal-dk); }
+.routemap__facts dd { margin: 0; font-family: var(--font-mono); text-align: right; }
+
+.legend--map { margin-bottom: 1.5rem; }
+
+.legend__line { width: 1.6rem; height: 0; border-top: 3px solid var(--teal); }
+.legend__line--open { border-color: #4f9a86; }
+.legend__line--filling { border-color: var(--gold); }
+.legend__line--full { border-color: var(--orange); border-top-style: dashed; }
+.legend__swatch--port { border-radius: 50%; background: var(--paper-2); }
+
+.routemap__list { margin-top: 1rem; font-size: 0.9rem; }
+.routemap__list summary { cursor: pointer; font-family: var(--font-display); font-size: 0.75rem; letter-spacing: var(--track-mid); text-transform: uppercase; }
+.routemap__list ul { margin: 0.75rem 0 0; padding-left: 1.2rem; }
+.routemap__list li { margin-bottom: 0.3rem; }
 
 /* -------------------------------------------------------- flight detail -- */
 
@@ -987,6 +1252,8 @@ a:hover { color: var(--orange-dk); }
 /* ----------------------------------------------------------- responsive -- */
 
 @media (max-width: 55rem) {
+  .routemap { grid-template-columns: 1fr; }
+  .routemap__readout { min-height: 0; }
   .seatmap { grid-template-columns: 1fr; }
 
   /* Pinned to the bottom of the viewport, so it must stay shallow: the desktop
@@ -1069,6 +1336,12 @@ a:hover { color: var(--orange-dk); }
   .seat-aisle { width: 0.8rem; }
   .search { padding: 1.1rem; }
   .search__field, .search select, .search input { width: 100%; }
+
+  .clock { gap: 0.6rem 1rem; padding: 0.9rem 1rem; }
+  .clock__face { font-size: 1.7rem; }
+  .clock__controls { margin-left: 0; width: 100%; }
+  .clock__controls select { flex: 1 1 10rem; }
+  .port__code { font-size: 17px; }   /* the map scales down; keep codes legible */
 }
 
 @media (prefers-reduced-motion: reduce) {

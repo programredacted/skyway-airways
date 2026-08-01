@@ -1,0 +1,37 @@
+{# Split-flap hall clock.
+
+   Painted with the server's time so it holds its full size in the first frame
+   (no layout shift) and still reads correctly without JavaScript. The script
+   takes over and starts it ticking. #}
+<aside class="clock" id="clock" aria-label="Time zone clock">
+  <div class="clock__display">
+    <span class="clock__face" id="clock-face">{{ clock.local }}</span>
+    <span class="clock__hour-note">24-hour</span>
+  </div>
+
+  <div class="clock__where">
+    <p class="clock__city" id="clock-city">New York</p>
+    <p class="clock__offset" id="clock-offset">UTC-5</p>
+  </div>
+
+  <div class="clock__controls">
+    <label for="clock-zone">Show time at</label>
+    <select id="clock-zone">
+      <option value="UTC" data-offset="0" data-city="Coordinated Universal Time">
+        UTC (reference)
+      </option>
+      {% for airport in airports %}
+        <option value="{{ airport.code }}"
+                data-offset="{{ airport.utc_offset_hours }}"
+                data-city="{{ airport.city }}"
+                {{ 'selected' if airport.code == 'JFK' }}>
+          {{ airport.city }} ({{ airport.code }})
+        </option>
+      {% endfor %}
+    </select>
+    <p class="clock__utc">
+      <span class="clock__utc-label">UTC</span>
+      <span class="clock__utc-time" id="clock-utc">{{ clock.utc }}</span>
+    </p>
+  </div>
+</aside>

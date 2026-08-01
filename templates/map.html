@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}Route map &middot; Skyway Airways{% endblock %}
+{% block steps %}{% with step = 1 %}{% include "_steps.html" %}{% endwith %}{% endblock %}
+
+{% block content %}
+<p class="eyebrow">The Skyway system</p>
+<h1 class="page-title">Route map</h1>
+<p class="lede">
+  Every scheduled flight, drawn end to end. Pick a route to book it, or pick a
+  city to see everything leaving from there.
+</p>
+
+<div class="routemap">
+  {# Drawn server-side, so it needs no JavaScript and cannot shift the layout.
+     Each arc and airport is a real link; the script only adds highlighting. #}
+  <svg class="routemap__svg"
+       viewBox="{{ '%.1f' % map.view.x }} {{ '%.1f' % map.view.y }} {{ '%.1f' % map.view.width }} {{ '%.1f' % map.view.height }}"
+       preserveAspectRatio="xMidYMid meet"
+       role="group"
+       aria-label="Map of {{ map.arcs | length }} Skyway routes between {{ map.airports | length }} airports">
+
+    <rect class="routemap__sea"
+          x="{{ '%.1f' % map.view.x }}" y="{{ '%.1f' % map.view.y }}"
+          width="{{ '%.1f' % map.view.width }}" height="{{ '%.1f' % map.view.height }}"/>
+
+    <g class="routemap__grid" aria-hidden="true">
+      {% for line in map.grid.parallels %}
+        <line x1="{{ line.x1 }}" y1="{{ '%.1f' % line.y1 }}"
+              x2="{{ line.x2 }}" y2="{{ '%.1f' % line.y1 }}"
+              class="{{ 'is-equator' if line.label == 0 }}"/>
+      {% endfor %}
+      {% for line in map.grid.meridians %}
+        <line x1="{{ '%.1f' % line.x1 }}" y1="{{ line.y1 }}"
+              x2="{{ '%.1f' % line.x1 }}" y2="{{ line.y2 }}"/>
+      {% endfor %}
+    </g>
+
+    <g class="routemap__arcs">
+      {% for arc in map.arcs %}
+        {% set flight = arc.flight %}
+        <a class="arc arc--{{ arc.fullness }}"
+           href="{{ url_for('flight_detail', flight_id=flight.id) }}"
+           data-flight-number="{{ flight.flight_number }}"
+           data-route="{{ flight.origin_city }} to {{ flight.dest_city }}"
+           data-codes="{{ flight.origin_code }}-{{ flight.dest_code }}"
+           data-origin="{{ flight.origin_code }}"
+           data-dest="{{ flight.dest_code }}"
+           data-aircraft="{{ flight.aircraft_model }}"
+           data-departs="{{ flight.departs_at | daystamp }} {{ flight.departs_at | clock }}"
+           data-duration="{{ flight.duration_minutes | duration }}"
+           data-fare="{{ flight.from_price_cents | fare }}"
+           data-seats="{{ flight.seats_available }}">
+          <title>{{ flight.flight_number }} — {{ flight.origin_code }} to {{ flight.dest_code }}, from {{ flight.from_price_cents | fare }}</title>
+          {% for path in arc.paths %}
+            <path class="arc__hit" d="{{ path }}"/>
+            <path class="arc__line" d="{{ path }}"/>
+          {% endfor %}
+        </a>
+      {% endfor %}
+    </g>
+
+    <g class="routemap__ports">
+      {% for airport in map.airports %}
+        <a class="port"
+           href="{{ url_for('flight_list', origin=airport.code) }}"
+           data-code="{{ airport.code }}"
+           data-city="{{ airport.city }}"
+           data-departures="{{ airport.departures }}">
+          <title>{{ airport.city }} ({{ airport.code }}) — {{ airport.departures }} departures</title>
+          <circle class="port__halo" cx="{{ '%.1f' % airport.x }}" cy="{{ '%.1f' % airport.y }}" r="11"/>
+          <circle class="port__dot" cx="{{ '%.1f' % airport.x }}" cy="{{ '%.1f' % airport.y }}" r="4.5"/>
+          <text class="port__code"
+                x="{{ '%.1f' % airport.label_x }}" y="{{ '%.1f' % airport.label_y }}"
+                style="text-anchor: {{ airport.label_anchor }}">{{ airport.code }}</text>
+        </a>
+      {% endfor %}
+    </g>
+  </svg>
+
+  <div class="routemap__readout" id="map-readout" aria-live="polite">
+    <p class="routemap__hint" id="map-hint">
+      Hover or tab through a route to see its details.
+    </p>
+    <div class="routemap__detail" id="map-detail" hidden>
+      <p class="routemap__number" id="map-number"></p>
+      <p class="routemap__route" id="map-route"></p>
+      <dl class="routemap__facts">
+        <div><dt>Departs</dt><dd id="map-departs"></dd></div>
+        <div><dt>Duration</dt><dd id="map-duration"></dd></div>
+        <div><dt>Aircraft</dt><dd id="map-aircraft"></dd></div>
+        <div><dt>Seats free</dt><dd id="map-seats"></dd></div>
+        <div><dt>From</dt><dd id="map-fare"></dd></div>
+      </dl>
+    </div>
+  </div>
+</div>
+
+<ul class="legend legend--map">
+  <li class="legend__item"><span class="legend__line legend__line--open"></span> Plenty of seats</li>
+  <li class="legend__item"><span class="legend__line legend__line--filling"></span> Filling up</li>
+  <li class="legend__item"><span class="legend__line legend__line--full"></span> Nearly full</li>
+  <li class="legend__item"><span class="legend__swatch legend__swatch--port"></span> Airport &mdash; opens its departures</li>
+</ul>
+
+<details class="routemap__list">
+  <summary>All {{ map.arcs | length }} routes as a list</summary>
+  <ul>
+    {% for arc in map.arcs %}
+      <li>
+        <a href="{{ url_for('flight_detail', flight_id=arc.flight.id) }}">
+          {{ arc.flight.flight_number }} &middot;
+          {{ arc.flight.origin_city }} to {{ arc.flight.dest_city }}
+        </a>
+        &middot; {{ arc.flight.duration_minutes | duration }}
+        &middot; from {{ arc.flight.from_price_cents | fare }}
+      </li>
+    {% endfor %}
+  </ul>
+</details>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/routemap.js') }}" defer></script>
+{% endblock %}

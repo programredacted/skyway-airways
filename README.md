@@ -78,12 +78,46 @@ run — there is no separate migrate or seed step.
 
 ```bash
 python seed.py                        # rebuild/print the timetable as a departure board
-python -m unittest discover tests     # 18 smoke tests
+python -m unittest discover tests     # 28 smoke tests
 ```
 
 Delete `flights.db` to start over from a clean timetable.
 
 ---
+
+## The departure hall
+
+![Route map](docs/screenshots/after-routemap-desktop.png)
+
+Three things keep the board feeling live rather than printed:
+
+- **Split-flap clock.** The same flip tiles as the board, showing 24-hour time
+  at any airport Skyway serves, with **UTC always beside it** as a fixed
+  reference. Your choice is remembered between visits. Offsets are whole hours
+  and ignore daylight saving, matching how the timetable stores its times.
+- **Self-refreshing board.** Seats, fares and status refetch every 60 seconds,
+  on demand via **Refresh now**, and whenever you return to the tab. Only the
+  cells whose values actually changed are touched — and they glow briefly, so a
+  seat someone else just booked is visible without the page moving. A ring
+  beside the button drains over the interval, so the board's liveness is
+  legible without anything blinking for attention.
+- **Route map.** Every flight drawn as an arc between its real coordinates.
+  Hover or tab a route for its details and click to book it; hover a city to
+  light up everything touching it and click to see its departures.
+
+The map is plain SVG, projected server-side in [routemap.py](routemap.py) — no
+mapping library, no tiles, nothing to fetch at runtime. Three problems it
+solves that are easy to miss:
+
+- **Pacific routes** like LAX–Sydney span 269° of longitude. Drawn naively they
+  stripe backwards across the whole map, so they are redrawn the short way and
+  mirrored across the seam, leaving one edge and arriving at the other.
+- **Return flights** share a great circle exactly, so outbound and inbound are
+  offset to either side — otherwise one is buried under the other and can never
+  be clicked.
+- **Hub departures** to nearby cities (New York to London, Paris, Frankfurt and
+  Rome) nearly coincide, so each airport's departures are fanned apart, and
+  city codes are placed in the nearest free position around their dot.
 
 ## The booking flow
 
@@ -107,6 +141,8 @@ which releases the seat back to the map while keeping the booking in history.
 |---|---|---|
 | GET | `/` | Landing page and search |
 | GET | `/flights` | Departure board; `?origin=&dest=&date=` |
+| GET | `/api/flights` | JSON seats/fare/status for the board's live refresh |
+| GET | `/map` | Interactive route map |
 | GET | `/flights/<id>` | Flight detail and cabin pricing |
 | GET | `/flights/<id>/seats` | Interactive seat map |
 | GET | `/api/flights/<id>/seats` | JSON seat state (live availability) |
@@ -139,18 +175,19 @@ Runtime dependencies are **Flask and gunicorn only**.
 app.py          Flask factory and every route
 db.py           connections, transactions, all read queries
 bookings.py     booking creation and cancellation (the only writes)
-seed.py         fleet, timetable, idempotent seeding
+seed.py         fleet, timetable, airports, idempotent seeding
 seatmap.py      shapes seat rows into the grid + JSON payload
+routemap.py     projects flights onto the SVG route map
 pricing.py      cabin multipliers and fare formatting
 schema.sql      tables, indexes, the partial unique index
 templates/      Jinja2 templates
-static/         retro.css, seatmap.js, splitflap.js
-tests/          smoke tests
+static/js/      seatmap, splitflap (shared tiles), clock, departures, routemap
+tests/          28 smoke tests
 ```
 
 ### Database
 
-`aircraft` → `flights` → `seats` → `bookings` ← `passengers`
+`airports` → `flights` ← `aircraft`, `flights` → `seats` → `bookings` ← `passengers`
 
 Availability is **derived, never stored**: a seat is free when no `CONFIRMED`
 booking points at it. There is no `is_booked` flag to drift out of sync. Money

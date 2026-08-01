@@ -5,7 +5,7 @@ Routes read through db.py and write through bookings.py; no SQL lives here.
 
 import os
 import re
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from flask import (Flask, abort, current_app, flash, g, jsonify, redirect,
@@ -13,6 +13,7 @@ from flask import (Flask, abort, current_app, flash, g, jsonify, redirect,
 
 import bookings
 import db
+import routemap
 import seatmap
 import seed
 from pricing import cabin_label, format_fare
@@ -21,6 +22,10 @@ PROJECT_ROOT = Path(__file__).parent
 
 EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[A-Za-z]{2,}$")
 PHONE_PATTERN = re.compile(r"^[0-9+()\-. ]{7,20}$")
+
+# The hall clock opens on New York; the picker offers every airport we serve.
+DEFAULT_CLOCK_CODE = "JFK"
+DEFAULT_CLOCK_OFFSET = -5
 
 
 def create_app():
@@ -134,17 +139,50 @@ def register_routes(app):
     def flight_list():
         """The departure board, optionally filtered by the search form."""
         connection = get_db()
-        criteria = {
-            "origin": request.args.get("origin", "").strip() or None,
-            "dest": request.args.get("dest", "").strip() or None,
-            "date": request.args.get("date", "").strip() or None,
-        }
+        criteria = _search_criteria()
         return render_template(
             "flights.html",
             flights=db.get_flights(connection, **criteria),
             airports=db.get_airports(connection),
             criteria=criteria,
+            clock=_clock_seed(DEFAULT_CLOCK_OFFSET),
         )
+
+    @app.route("/map")
+    def route_map():
+        """Every flight drawn as an arc; a way to pick a departure by looking."""
+        connection = get_db()
+        return render_template(
+            "map.html",
+            map=routemap.build(db.get_routes(connection)),
+            airports=db.get_airports(connection),
+        )
+
+    @app.route("/api/flights")
+    def flight_availability():
+        """The handful of values that go stale on the departure board.
+
+        Only what changes: seats, fare and status. Times and routes are fixed,
+        so the board patches these cells instead of reloading the page.
+        """
+        connection = get_db()
+        criteria = _search_criteria()
+        payload = {
+            "updated_at": datetime.now().strftime("%H:%M:%S"),
+            "flights": [
+                {
+                    "id": flight["id"],
+                    "seats_available": flight["seats_available"],
+                    "total_seats": flight["total_seats"],
+                    "from_price_cents": flight["from_price_cents"],
+                    "status": flight["status"],
+                }
+                for flight in db.get_flights(connection, **criteria)
+            ],
+        }
+        response = jsonify(payload)
+        response.headers["Cache-Control"] = "no-store"
+        return response
 
     @app.route("/flights/<int:flight_id>")
     def flight_detail(flight_id):
@@ -287,6 +325,29 @@ def register_routes(app):
 
 
 # --- route helpers -----------------------------------------------------------
+
+def _clock_seed(offset_hours):
+    """Times to paint the clock with on the server.
+
+    Rendering it filled means the element occupies its final size in the very
+    first frame, so revealing the live clock costs no layout shift -- and a
+    visitor without JavaScript still sees the time the page was served.
+    """
+    now_utc = datetime.now(timezone.utc)
+    return {
+        "local": (now_utc + timedelta(hours=offset_hours)).strftime("%H:%M:%S"),
+        "utc": now_utc.strftime("%H:%M:%S"),
+    }
+
+
+def _search_criteria():
+    """The departure-board filters, shared by the page and its refresh endpoint."""
+    return {
+        "origin": request.args.get("origin", "").strip() or None,
+        "dest": request.args.get("dest", "").strip() or None,
+        "date": request.args.get("date", "").strip() or None,
+    }
+
 
 def _seat_on_flight(connection, flight_id, raw_seat_id):
     """The seat if it exists on this flight, sold or not. Flashes why if not."""

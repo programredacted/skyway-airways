@@ -89,13 +89,37 @@ def get_flight(connection, flight_id):
 
 
 def get_airports(connection):
-    """Distinct origins and destinations, for the search form's dropdowns."""
+    """Every airport we serve, with its clock offset and coordinates."""
+    return connection.execute(
+        "SELECT code, city, utc_offset_hours, latitude, longitude"
+        " FROM airports ORDER BY city"
+    ).fetchall()
+
+
+def get_routes(connection):
+    """Every flight with both endpoints' coordinates, for the route map.
+
+    Availability rides along so the map can colour a route by how full it is.
+    """
     return connection.execute(
         """
-        SELECT origin_code AS code, origin_city AS city FROM flights
-        UNION
-        SELECT dest_code, dest_city FROM flights
-        ORDER BY city
+        SELECT f.id, f.flight_number, f.status,
+               f.origin_code, f.origin_city, f.dest_code, f.dest_city,
+               f.departs_at, f.arrives_at, f.duration_minutes,
+               a.model AS aircraft_model,
+               o.latitude AS origin_lat, o.longitude AS origin_lon,
+               d.latitude AS dest_lat,   d.longitude AS dest_lon,
+               COUNT(s.id) AS total_seats,
+               SUM(CASE WHEN b.id IS NULL THEN 1 ELSE 0 END) AS seats_available,
+               MIN(CASE WHEN b.id IS NULL THEN s.price_cents END) AS from_price_cents
+        FROM flights f
+        JOIN aircraft a ON a.id = f.aircraft_id
+        JOIN airports o ON o.code = f.origin_code
+        JOIN airports d ON d.code = f.dest_code
+        JOIN seats s ON s.flight_id = f.id
+        LEFT JOIN bookings b ON b.seat_id = s.id AND b.status = 'CONFIRMED'
+        GROUP BY f.id
+        ORDER BY f.departs_at
         """
     ).fetchall()
 

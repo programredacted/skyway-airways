@@ -12,6 +12,16 @@ CREATE TABLE IF NOT EXISTS aircraft (
     business_last_row     INTEGER NOT NULL   -- next rows are Business, remainder Economy
 );
 
+-- Airports carry the two things the timetable itself cannot: a clock offset for
+-- the departure-board clock, and coordinates for the route map.
+CREATE TABLE IF NOT EXISTS airports (
+    code             TEXT PRIMARY KEY,
+    city             TEXT    NOT NULL,
+    utc_offset_hours INTEGER NOT NULL,  -- whole hours; no daylight saving
+    latitude         REAL    NOT NULL,
+    longitude        REAL    NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS flights (
     id               INTEGER PRIMARY KEY,
     flight_number    TEXT    NOT NULL UNIQUE,

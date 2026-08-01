@@ -13,6 +13,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import bookings  # noqa: E402
 import db  # noqa: E402
+import routemap  # noqa: E402
 import seed  # noqa: E402
 
 
@@ -70,6 +71,48 @@ class SeedTests(unittest.TestCase):
         self.assertGreater(db.count_rows(self.connection, "bookings"), 0)
         busiest = min(db.get_flights(self.connection), key=lambda f: f["seats_available"])
         self.assertLess(busiest["seats_available"], busiest["total_seats"] * 0.3)
+
+
+class RouteMapTests(unittest.TestCase):
+    """The map is projected server-side, so its geometry is testable."""
+
+    def setUp(self):
+        self.connection, self.path = fresh_database()
+        self.built = routemap.build(db.get_routes(self.connection))
+
+    def tearDown(self):
+        self.connection.close()
+        remove_database(self.path)
+
+    def test_every_airport_has_coordinates(self):
+        for airport in db.get_airports(self.connection):
+            self.assertTrue(-90 <= airport["latitude"] <= 90, airport["code"])
+            self.assertTrue(-180 <= airport["longitude"] <= 180, airport["code"])
+
+    def test_projection_places_the_origin_at_the_centre(self):
+        self.assertEqual(routemap.project(0, 0),
+                         (routemap.MAP_WIDTH / 2, routemap.MAP_HEIGHT / 2))
+
+    def test_pacific_routes_are_split_at_the_antimeridian(self):
+        # LAX to Sydney spans 269 degrees; drawn naively it would stripe backwards.
+        self.assertEqual(len(routemap.arc_paths(33.94, -118.41, -33.94, 151.18)), 2)
+        self.assertEqual(len(routemap.arc_paths(40.64, -73.78, 51.47, -0.45)), 1)
+
+    def test_outbound_and_return_do_not_share_a_path(self):
+        out = routemap.arc_paths(40.64, -73.78, 51.47, -0.45)
+        back = routemap.arc_paths(51.47, -0.45, 40.64, -73.78)
+        self.assertNotEqual(out[0], back[0])
+
+    def test_labels_never_collide(self):
+        boxes = [routemap._label_box(a["label_x"], a["label_y"], a["label_anchor"],
+                                     len(a["code"])) for a in self.built["airports"]]
+        for first in range(len(boxes)):
+            for second in range(first + 1, len(boxes)):
+                self.assertFalse(routemap._overlaps(boxes[first], boxes[second]))
+
+    def test_every_flight_is_drawn(self):
+        self.assertEqual(len(self.built["arcs"]),
+                         db.count_rows(self.connection, "flights"))
 
 
 class BookingTests(unittest.TestCase):
@@ -133,9 +176,33 @@ class RouteTests(unittest.TestCase):
 
     def test_pages_render(self):
         for path in ["/", "/flights", "/flights?origin=JFK", "/flights/1",
-                     "/flights/1/seats", "/api/flights/1/seats", "/lookup", "/healthz"]:
+                     "/flights/1/seats", "/api/flights/1/seats", "/map",
+                     "/api/flights", "/lookup", "/healthz"]:
             with self.subTest(path=path):
                 self.assertEqual(self.client.get(path).status_code, 200)
+
+    def test_board_refresh_endpoint_matches_the_page(self):
+        payload = self.client.get("/api/flights").get_json()
+        self.assertEqual(len(payload["flights"]),
+                         db.count_rows(self.connection, "flights"))
+        self.assertRegex(payload["updated_at"], r"^\d{2}:\d{2}:\d{2}$")
+
+    def test_board_refresh_honours_filters(self):
+        filtered = self.client.get("/api/flights?origin=JFK").get_json()
+        self.assertEqual(len(filtered["flights"]),
+                         len(db.get_flights(self.connection, origin="JFK")))
+
+    def test_board_refresh_reflects_a_new_booking(self):
+        before = self.client.get("/api/flights").get_json()["flights"][0]
+        seat = next(s for s in db.get_seats(self.connection, before["id"]) if s["available"])
+        bookings.create_booking(self.connection, seat["id"], "A B", "a@b.co")
+        after = self.client.get("/api/flights").get_json()["flights"][0]
+        self.assertEqual(before["seats_available"] - after["seats_available"], 1)
+
+    def test_map_page_draws_every_route(self):
+        page = self.client.get("/map").get_data(as_text=True)
+        self.assertEqual(page.count('class="arc '),
+                         db.count_rows(self.connection, "flights"))
 
     def test_unknown_flight_and_booking_are_404(self):
         self.assertEqual(self.client.get("/flights/9999").status_code, 404)

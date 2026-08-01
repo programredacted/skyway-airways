@@ -14,25 +14,27 @@ from pricing import CABIN_ORDER, fare_for_class, format_fare
 
 AIRLINE = "Skyway Airways"
 
-# code -> (city, hours offset from UTC). Whole hours only, to keep arrival maths honest.
+# code -> (city, hours offset from UTC, latitude, longitude).
+# Whole-hour offsets only, to keep arrival maths honest; coordinates are the
+# real airport positions, used to plot the route map.
 AIRPORTS = {
-    "JFK": ("New York", -5),
-    "LAX": ("Los Angeles", -8),
-    "SFO": ("San Francisco", -8),
-    "ORD": ("Chicago", -6),
-    "MIA": ("Miami", -5),
-    "ANC": ("Anchorage", -9),
-    "HNL": ("Honolulu", -10),
-    "MEX": ("Mexico City", -6),
-    "GIG": ("Rio de Janeiro", -3),
-    "LHR": ("London", 0),
-    "CDG": ("Paris", 1),
-    "FCO": ("Rome", 1),
-    "FRA": ("Frankfurt", 1),
-    "IST": ("Istanbul", 3),
-    "HKG": ("Hong Kong", 8),
-    "HND": ("Tokyo", 9),
-    "SYD": ("Sydney", 10),
+    "JFK": ("New York", -5, 40.64, -73.78),
+    "LAX": ("Los Angeles", -8, 33.94, -118.41),
+    "SFO": ("San Francisco", -8, 37.62, -122.38),
+    "ORD": ("Chicago", -6, 41.98, -87.90),
+    "MIA": ("Miami", -5, 25.79, -80.29),
+    "ANC": ("Anchorage", -9, 61.17, -150.00),
+    "HNL": ("Honolulu", -10, 21.32, -157.92),
+    "MEX": ("Mexico City", -6, 19.44, -99.07),
+    "GIG": ("Rio de Janeiro", -3, -22.81, -43.25),
+    "LHR": ("London", 0, 51.47, -0.45),
+    "CDG": ("Paris", 1, 49.01, 2.55),
+    "FCO": ("Rome", 1, 41.80, 12.25),
+    "FRA": ("Frankfurt", 1, 50.04, 8.56),
+    "IST": ("Istanbul", 3, 41.28, 28.75),
+    "HKG": ("Hong Kong", 8, 22.31, 113.91),
+    "HND": ("Tokyo", 9, 35.55, 139.78),
+    "SYD": ("Sydney", 10, -33.94, 151.18),
 }
 
 # Cabin bands are row ranges: rows 1..first_class_last_row are First, the next
@@ -140,6 +142,10 @@ def seed_if_empty(connection, seed_date=None):
     )
 
     with db.transaction(connection):
+        # Airports are guarded separately, so a database seeded before this
+        # table existed still picks them up on the next start.
+        _insert_airports_if_empty(connection)
+
         if db.count_rows(connection, "flights") > 0:
             return False
 
@@ -151,6 +157,18 @@ def seed_if_empty(connection, seed_date=None):
             _insert_seats(connection, flight_id, spec, aircraft_ids)
             _presell_seats(connection, flight_id, spec, passenger_ids)
 
+    return True
+
+
+def _insert_airports_if_empty(connection):
+    if db.count_rows(connection, "airports") > 0:
+        return False
+    connection.executemany(
+        "INSERT INTO airports (code, city, utc_offset_hours, latitude, longitude)"
+        " VALUES (?, ?, ?, ?, ?)",
+        [(code, city, offset, lat, lon)
+         for code, (city, offset, lat, lon) in AIRPORTS.items()],
+    )
     return True
 
 
@@ -190,6 +208,7 @@ def _insert_flight(connection, spec, aircraft_ids, seed_date):
     departs_at, arrives_at = local_times(spec, seed_date)
     origin_city = AIRPORTS[spec["origin"]][0]
     dest_city = AIRPORTS[spec["dest"]][0]
+
 
     cursor = connection.execute(
         """
