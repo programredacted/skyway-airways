@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% block title %}Departures &middot; Skyway Airways{% endblock %}
 {% block steps %}{% with step = 1 %}{% include "_steps.html" %}{% endwith %}{% endblock %}
+{% block main_class %}site-main--tight{% endblock %}
 
 {% block content %}
+<div class="flights-page">
 <p class="eyebrow">Skyway timetable</p>
 <h1 class="page-title">Departures</h1>
-
-{% include "_clock.html" %}
 
 <form class="search search--inline" method="get" action="{{ url_for('flight_list') }}">
   <div class="search__field">
@@ -41,21 +41,26 @@
   {% endif %}
 </form>
 
-{% if flights %}
-{# Live-board controls. Hidden until the script runs, so nothing on screen
-   promises a refresh that will not happen. #}
-<div class="boardbar">
-  <span class="boardbar__pulse" id="board-pulse" hidden aria-hidden="true"></span>
-  <p class="boardbar__status" id="board-status" hidden>Updating automatically</p>
-  <button type="button" class="btn btn--small" id="board-refresh" hidden>
-    Refresh now
-  </button>
-</div>
+{# The map sits directly above the board so the network and the timetable are
+   readable together. Same component as /map, drawn shorter. #}
+{% with compact = true %}{% include "_routemap.html" %}{% endwith %}
 
+{% if flights %}
 <div class="board" id="board">
   <table class="board__table">
+    {# The live-board controls ride in the caption rather than in a band of
+       their own, so the map above and the first departures fit one screen.
+       They stay hidden until the script runs: nothing on screen should promise
+       a refresh that will not happen. #}
     <caption class="board__caption">
-      Departures &middot; {{ flights | length }} flights &middot; all times local to each airport
+      <span class="board__caption-row">
+        <span>Departures &middot; {{ flights | length }} flights &middot; all times local to each airport</span>
+        <span class="boardbar">
+          <span class="boardbar__pulse" id="board-pulse" hidden aria-hidden="true"></span>
+          <span class="boardbar__status" id="board-status" hidden>Updating automatically</span>
+          <button type="button" class="btn btn--small" id="board-refresh" hidden>Refresh now</button>
+        </span>
+      </span>
     </caption>
     <thead>
       <tr>
@@ -117,10 +122,10 @@
     <a href="{{ url_for('flight_list') }}">Show every flight.</a>
   </p>
 {% endif %}
+</div>
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/splitflap.js') }}" defer></script>
-<script src="{{ url_for('static', filename='js/clock.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/routemap.js') }}" defer></script>
 <script src="{{ url_for('static', filename='js/departures.js') }}" defer></script>
 {% endblock %}

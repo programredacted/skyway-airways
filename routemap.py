@@ -5,8 +5,18 @@ The map is drawn server-side so it renders without JavaScript and cannot shift
 the layout; the browser only adds hover and selection on top.
 """
 
+import worldmap
+
 MAP_WIDTH = 1000
 MAP_HEIGHT = 500
+
+# The frame keeps the full span of longitude, so its left and right edges are
+# the date line itself. A route crossing the Pacific then leaves one edge and
+# arrives at the other exactly where a world map says it should -- cropping the
+# sides instead would strand it in open ocean. Latitude is trimmed: Skyway
+# flies nowhere near either pole.
+VIEW_LAT_NORTH = 78
+VIEW_LAT_SOUTH = -52
 
 # How far an arc bows towards the pole, as a fraction of its own length.
 BOW = 0.16
@@ -178,24 +188,36 @@ def _place_labels(airports):
         taken.append(chosen[3])
 
 
-def _viewbox(airports):
-    """Frame the network rather than the whole globe.
+def _viewbox():
+    """Full width, trimmed height. See VIEW_LAT_* above for why."""
+    _, top = project(VIEW_LAT_NORTH, 0)
+    _, bottom = project(VIEW_LAT_SOUTH, 0)
+    return {"x": 0, "y": top, "width": MAP_WIDTH, "height": bottom - top}
 
-    Skyway flies between 34S and 61N, so half an equirectangular world map
-    would be empty ocean. Cropping to the routes roughly doubles their size.
+
+def _viewbox_tight(airports):
+    """The strip above the departure board, cropped to the network itself.
+
+    Sitting on top of the timetable, the map has to earn its height: trimming to
+    the airports makes it a wide band instead of a square, which keeps the first
+    departures on the same screen.
     """
-    xs = [airport["x"] for airport in airports] + \
-         [airport["label_x"] for airport in airports]
-    ys = [airport["y"] for airport in airports] + \
-         [airport["label_y"] for airport in airports]
-    left = min(xs) - PADDING
-    top = min(ys) - PADDING
-    return {
-        "x": left,
-        "y": top,
-        "width": max(xs) + PADDING - left,
-        "height": max(ys) + PADDING - top,
-    }
+    edges = [airport["y"] for airport in airports] + \
+            [airport["label_y"] for airport in airports]
+    top = min(edges) - 14
+    return {"x": 0, "y": top, "width": MAP_WIDTH, "height": max(edges) + 16 - top}
+
+
+def coastlines():
+    """Every landmass as an SVG path, projected the same way as the routes."""
+    paths = []
+    for name, ring in worldmap.LANDMASSES.items():
+        points = []
+        for latitude, longitude in ring:
+            x, y = project(latitude, longitude)
+            points.append(f"{x:.1f} {y:.1f}")
+        paths.append({"name": name, "d": "M " + " L ".join(points) + " Z"})
+    return paths
 
 
 def build(routes):
@@ -231,8 +253,10 @@ def build(routes):
     return {
         "airports": plotted,
         "arcs": arcs,
+        "land": coastlines(),
         "grid": graticule(),
-        "view": _viewbox(plotted),
+        "view": _viewbox(),
+        "view_tight": _viewbox_tight(plotted),
         "width": MAP_WIDTH,
         "height": MAP_HEIGHT,
     }

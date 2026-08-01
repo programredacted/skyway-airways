@@ -40,6 +40,7 @@ def create_app():
     prepare_database(app)
     register_teardown(app)
     register_filters(app)
+    register_context(app)
     register_routes(app)
     return app
 
@@ -99,6 +100,19 @@ def register_filters(app):
     app.jinja_env.globals["cabin_label"] = cabin_label
 
 
+def register_context(app):
+    """The hall clock hangs on every page, so every template gets its data."""
+
+    @app.context_processor
+    def clock_context():
+        if not request.endpoint or request.endpoint == "static":
+            return {}
+        return {
+            "clock": _clock_seed(DEFAULT_CLOCK_OFFSET),
+            "clock_airports": db.get_airports(get_db()),
+        }
+
+
 # --- input validation --------------------------------------------------------
 
 def validate_passenger(form):
@@ -145,7 +159,9 @@ def register_routes(app):
             flights=db.get_flights(connection, **criteria),
             airports=db.get_airports(connection),
             criteria=criteria,
-            clock=_clock_seed(DEFAULT_CLOCK_OFFSET),
+            # The whole network is drawn above the board, not just the filtered
+            # rows: it is there to navigate by, so it should show what exists.
+            map=routemap.build(db.get_routes(connection)),
         )
 
     @app.route("/map")

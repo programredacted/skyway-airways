@@ -20,7 +20,7 @@
       <option value="UTC" data-offset="0" data-city="Coordinated Universal Time">
         UTC (reference)
       </option>
-      {% for airport in airports %}
+      {% for airport in clock_airports %}
         <option value="{{ airport.code }}"
                 data-offset="{{ airport.utc_offset_hours }}"
                 data-city="{{ airport.city }}"
