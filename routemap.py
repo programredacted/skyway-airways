@@ -53,12 +53,17 @@ def graticule(step_degrees=30):
     return {"meridians": meridians, "parallels": parallels}
 
 
+# Where along each arc a direction arrow is stamped, as a fraction of the curve.
+ARROW_AT = (0.34, 0.66)
+
+
 def _curve(x1, y1, x2, y2, fan=0.0):
     """A quadratic bezier bowing towards the nearer pole, like a great circle.
 
     Eastbound and westbound legs of the same route are offset to either side of
     that curve, and `fan` separates routes sharing an origin, so no arc can end
-    up hidden underneath another.
+    up hidden underneath another. Returns the path plus the little arrowheads
+    that show which way the flight goes.
     """
     midpoint_x = (x1 + x2) / 2
     midpoint_y = (y1 + y2) / 2
@@ -69,11 +74,34 @@ def _curve(x1, y1, x2, y2, fan=0.0):
     control_y = (midpoint_y + towards_pole * length * BOW
                  + heading * DIRECTION_SPLIT + fan)
 
-    return f"M {x1:.1f} {y1:.1f} Q {midpoint_x:.1f} {control_y:.1f} {x2:.1f} {y2:.1f}"
+    return {
+        "d": f"M {x1:.1f} {y1:.1f} Q {midpoint_x:.1f} {control_y:.1f} {x2:.1f} {y2:.1f}",
+        "arrows": _arrows(x1, y1, midpoint_x, control_y, x2, y2),
+    }
 
 
-def arc_paths(origin_lat, origin_lon, dest_lat, dest_lon, fan=0.0):
-    """One path, or two when the route crosses the antimeridian.
+def _arrows(x0, y0, cx, cy, x2, y2):
+    """Points along the curve, each with the tangent angle to point down.
+
+    A quadratic bezier is B(t) = (1-t)^2 P0 + 2(1-t)t C + t^2 P2, and its
+    derivative gives the heading at that point.
+    """
+    from math import atan2, degrees
+
+    marks = []
+    for t in ARROW_AT:
+        u = 1 - t
+        x = u * u * x0 + 2 * u * t * cx + t * t * x2
+        y = u * u * y0 + 2 * u * t * cy + t * t * y2
+        dx = 2 * u * (cx - x0) + 2 * t * (x2 - cx)
+        dy = 2 * u * (cy - y0) + 2 * t * (y2 - cy)
+        marks.append({"x": round(x, 1), "y": round(y, 1),
+                      "angle": round(degrees(atan2(dy, dx)), 1)})
+    return marks
+
+
+def arc_segments(origin_lat, origin_lon, dest_lat, dest_lon, fan=0.0):
+    """One segment, or two when the route crosses the antimeridian.
 
     A Pacific route like LAX-SYD spans 269 degrees of longitude. Drawn naively
     it would stripe backwards across the whole map, so we redraw it the short
@@ -241,9 +269,9 @@ def build(routes):
 
         arcs.append({
             "flight": route,
-            "paths": arc_paths(route["origin_lat"], route["origin_lon"],
-                               route["dest_lat"], route["dest_lon"],
-                               offsets[route["id"]]),
+            "segments": arc_segments(route["origin_lat"], route["origin_lon"],
+                                     route["dest_lat"], route["dest_lon"],
+                                     offsets[route["id"]]),
             "fullness": _fullness(route),
         })
 

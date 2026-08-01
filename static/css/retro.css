@@ -776,6 +776,14 @@ a:hover { color: var(--orange-dk); }
 .arc--filling .arc__line { stroke: var(--gold); }
 .arc--full .arc__line { stroke: var(--orange); stroke-dasharray: 5 4; }
 
+/* Direction arrows: same colour as their route, and they grow a little when
+   the route is picked out so you can actually read the heading. */
+.arc__arrow { fill: #4f9a86; pointer-events: none; transition: opacity 0.15s ease; }
+.arc--filling .arc__arrow { fill: var(--gold); }
+.arc--full .arc__arrow { fill: var(--orange); }
+.routemap__svg.is-focused .arc.is-dimmed .arc__arrow { opacity: 0.18; }
+.arc.is-active .arc__arrow { fill: var(--paper); }
+
 .routemap__svg.is-focused .arc.is-dimmed .arc__line { opacity: 0.18; }
 .arc.is-active .arc__line { stroke: var(--paper); stroke-width: 3.2; stroke-dasharray: none; }
 .arc:focus-visible { outline: none; }

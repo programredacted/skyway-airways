@@ -95,13 +95,31 @@ class RouteMapTests(unittest.TestCase):
 
     def test_pacific_routes_are_split_at_the_antimeridian(self):
         # LAX to Sydney spans 269 degrees; drawn naively it would stripe backwards.
-        self.assertEqual(len(routemap.arc_paths(33.94, -118.41, -33.94, 151.18)), 2)
-        self.assertEqual(len(routemap.arc_paths(40.64, -73.78, 51.47, -0.45)), 1)
+        self.assertEqual(len(routemap.arc_segments(33.94, -118.41, -33.94, 151.18)), 2)
+        self.assertEqual(len(routemap.arc_segments(40.64, -73.78, 51.47, -0.45)), 1)
 
     def test_outbound_and_return_do_not_share_a_path(self):
-        out = routemap.arc_paths(40.64, -73.78, 51.47, -0.45)
-        back = routemap.arc_paths(51.47, -0.45, 40.64, -73.78)
-        self.assertNotEqual(out[0], back[0])
+        out = routemap.arc_segments(40.64, -73.78, 51.47, -0.45)
+        back = routemap.arc_segments(51.47, -0.45, 40.64, -73.78)
+        self.assertNotEqual(out[0]["d"], back[0]["d"])
+
+    def test_arrows_point_the_way_the_flight_goes(self):
+        """The arrowheads have to face the destination, not just sit on the line."""
+        eastbound = routemap.arc_segments(40.64, -73.78, 51.47, -0.45)[0]["arrows"]
+        westbound = routemap.arc_segments(51.47, -0.45, 40.64, -73.78)[0]["arrows"]
+
+        self.assertTrue(eastbound and westbound)
+        # East is a heading near 0 degrees, west near +/-180.
+        for arrow in eastbound:
+            self.assertLess(abs(arrow["angle"]), 90, "eastbound arrow points backwards")
+        for arrow in westbound:
+            self.assertGreater(abs(arrow["angle"]), 90, "westbound arrow points backwards")
+
+    def test_every_arc_carries_direction_arrows(self):
+        for arc in self.built["arcs"]:
+            with self.subTest(flight=arc["flight"]["flight_number"]):
+                for segment in arc["segments"]:
+                    self.assertEqual(len(segment["arrows"]), len(routemap.ARROW_AT))
 
     def test_labels_never_collide(self):
         boxes = [routemap._label_box(a["label_x"], a["label_y"], a["label_anchor"],

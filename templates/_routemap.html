@@ -49,9 +49,15 @@
            data-fare="{{ flight.from_price_cents | fare }}"
            data-seats="{{ flight.seats_available }}">
           <title>{{ flight.flight_number }} — {{ flight.origin_code }} to {{ flight.dest_code }}, from {{ flight.from_price_cents | fare }}</title>
-          {% for path in arc.paths %}
-            <path class="arc__hit" d="{{ path }}"/>
-            <path class="arc__line" d="{{ path }}"/>
+          {% for segment in arc.segments %}
+            <path class="arc__hit" d="{{ segment.d }}"/>
+            <path class="arc__line" d="{{ segment.d }}"/>
+            {# Which way round the route runs. Tiny on purpose: they should
+               read as tick marks until you look for them. #}
+            {% for arrow in segment.arrows %}
+              <path class="arc__arrow" d="M -2.6 -2 L 2.6 0 L -2.6 2 Z"
+                    transform="translate({{ arrow.x }} {{ arrow.y }}) rotate({{ arrow.angle }})"/>
+            {% endfor %}
           {% endfor %}
         </a>
       {% endfor %}
