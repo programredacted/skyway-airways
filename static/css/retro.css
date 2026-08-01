@@ -988,13 +988,64 @@ a:hover { color: var(--orange-dk); }
 
 @media (max-width: 55rem) {
   .seatmap { grid-template-columns: 1fr; }
+
+  /* Pinned to the bottom of the viewport, so it must stay shallow: the desktop
+     layout is ~390px tall, which would bury half the seat map on a phone.
+     Same information, laid out across instead of down. */
   .summary {
     position: sticky;
     top: auto;
     bottom: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.3rem 0.9rem;
+    padding: 0.7rem 1rem;
     box-shadow: 0 -6px 14px rgba(20, 33, 46, 0.18);
   }
-  .summary__seat { font-size: 2.2rem; }
+
+  .summary__title { display: none; }
+  .summary__empty { flex: 1 1 100%; margin: 0; font-size: 0.82rem; }
+
+  .summary__chosen {
+    display: flex;
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.2rem 0.7rem;
+  }
+
+  .summary__seat { font-size: 1.9rem; }
+  .summary__cabin { margin: 0; }
+
+  /* Label above value in three tight columns, so nothing wraps mid-phrase. */
+  .summary__maths { display: flex; flex: 1 1 100%; gap: 1.1rem; margin: 0; }
+
+  .summary__maths > div {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    padding: 0;
+    border-bottom: none;
+  }
+
+  .summary__maths dt,
+  .summary__maths dd { white-space: nowrap; line-height: 1.3; }
+
+  .summary__maths dt {
+    font-family: var(--font-display);
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: var(--track-mid);
+    text-transform: uppercase;
+  }
+
+  .summary__maths dd { font-size: 0.85rem; }
+  .summary__total { padding-top: 0 !important; margin-left: auto; align-items: flex-end !important; }
+  .summary__total dd { font-size: 1.2rem; }
+
+  .summary #continue-btn { flex: 1 1 100%; padding: 0.7rem 1rem; }
+  .summary__hint { display: none; }  /* there is no hover on a touchscreen */
 }
 
 @media (max-width: 40rem) {
