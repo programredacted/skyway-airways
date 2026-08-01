@@ -33,12 +33,26 @@
   <path d="M296 212 L306 198 L316 212 Z"/>
 </g>
 
-{# fog bank rolling through, and the bay below #}
+{# fog bank rolling under the deck, and the bay below #}
 <rect x="0" y="410" width="400" height="190" fill="{{ sky }}" opacity="0.5"/>
-<g fill="#f7f0e1" opacity="0.4">
-  <path d="M-10 388 Q60 372 130 388 T280 386 T420 390 L420 414 L-10 414 Z"/>
+<g fill="{{ warm }}" opacity="0.16">
+  <rect x="112" y="410" width="20" height="86"/>
+  <rect x="296" y="410" width="20" height="72"/>
 </g>
-<g stroke="#f7f0e1" stroke-width="3" fill="none" opacity="0.35">
-  <path d="M-10 462 Q80 450 170 462 T350 460"/>
-  <path d="M40 500 Q130 488 220 500 T400 496"/>
+<g stroke="{{ sky }}" stroke-width="3" opacity="0.35">
+  {% for y in [426, 442, 458, 474, 490] %}<line x1="0" y1="{{ y }}" x2="400" y2="{{ y }}"/>{% endfor %}
+</g>
+<g fill="#f7f0e1" opacity="0.45">
+  <path d="M-10 388 Q60 370 132 388 T282 384 T420 392 L420 418 L-10 418 Z"/>
+  <path d="M-10 434 Q70 420 150 436 T320 430 T420 438 L420 452 L-10 452 Z" opacity="0.6"/>
+</g>
+{# a freighter standing out under the span #}
+<g fill="{{ warm }}" opacity="0.85">
+  <path d="M182 508 L268 508 L260 522 L190 522 Z"/>
+  <rect x="212" y="494" width="26" height="14"/>
+  <rect x="220" y="484" width="5" height="12"/>
+</g>
+<g stroke="#f7f0e1" stroke-width="3" fill="none" opacity="0.3">
+  <path d="M-10 542 Q80 530 170 542 T350 540"/>
+  <path d="M40 570 Q130 558 220 570 T400 566"/>
 </g>

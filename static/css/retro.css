@@ -776,13 +776,32 @@ a:hover { color: var(--orange-dk); }
 .arc--filling .arc__line { stroke: var(--gold); }
 .arc--full .arc__line { stroke: var(--orange); stroke-dasharray: 5 4; }
 
-/* Direction arrows: same colour as their route, and they grow a little when
-   the route is picked out so you can actually read the heading. */
-.arc__arrow { fill: #4f9a86; pointer-events: none; transition: opacity 0.15s ease; }
-.arc--filling .arc__arrow { fill: var(--gold); }
-.arc--full .arc__arrow { fill: var(--orange); }
+/* Direction arrows: same colour as their route, outlined in the sea colour so
+   they stay readable on the dashed "nearly full" lines, and scaled up with the
+   line when the route is picked out. */
+.arc__arrow { pointer-events: none; }
+
+.arc__arrow path {
+  fill: #4f9a86;
+  stroke: var(--board);
+  stroke-width: 0.7;
+  stroke-linejoin: round;
+  transform-origin: center;
+  transition: transform 0.15s ease, fill 0.15s ease;
+}
+
+.arc--filling .arc__arrow path { fill: var(--gold); }
+.arc--full .arc__arrow path { fill: var(--orange); stroke-width: 1.1; }
+
 .routemap__svg.is-focused .arc.is-dimmed .arc__arrow { opacity: 0.18; }
-.arc.is-active .arc__arrow { fill: var(--paper); }
+
+.arc.is-active .arc__arrow path,
+.arc:focus-visible .arc__arrow path {
+  fill: var(--paper);
+  stroke: var(--teal-dk);
+  stroke-width: 0.9;
+  transform: scale(1.85);
+}
 
 .routemap__svg.is-focused .arc.is-dimmed .arc__line { opacity: 0.18; }
 .arc.is-active .arc__line { stroke: var(--paper); stroke-width: 3.2; stroke-dasharray: none; }

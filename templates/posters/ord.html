@@ -43,7 +43,21 @@
   {% endfor %}
 </g>
 
-<rect x="0" y="504" width="400" height="96" fill="{{ sky }}" opacity="0.4"/>
+{# the lake, with a sailing boat and the towers laid across it #}
+<rect x="0" y="504" width="400" height="96" fill="{{ sky }}" opacity="0.45"/>
+<g fill="{{ warm }}" opacity="0.14">
+  {% for x, w in [(30, 30), (68, 26), (104, 46), (160, 30), (200, 66), (276, 26), (312, 30), (352, 24)] %}
+    <rect x="{{ x }}" y="504" width="{{ w }}" height="{{ 30 + w }}"/>
+  {% endfor %}
+</g>
+<g stroke="{{ sky }}" stroke-width="3" opacity="0.4">
+  {% for y in [516, 532, 548, 564] %}<line x1="0" y1="{{ y }}" x2="400" y2="{{ y }}"/>{% endfor %}
+</g>
+<g fill="#f7f0e1" opacity="0.9">
+  <path d="M296 556 L296 516 L322 556 Z"/>
+  <path d="M292 556 L292 528 L278 556 Z"/>
+  <path d="M270 556 L328 556 L320 566 L278 566 Z"/>
+</g>
 <g stroke="#f7f0e1" stroke-width="3" fill="none" opacity="0.3">
-  <path d="M-10 534 Q90 522 190 534 T400 530"/>
+  <path d="M-10 578 Q90 566 190 578 T400 574"/>
 </g>

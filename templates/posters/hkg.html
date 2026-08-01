@@ -28,6 +28,24 @@
 
 <rect x="0" y="418" width="400" height="182" fill="{{ sky }}" opacity="0.55"/>
 
+{# the harbour throws the whole skyline back at you, in broken ribbons #}
+<g fill="{{ warm }}" opacity="0.16">
+  {% for x, w, h in [(34, 26, 60), (68, 22, 84), (98, 30, 66), (136, 26, 92),
+                     (170, 22, 58), (200, 28, 76), (236, 20, 52), (264, 26, 68),
+                     (298, 22, 48), (328, 28, 62), (364, 22, 44)] %}
+    <rect x="{{ x }}" y="418" width="{{ w }}" height="{{ h }}"/>
+  {% endfor %}
+</g>
+<g stroke="{{ sky }}" stroke-width="3.5" opacity="0.4">
+  {% for y in [432, 448, 464, 480, 496] %}<line x1="0" y1="{{ y }}" x2="400" y2="{{ y }}"/>{% endfor %}
+</g>
+
+{# searchlights sweeping up off the towers, as they do every night #}
+<g fill="{{ gold }}" opacity="0.12">
+  <path d="M148 236 L104 140 L118 138 Z"/>
+  <path d="M212 270 L268 158 L280 164 Z"/>
+</g>
+
 {# a junk with battened sails #}
 <g fill="{{ warm }}">
   <path d="M104 486 L262 486 L242 512 L124 512 Z"/>

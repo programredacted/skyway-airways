@@ -14,11 +14,20 @@
   </g>
 {% endfor %}
 
-{# the amphitheatre: outer wall as one ellipse-topped body, tiers cut into it #}
-<path d="M104 452 L104 300 Q200 250 296 300 L296 452 Z" fill="#f7f0e1"/>
-<path d="M240 452 L240 268 Q272 276 296 300 L296 452 Z" fill="{{ warm }}" opacity="0.22"/>
-{# the broken upper rim, continuous with the wall below it #}
-<path d="M240 268 Q258 272 272 280 L266 292 L256 284 L248 292 L240 286 Z" fill="#f7f0e1"/>
+{# The amphitheatre. The outer wall survives to full height on the right and
+   falls away to a broken stub on the left, which is what the ruin actually
+   looks like — the top edge is ragged in the main silhouette rather than a
+   separate piece laid on top. #}
+<path d="M104 452
+         L104 318 L112 310 L118 318 L126 306 L134 314 L142 300
+         Q188 268 240 272
+         L244 262 L252 268 L258 258 L266 266 L272 262
+         Q288 274 296 296
+         L296 452 Z" fill="#f7f0e1"/>
+{# the sunlit face, kept faint so it reads as light and not as a second wall #}
+<path d="M236 452 L236 272 Q272 262 296 296 L296 452 Z" fill="{{ gold }}" opacity="0.16"/>
+{# the inner arena wall, visible through the broken end #}
+<path d="M112 452 L112 340 Q160 316 208 322 L208 452 Z" fill="{{ warm }}" opacity="0.14"/>
 
 {# three storeys of arches, each row seated on a cornice #}
 <g fill="{{ sky }}" opacity="0.5">

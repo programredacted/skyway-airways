@@ -40,13 +40,40 @@
 <rect x="48" y="406" width="204" height="16" fill="{{ warm }}"/>
 
 <rect x="0" y="422" width="400" height="178" fill="{{ sky }}" opacity="0.55"/>
-<g stroke="#f7f0e1" stroke-width="4" fill="none" opacity="0.5">
+
+{# the harbour reflects the shells and the bridge, broken into ribbons #}
+<g fill="#f7f0e1" opacity="0.16">
+  <path d="M60 426 Q78 470 132 426 Z"/>
+  <path d="M96 426 Q120 500 182 426 Z"/>
+  <path d="M140 426 Q168 486 216 426 Z"/>
+</g>
+<g fill="{{ warm }}" opacity="0.14">
+  <path d="M212 426 Q296 500 386 426 Z"/>
+</g>
+<g stroke="{{ sky }}" stroke-width="3" opacity="0.35">
+  {% for y in [438, 452, 466, 480, 494] %}<line x1="0" y1="{{ y }}" x2="400" y2="{{ y }}"/>{% endfor %}
+</g>
+<g stroke="#f7f0e1" stroke-width="4" fill="none" opacity="0.45">
   <path d="M-10 452 Q60 442 130 452 T280 452 T420 448"/>
   <path d="M-10 486 Q80 474 170 486 T340 484"/>
 </g>
-{# a little sail, as every Sydney poster has #}
+
+{# a yacht under sail, and the green-and-gold ferry that crosses all day #}
 <g fill="#f7f0e1">
   <path d="M300 470 L300 424 L326 470 Z"/>
   <path d="M296 470 L296 440 L282 470 Z"/>
-  <path d="M272 470 L334 470 L324 482 L282 482 Z"/>
+  <path d="M272 470 L334 470 L324 484 L282 484 Z"/>
+</g>
+<g>
+  <path d="M56 516 L164 516 L154 534 L66 534 Z" fill="{{ warm }}"/>
+  <path d="M78 500 L146 500 L146 516 L78 516 Z" fill="#f7f0e1"/>
+  <rect x="106" y="488" width="6" height="14" fill="{{ warm }}"/>
+  <g fill="{{ sky }}" opacity="0.5">
+    {% for x in [86, 102, 118, 132] %}<rect x="{{ x }}" y="504" width="10" height="8"/>{% endfor %}
+  </g>
+</g>
+{# gulls #}
+<g stroke="#f7f0e1" stroke-width="1.8" fill="none" opacity="0.55">
+  <path d="M226 440 q5 -4 10 0 q5 -4 10 0"/>
+  <path d="M252 458 q4 -3 8 0 q4 -3 8 0"/>
 </g>

@@ -54,9 +54,12 @@
             <path class="arc__line" d="{{ segment.d }}"/>
             {# Which way round the route runs. Tiny on purpose: they should
                read as tick marks until you look for them. #}
+            {# The <g> carries the placement; the path inside carries the shape,
+               so CSS can scale the head on hover without losing the rotation. #}
             {% for arrow in segment.arrows %}
-              <path class="arc__arrow" d="M -2.6 -2 L 2.6 0 L -2.6 2 Z"
-                    transform="translate({{ arrow.x }} {{ arrow.y }}) rotate({{ arrow.angle }})"/>
+              <g class="arc__arrow" transform="translate({{ arrow.x }} {{ arrow.y }}) rotate({{ arrow.angle }})">
+                <path d="M -2.6 -2.1 L 2.8 0 L -2.6 2.1 L -1.4 0 Z"/>
+              </g>
             {% endfor %}
           {% endfor %}
         </a>

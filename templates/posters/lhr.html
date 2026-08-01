@@ -49,8 +49,25 @@
   <path d="M-10 480 Q70 468 150 480 T310 480 T420 476"/>
   <path d="M-10 514 Q90 502 190 514 T400 510"/>
 </g>
+{# the tower and the front thrown back onto the water #}
+<g fill="#f7f0e1" opacity="0.15">
+  <path d="M78 448 L78 560 L116 560 L116 448 Z"/>
+  <path d="M116 448 L116 520 L268 520 L268 448 Z"/>
+</g>
+<g stroke="{{ sky }}" stroke-width="3" opacity="0.4">
+  {% for y in [462, 478, 494, 510, 526] %}<line x1="0" y1="{{ y }}" x2="400" y2="{{ y }}"/>{% endfor %}
+</g>
+
 {# a river bus going downstream #}
 <g fill="{{ warm }}">
   <path d="M262 500 L344 500 L336 516 L270 516 Z"/>
   <rect x="284" y="486" width="40" height="14"/>
+  <rect x="300" y="476" width="4" height="10"/>
+</g>
+{# lamp standards along the embankment #}
+<g fill="{{ warm }}" opacity="0.8">
+  {% for x in [22, 76, 300, 356] %}
+    <rect x="{{ x }}" y="404" width="4" height="34"/>
+    <circle cx="{{ x + 2 }}" cy="400" r="5"/>
+  {% endfor %}
 </g>

@@ -21,8 +21,18 @@
   {% endfor %}
 </g>
 
-{# lake #}
+{# lake, with the range folded back into it #}
 <rect x="0" y="428" width="400" height="172" fill="{{ sky }}" opacity="0.5"/>
+<g fill="{{ sky }}" opacity="0.3">
+  <path d="M0 428 L58 528 L104 470 L156 574 L226 472 L272 522 L332 456 L400 514 L400 428 Z"/>
+</g>
+<g fill="#f7f0e1" opacity="0.14">
+  <path d="M124 428 L156 574 L192 424 Z"/>
+  <path d="M36 428 L58 528 L84 428 Z"/>
+</g>
+<g stroke="{{ sky }}" stroke-width="3" opacity="0.45">
+  {% for y in [444, 462, 480, 498, 516] %}<line x1="0" y1="{{ y }}" x2="400" y2="{{ y }}"/>{% endfor %}
+</g>
 
 {# the float plane, side on: nose left, tall tail right, wing over the cabin #}
 <g fill="#f7f0e1">

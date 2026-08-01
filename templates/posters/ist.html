@@ -34,7 +34,21 @@
   <rect x="126" y="466" width="52" height="20"/>
   <rect x="146" y="450" width="7" height="18"/>
 </g>
-<g stroke="#f7f0e1" stroke-width="3.5" fill="none" opacity="0.4">
-  <path d="M-10 522 Q80 510 170 522 T350 520"/>
-  <path d="M60 552 Q160 540 260 552 T440 548"/>
+{# the mosque reflected, and the strait ribbed with current #}
+<g fill="#f7f0e1" opacity="0.14">
+  <path d="M108 442 L108 520 L292 520 L292 442 Z"/>
+  <path d="M132 520 A68 68 0 0 0 268 520 Z"/>
+</g>
+<g stroke="{{ sky }}" stroke-width="3.5" opacity="0.4">
+  {% for y in [456, 474, 492, 510, 528] %}<line x1="0" y1="{{ y }}" x2="400" y2="{{ y }}"/>{% endfor %}
+</g>
+<g stroke="#f7f0e1" stroke-width="3.5" fill="none" opacity="0.35">
+  <path d="M-10 546 Q80 534 170 546 T350 544"/>
+  <path d="M60 574 Q160 562 260 574 T440 570"/>
+</g>
+{# gulls following the ferry, which they always do #}
+<g stroke="#f7f0e1" stroke-width="1.8" fill="none" opacity="0.6">
+  <path d="M226 460 q5 -4 10 0 q5 -4 10 0"/>
+  <path d="M252 442 q4 -3 8 0 q4 -3 8 0"/>
+  <path d="M68 452 q4 -3 8 0 q4 -3 8 0"/>
 </g>
