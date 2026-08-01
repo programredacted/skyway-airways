@@ -1,46 +1,62 @@
-{# New York — Liberty against the skyline at night #}
-<g fill="{{ sky }}" opacity="0.5">
-  <rect x="0" y="300" width="34" height="170"/>
-  <rect x="44" y="340" width="26" height="130"/>
-  <rect x="256" y="318" width="34" height="152"/>
-  <rect x="298" y="286" width="26" height="184"/>
-  <rect x="332" y="336" width="38" height="134"/>
-  <rect x="378" y="308" width="22" height="162"/>
+{# New York — Liberty against the skyline at night.
+   The figure is one continuous silhouette: pedestal, robe, torso, raised arm
+   and torch all in a single path, so nothing reads as a stack of parts. #}
+<g fill="{{ sky }}" opacity="0.55">
+  <path d="M0 470 L0 300 L26 300 L26 288 L44 288 L44 300 L62 300 L62 342 L86 342 L86 470 Z"/>
+  <path d="M282 470 L282 316 L300 316 L300 292 L318 292 L318 274 L332 274 L332 292 L348 292
+           L348 330 L372 330 L372 306 L400 306 L400 470 Z"/>
 </g>
-<g fill="{{ warm }}" opacity="0.45">
-  {% for i in range(46) %}
-    <rect x="{{ 6 + (i % 7) * 9 + (i % 3) * 2 }}" y="{{ 312 + (i // 7) * 22 }}" width="4" height="6"/>
+<g fill="{{ warm }}" opacity="0.4">
+  {% for i in range(36) %}
+    <rect x="{{ 6 + (i % 6) * 13 }}" y="{{ 318 + (i // 6) * 24 }}" width="4" height="6"/>
   {% endfor %}
-  {% for i in range(40) %}
-    <rect x="{{ 262 + (i % 6) * 22 }}" y="{{ 300 + (i // 6) * 24 }}" width="5" height="7"/>
+  {% for i in range(30) %}
+    <rect x="{{ 290 + (i % 6) * 18 }}" y="{{ 330 + (i // 6) * 24 }}" width="4" height="6"/>
   {% endfor %}
 </g>
 
-{# the searchlight beam of the 1927 poster #}
-<path d="M330 96 L196 176 L214 202 L360 130 Z" fill="#f7f0e1" opacity="0.16"/>
+{# the searchlight beam, as on the 1927 poster #}
+<path d="M338 92 L188 186 L204 214 L364 124 Z" fill="#f7f0e1" opacity="0.14"/>
 
-<g fill="#f7f0e1">
-  <path d="M182 470 L246 470 L240 424 L188 424 Z" opacity="0.85"/>
-  <path d="M186 424 L242 424 L236 396 L192 396 Z" opacity="0.92"/>
+{# pedestal and star-fort base #}
+<g fill="#f7f0e1" opacity="0.82">
+  <path d="M150 470 L158 428 L242 428 L250 470 Z"/>
+  <path d="M162 428 L166 392 L234 392 L238 428 Z"/>
+</g>
+<g stroke="{{ sky }}" stroke-width="2" opacity="0.3">
+  <line x1="166" y1="404" x2="234" y2="404"/>
+  <line x1="160" y1="446" x2="240" y2="446"/>
 </g>
 
-<g fill="{{ gold }}">
-  {# robed figure #}
-  <path d="M200 396 L200 320 Q206 296 214 292 L226 292 Q234 300 232 322 L236 396 Z"/>
-  <path d="M214 292 L214 264 L228 264 L228 292 Z"/>
-  <circle cx="221" cy="252" r="15"/>
-  {# crown: seven spikes, written out so the shape is obvious #}
-  {% for x, tip in [(206, 236), (211, 230), (216, 226), (221, 224),
-                    (226, 226), (231, 230), (236, 236)] %}
-    <path d="M221 244 L{{ x }} {{ tip }} L{{ x + 3 }} 245 Z"/>
-  {% endfor %}
-  {# raised arm and torch #}
-  <path d="M228 300 L246 246 L254 250 L238 304 Z"/>
-  <rect x="242" y="228" width="14" height="20" rx="2"/>
+{# the statue itself, one path: hem, robe, shoulder, raised arm, torch handle #}
+<path d="M176 392
+         L182 348 Q185 322 193 306
+         L193 288 Q188 282 190 274 L200 268
+         L206 240 Q208 228 216 226
+         L228 224 L232 234 L221 240 L214 268
+         L221 272 Q225 280 220 288
+         L220 300 Q231 316 233 344
+         L238 392 Z"
+      fill="{{ gold }}"/>
+{# folds in the robe, which is what makes it read as cloth #}
+<g stroke="{{ warm }}" stroke-width="1.6" opacity="0.5" fill="none">
+  <path d="M196 316 Q198 352 194 390"/>
+  <path d="M208 312 Q210 350 209 390"/>
+  <path d="M220 316 Q224 352 224 390"/>
 </g>
-<path d="M249 228 Q243 210 249 200 Q255 210 249 228 Z" fill="#f7f0e1"/>
 
-<rect x="0" y="470" width="400" height="130" fill="{{ sky }}" opacity="0.35"/>
-<g stroke="#f7f0e1" stroke-width="2" opacity="0.3" fill="none">
-  <path d="M20 496 H150"/><path d="M250 512 H380"/><path d="M60 528 H210"/>
+{# head, crown and tablet, joined to the body above #}
+<circle cx="205" cy="256" r="14" fill="{{ gold }}"/>
+<path d="M205 250 L191 244 L193 232 L199 240 L201 226 L207 226 L210 240 L216 232 L218 244 Z"
+      fill="{{ gold }}"/>
+<path d="M186 300 L172 318 L182 330 L196 312 Z" fill="{{ gold }}"/>
+
+{# torch: the arm above ends in a handle, bowl and flame #}
+<path d="M229 226 L236 208 L248 212 L242 230 Z" fill="{{ gold }}"/>
+<path d="M234 208 L252 212 L250 200 L236 196 Z" fill="{{ gold }}"/>
+<path d="M243 196 Q234 174 243 158 Q252 174 243 196 Z" fill="#f7f0e1"/>
+
+<rect x="0" y="470" width="400" height="130" fill="{{ sky }}" opacity="0.4"/>
+<g stroke="#f7f0e1" stroke-width="2" opacity="0.22" fill="none">
+  <path d="M24 494 H152"/><path d="M248 512 H376"/><path d="M64 530 H208"/>
 </g>

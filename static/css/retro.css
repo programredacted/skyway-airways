@@ -706,8 +706,15 @@ a:hover { color: var(--orange-dk); }
 .destpanel__actions { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 1.1rem 0 0; }
 .destpanel__error { margin: 0; color: var(--oxblood); }
 
-.itinerary--compact .itinerary__item { padding: 0.55rem 0; }
-.itinerary--compact .itinerary__detail { font-size: 0.86rem; }
+.destpanel__heading {
+  margin: 1.1rem 0 0.2rem;
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: var(--track-wide);
+  text-transform: uppercase;
+  color: var(--orange-dk);
+}
 
 /* On the departures page the heading, padding and filters all give up some
    breathing room, so the map and the first departures share one screen. */
@@ -1281,30 +1288,40 @@ a:hover { color: var(--orange-dk); }
   color: var(--orange-dk);
 }
 
-.itinerary { margin: 0; padding: 0; list-style: none; }
-
-.itinerary__item {
-  display: flex;
-  gap: 1.1rem;
-  padding: 0.9rem 0;
-  border-top: 1px dotted var(--ink-soft);
+/* Sights are a list of places, not a schedule: two columns where there is
+   room, so six of them read at a glance. */
+.sights {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 0.2rem 2rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.itinerary__item:last-child { border-bottom: 1px dotted var(--ink-soft); }
+.sights__item { padding: 0.65rem 0; border-top: 1px dotted var(--ink-soft); }
 
-.itinerary__day {
-  flex: 0 0 3.6rem;
-  font-family: var(--font-display);
-  font-size: 0.66rem;
-  font-weight: 600;
-  letter-spacing: var(--track-mid);
-  text-transform: uppercase;
-  color: var(--teal);
-  padding-top: 0.2rem;
+.sights__title {
+  margin: 0;
+  font-weight: 700;
+  padding-left: 1rem;
+  position: relative;
 }
 
-.itinerary__title { margin: 0; font-weight: 700; }
-.itinerary__detail { margin: 0.15rem 0 0; color: var(--ink-soft); font-size: 0.92rem; }
+.sights__title::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 0.45rem;
+  height: 0.45rem;
+  background: var(--orange);
+  transform: rotate(45deg);
+}
+
+.sights__detail { margin: 0.1rem 0 0 1rem; color: var(--ink-soft); font-size: 0.9rem; }
+.sights--compact .sights__item { padding: 0.45rem 0; }
+.sights--compact .sights__detail { font-size: 0.84rem; }
 
 .guide__flights { margin: 0; padding-left: 1.1rem; font-size: 0.92rem; }
 .guide__flights li { margin-bottom: 0.4rem; }

@@ -1,38 +1,45 @@
 {# Rome — the Colosseum in low sun, umbrella pines behind #}
-<circle cx="312" cy="168" r="42" fill="{{ gold }}" opacity="0.7"/>
+<circle cx="316" cy="164" r="44" fill="{{ gold }}" opacity="0.72"/>
 
-{# umbrella pines #}
-<g fill="{{ sky }}" opacity="0.45">
-  {% for x, top in [(46, 268), (86, 288), (352, 274)] %}
-    <rect x="{{ x + 12 }}" y="{{ top }}" width="6" height="{{ 448 - top }}"/>
-    <ellipse cx="{{ x + 15 }}" cy="{{ top - 6 }}" rx="34" ry="14"/>
+{# umbrella pines: trunk and canopy joined, not a ball on a stick #}
+{% for x, top, spread in [(44, 262, 38), (88, 286, 30), (352, 268, 34)] %}
+  <g fill="{{ sky }}" opacity="0.5">
+    <path d="M{{ x + 10 }} 452 Q{{ x + 14 }} {{ (452 + top) / 2 }} {{ x + 12 }} {{ top + 8 }}
+             L{{ x + 20 }} {{ top + 8 }} Q{{ x + 18 }} {{ (452 + top) / 2 }} {{ x + 20 }} 452 Z"/>
+    <path d="M{{ x + 16 }} {{ top + 12 }}
+             Q{{ x - spread + 16 }} {{ top + 14 }} {{ x - spread + 22 }} {{ top - 2 }}
+             Q{{ x - spread / 2 + 16 }} {{ top - 18 }} {{ x + 16 }} {{ top - 14 }}
+             Q{{ x + spread / 2 + 16 }} {{ top - 18 }} {{ x + spread + 10 }} {{ top - 2 }}
+             Q{{ x + spread + 16 }} {{ top + 14 }} {{ x + 16 }} {{ top + 12 }} Z"/>
+  </g>
+{% endfor %}
+
+{# the amphitheatre: outer wall as one ellipse-topped body, tiers cut into it #}
+<path d="M104 452 L104 300 Q200 250 296 300 L296 452 Z" fill="#f7f0e1"/>
+<path d="M240 452 L240 268 Q272 276 296 300 L296 452 Z" fill="{{ warm }}" opacity="0.22"/>
+{# the broken upper rim, continuous with the wall below it #}
+<path d="M240 268 Q258 272 272 280 L266 292 L256 284 L248 292 L240 286 Z" fill="#f7f0e1"/>
+
+{# three storeys of arches, each row seated on a cornice #}
+<g fill="{{ sky }}" opacity="0.5">
+  {% for x in [114, 140, 166, 192, 218, 244, 270] %}
+    <path d="M{{ x }} 344 L{{ x }} 322 Q{{ x + 8 }} 312 {{ x + 16 }} 322 L{{ x + 16 }} 344 Z"/>
+    <path d="M{{ x }} 392 L{{ x }} 368 Q{{ x + 8 }} 358 {{ x + 16 }} 368 L{{ x + 16 }} 392 Z"/>
+    <path d="M{{ x }} 444 L{{ x }} 418 Q{{ x + 8 }} 406 {{ x + 16 }} 418 L{{ x + 16 }} 444 Z"/>
   {% endfor %}
 </g>
-
-{# amphitheatre: outer wall with two tiers of arches, one side fallen away #}
-<g fill="#f7f0e1">
-  <path d="M112 448 L112 292 Q200 250 292 292 L292 448 Z"/>
+<g stroke="{{ warm }}" stroke-width="3.5" opacity="0.7">
+  <line x1="104" y1="352" x2="296" y2="352"/>
+  <line x1="104" y1="400" x2="296" y2="400"/>
+  <line x1="104" y1="306" x2="296" y2="306"/>
 </g>
-<path d="M240 448 L240 268 Q268 274 292 292 L292 448 Z" fill="{{ warm }}" opacity="0.28"/>
+<rect x="104" y="446" width="192" height="6" fill="{{ warm }}" opacity="0.8"/>
 
-<g fill="{{ sky }}" opacity="0.55">
-  {% for x in [124, 152, 180, 208, 236, 264] %}
-    <path d="M{{ x }} 380 L{{ x }} 336 Q{{ x + 9 }} 324 {{ x + 18 }} 336 L{{ x + 18 }} 380 Z"/>
-  {% endfor %}
-  {% for x in [124, 152, 180, 208, 236, 264] %}
-    <path d="M{{ x }} 442 L{{ x }} 400 Q{{ x + 9 }} 388 {{ x + 18 }} 400 L{{ x + 18 }} 442 Z"/>
-  {% endfor %}
-</g>
-<g stroke="{{ warm }}" stroke-width="3" opacity="0.75">
-  <line x1="112" y1="392" x2="292" y2="392"/>
-  <line x1="112" y1="300" x2="292" y2="300"/>
-</g>
-
-{# broken upper rim on the right #}
-<path d="M240 268 L252 262 L262 270 L274 264 L292 274 L292 292 Q268 274 240 268 Z" fill="#f7f0e1"/>
-
-<rect x="0" y="448" width="400" height="152" fill="{{ gold }}" opacity="0.32"/>
-<rect x="0" y="448" width="400" height="6" fill="{{ warm }}"/>
-<g fill="{{ warm }}" opacity="0.3">
-  {% for x in [30, 74, 120, 320, 366] %}<rect x="{{ x }}" y="454" width="26" height="9"/>{% endfor %}
+<rect x="0" y="452" width="400" height="148" fill="{{ gold }}" opacity="0.34"/>
+<rect x="0" y="452" width="400" height="6" fill="{{ warm }}"/>
+{# fallen column drums along the roadside #}
+<g fill="{{ warm }}" opacity="0.35">
+  <rect x="24" y="470" width="52" height="10" rx="5"/>
+  <rect x="34" y="486" width="34" height="10" rx="5"/>
+  <rect x="330" y="474" width="48" height="10" rx="5"/>
 </g>

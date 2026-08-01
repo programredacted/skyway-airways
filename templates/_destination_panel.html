@@ -10,17 +10,15 @@
     <h2 class="destpanel__city">{{ destination.city }}</h2>
     <p class="destpanel__tagline">{{ destination.tagline }}.</p>
 
-    <ol class="itinerary itinerary--compact">
+    <h3 class="destpanel__heading">What to see</h3>
+    <ul class="sights sights--compact">
       {% for title, detail in destination.things %}
-        <li class="itinerary__item">
-          <span class="itinerary__day">Day {{ loop.index }}</span>
-          <div>
-            <p class="itinerary__title">{{ title }}</p>
-            <p class="itinerary__detail">{{ detail }}</p>
-          </div>
+        <li class="sights__item">
+          <p class="sights__title">{{ title }}</p>
+          <p class="sights__detail">{{ detail }}</p>
         </li>
       {% endfor %}
-    </ol>
+    </ul>
 
     <p class="destpanel__actions" data-panel-actions>
       <a class="btn btn--small"

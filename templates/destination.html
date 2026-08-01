@@ -14,18 +14,15 @@
     <h1 class="page-title">{{ destination.city }}</h1>
     <p class="lede">{{ destination.tagline }}.</p>
 
-    <h2 class="guide__heading">Four days, four things</h2>
-    <ol class="itinerary">
+    <h2 class="guide__heading">What to see</h2>
+    <ul class="sights">
       {% for title, detail in destination.things %}
-        <li class="itinerary__item">
-          <span class="itinerary__day">Day {{ loop.index }}</span>
-          <div>
-            <p class="itinerary__title">{{ title }}</p>
-            <p class="itinerary__detail">{{ detail }}</p>
-          </div>
+        <li class="sights__item">
+          <p class="sights__title">{{ title }}</p>
+          <p class="sights__detail">{{ detail }}</p>
         </li>
       {% endfor %}
-    </ol>
+    </ul>
 
     {% if flights %}
       <h2 class="guide__heading">Getting there</h2>

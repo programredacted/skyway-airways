@@ -1,39 +1,55 @@
 {# Honolulu — Diamond Head, palms and a surfer on a long wave #}
-<circle cx="290" cy="150" r="44" fill="{{ gold }}" opacity="0.85"/>
+<circle cx="292" cy="150" r="46" fill="{{ gold }}" opacity="0.85"/>
 
-{# the crater headland #}
-<path d="M180 372 L232 292 L268 306 L306 274 L400 372 Z" fill="{{ sky }}" opacity="0.62"/>
-<path d="M232 292 L268 306 L306 274 L286 300 L258 316 Z" fill="{{ warm }}" opacity="0.3"/>
-<path d="M0 372 Q90 352 180 372 L180 392 L0 392 Z" fill="{{ sky }}" opacity="0.35"/>
+{# the crater: one ridge line, with its seaward face shaded #}
+<path d="M168 380 L214 300 L248 288 L286 262 L318 288 L400 372 L400 380 Z"
+      fill="{{ sky }}" opacity="0.68"/>
+<path d="M286 262 L318 288 L400 372 L400 380 L322 380 Z" fill="#14212e" opacity="0.16"/>
+<path d="M0 380 Q86 358 168 380 L168 396 L0 396 Z" fill="{{ sky }}" opacity="0.4"/>
 
-{# palms leaning in from the left #}
-<g fill="{{ warm }}">
-  <path d="M52 470 Q42 400 62 344 L70 346 Q54 402 62 470 Z"/>
-  <path d="M104 470 Q100 414 114 372 L121 375 Q108 418 113 470 Z"/>
-</g>
-<g fill="{{ sky }}" opacity="0.75">
-  {% for cx, cy, rot in [(66, 342, -46), (66, 342, -8), (66, 342, 32), (66, 342, 74),
-                          (117, 370, -38), (117, 370, 4), (117, 370, 46)] %}
-    <ellipse cx="{{ cx + 22 }}" cy="{{ cy }}" rx="24" ry="6"
-             transform="rotate({{ rot }} {{ cx }} {{ cy }})"/>
-  {% endfor %}
-</g>
+{# palms leaning out over the sand; broad fronds, joined to the trunk by a collar #}
+{% for base_x, base_y, lean, scale in [(56, 486, -22, 1.0), (122, 478, 14, 0.74)] %}
+  <g transform="translate({{ base_x }} {{ base_y }}) scale({{ scale }})" fill="{{ warm }}">
+    <path d="M0 0 C 2 -56 {{ lean / 2 }} -104 {{ lean }} -142
+             L{{ lean + 13 }} -142 C {{ lean / 2 + 14 }} -104 16 -56 15 0 Z"/>
+    <path d="M{{ lean + 2 }} -138 L{{ lean + 16 }} -138 L{{ lean + 13 }} -150 L{{ lean + 4 }} -150 Z"/>
+    <g>
+      <path d="M{{ lean + 8 }} -148 C {{ lean - 18 }} -170 {{ lean - 50 }} -176 {{ lean - 76 }} -162
+               C {{ lean - 50 }} -160 {{ lean - 22 }} -150 {{ lean + 2 }} -136 Z"/>
+      <path d="M{{ lean + 8 }} -148 C {{ lean + 34 }} -172 {{ lean + 66 }} -178 {{ lean + 92 }} -164
+               C {{ lean + 66 }} -162 {{ lean + 38 }} -152 {{ lean + 14 }} -136 Z"/>
+      <path d="M{{ lean + 8 }} -150 C {{ lean - 12 }} -180 {{ lean - 32 }} -202 {{ lean - 56 }} -210
+               C {{ lean - 38 }} -188 {{ lean - 24 }} -166 {{ lean - 8 }} -142 Z"/>
+      <path d="M{{ lean + 8 }} -150 C {{ lean + 28 }} -182 {{ lean + 50 }} -204 {{ lean + 74 }} -210
+               C {{ lean + 54 }} -188 {{ lean + 40 }} -166 {{ lean + 26 }} -142 Z"/>
+      <path d="M{{ lean + 8 }} -152 C {{ lean - 1 }} -180 {{ lean - 1 }} -206 {{ lean + 7 }} -228
+               C {{ lean + 19 }} -204 {{ lean + 21 }} -180 {{ lean + 17 }} -150 Z"/>
+    </g>
+    <g fill="{{ gold }}">
+      <circle cx="{{ lean + 3 }}" cy="-132" r="5"/>
+      <circle cx="{{ lean + 15 }}" cy="-128" r="5"/>
+    </g>
+  </g>
+{% endfor %}
 
-{# ocean and the long breaking wave #}
-<rect x="0" y="392" width="400" height="208" fill="{{ sky }}" opacity="0.55"/>
-<path d="M-10 470 Q80 418 200 448 Q300 472 410 440 L410 600 L-10 600 Z"
+{# ocean, and one long wave the surfer is riding #}
+<rect x="0" y="396" width="400" height="204" fill="{{ sky }}" opacity="0.55"/>
+<path d="M-10 474 Q84 416 202 448 Q302 474 410 442 L410 600 L-10 600 Z"
       fill="{{ sky }}" opacity="0.45"/>
-<path d="M-10 470 Q80 418 200 448 Q140 452 60 486 Q10 500 -10 496 Z"
-      fill="#f7f0e1" opacity="0.9"/>
-<g stroke="#f7f0e1" stroke-width="4" fill="none" opacity="0.5">
-  <path d="M180 508 Q260 496 340 508 T460 504"/>
-  <path d="M40 542 Q140 530 240 542 T440 538"/>
+<path d="M-10 474 Q84 416 202 448 Q136 452 58 490 Q12 506 -10 502 Z"
+      fill="#f7f0e1" opacity="0.92"/>
+<path d="M60 484 Q108 458 158 450 Q112 470 78 494 Z" fill="#f7f0e1" opacity="0.5"/>
+<g stroke="#f7f0e1" stroke-width="4" fill="none" opacity="0.45">
+  <path d="M188 516 Q268 504 348 516 T470 512"/>
+  <path d="M40 550 Q140 538 240 550 T440 546"/>
 </g>
 
-{# surfer #}
+{# surfer: board, legs, torso and arms as one connected figure #}
 <g fill="{{ warm }}">
-  <path d="M126 468 L166 460 L168 466 L128 474 Z"/>
-  <path d="M144 460 L148 436 L152 436 L154 458 Z"/>
-  <circle cx="150" cy="430" r="6"/>
-  <path d="M150 440 L138 432 L140 428 L152 434 Z"/>
+  <path d="M120 470 Q146 458 176 456 Q152 470 124 478 Z"/>
+  <path d="M146 458 L150 442 L154 442 L156 456 Z"/>
+  <path d="M150 442 L148 424 L156 424 L158 442 Z"/>
+  <circle cx="152" cy="418" r="6"/>
+  <path d="M149 428 L134 420 L136 415 L152 423 Z"/>
+  <path d="M156 428 L172 422 L173 427 L157 434 Z"/>
 </g>

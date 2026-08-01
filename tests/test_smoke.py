@@ -219,7 +219,26 @@ class RouteTests(unittest.TestCase):
                 self.assertTrue(os.path.exists(os.path.join(posters, f"{code.lower()}.html")),
                                 f"no poster artwork for {code}")
                 self.assertEqual(len(guide["palette"]), 3)
-                self.assertGreaterEqual(len(guide["things"]), 3)
+                # Plenty of real sights, not a thin four-day plan.
+                self.assertGreaterEqual(len(guide["things"]), 5)
+
+    def test_guides_name_the_landmark_the_poster_draws(self):
+        """A guide to Paris that never mentions the Eiffel Tower is not a guide."""
+        import destinations
+
+        expected = {
+            "JFK": "Statue of Liberty", "CDG": "Eiffel Tower", "LHR": "Big Ben",
+            "FCO": "Colosseum", "SYD": "Opera House", "SFO": "Golden Gate",
+            "IST": "Hagia Sophia", "GIG": "Christ the Redeemer", "MEX": "Teotihuacan",
+            "HND": "Fuji", "HNL": "Diamond Head", "HKG": "Victoria Peak",
+            "LAX": "Hollywood Sign", "ORD": "Willis Tower", "MIA": "Art Deco",
+            "FRA": "Romerberg", "ANC": "Denali",
+        }
+        for code, landmark in expected.items():
+            with self.subTest(code=code):
+                text = " ".join(title + " " + detail
+                                for title, detail in destinations.get(code)["things"])
+                self.assertIn(landmark, text)
 
     def test_destination_panel_fragment_renders(self):
         import destinations
@@ -228,7 +247,7 @@ class RouteTests(unittest.TestCase):
             with self.subTest(code=code):
                 response = self.client.get(f"/destinations/{code}/panel")
                 self.assertEqual(response.status_code, 200)
-                self.assertIn("itinerary__item", response.get_data(as_text=True))
+                self.assertIn("sights__item", response.get_data(as_text=True))
         self.assertEqual(self.client.get("/destinations/ZZZ/panel").status_code, 404)
 
     def test_every_airport_we_fly_to_has_a_guide(self):

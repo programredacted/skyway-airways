@@ -44,6 +44,7 @@
            data-book="{{ url_for('flight_detail', flight_id=flight.id) }}"
            data-aircraft="{{ flight.aircraft_model }}"
            data-departs="{{ flight.departs_at | daystamp }} {{ flight.departs_at | clock }}"
+           data-date="{{ flight.departs_at[:10] }}"
            data-duration="{{ flight.duration_minutes | duration }}"
            data-fare="{{ flight.from_price_cents | fare }}"
            data-seats="{{ flight.seats_available }}">
@@ -88,7 +89,9 @@
         <div><dt>Seats free</dt><dd id="map-seats"></dd></div>
         <div><dt>From</dt><dd id="map-fare"></dd></div>
       </dl>
-      <p class="routemap__cue">Click for a guide to {{ '' }}<span id="map-dest-city"></span></p>
+      {# No city name here on purpose: "Rio de Janeiro" wrapped to three lines
+         and pushed the panel's contents out through the bottom. #}
+      <p class="routemap__cue">Click for its travel guide</p>
     </div>
   </div>
 </div>

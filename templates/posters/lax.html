@@ -1,37 +1,51 @@
-{# Los Angeles — palm-lined boulevard running into the hills at sunset #}
-<circle cx="200" cy="286" r="62" fill="{{ gold }}" opacity="0.9"/>
-<g stroke="{{ warm }}" stroke-width="9" opacity="0.35">
-  {% for y in [258, 282, 306] %}<line x1="138" y1="{{ y }}" x2="262" y2="{{ y }}"/>{% endfor %}
+{# Los Angeles — palm-lined boulevard into the hills, sign on the ridge #}
+<circle cx="200" cy="284" r="64" fill="{{ gold }}" opacity="0.9"/>
+<g stroke="{{ warm }}" stroke-width="8" opacity="0.3">
+  {% for y in [256, 280, 304] %}<line x1="140" y1="{{ y }}" x2="260" y2="{{ y }}"/>{% endfor %}
 </g>
 
-{# hills #}
-<path d="M0 348 Q70 300 150 336 Q230 300 300 340 Q350 318 400 344 L400 400 L0 400 Z"
-      fill="{{ sky }}" opacity="0.55"/>
-<g fill="#f7f0e1" opacity="0.75">
-  {% for x, y in [(52, 322), (68, 318), (84, 320), (100, 316), (116, 320),
-                  (132, 322), (148, 326), (164, 324), (180, 322)] %}
-    <rect x="{{ x }}" y="{{ y }}" width="9" height="13"/>
+{# hills as one continuous ridge #}
+<path d="M0 352 Q66 302 148 336 Q228 298 302 340 Q352 316 400 342 L400 404 L0 404 Z"
+      fill="{{ sky }}" opacity="0.58"/>
+<path d="M148 336 Q228 298 302 340 L302 404 L148 404 Z" fill="#14212e" opacity="0.1"/>
+
+{# the sign, letters seated on the ridge line #}
+<g fill="#f7f0e1" opacity="0.9">
+  {% for x, y in [(60, 318), (76, 315), (92, 316), (108, 313), (124, 315),
+                  (140, 318), (156, 321), (172, 320), (188, 318)] %}
+    <rect x="{{ x }}" y="{{ y }}" width="10" height="15"/>
   {% endfor %}
 </g>
 
-{# the boulevard, in one-point perspective #}
-<path d="M0 600 L166 400 L234 400 L400 600 Z" fill="{{ sky }}" opacity="0.35"/>
-<g stroke="#f7f0e1" stroke-width="5" opacity="0.75">
-  {% for y1, y2 in [(596, 556), (536, 506), (490, 468), (454, 438), (426, 414)] %}
+{# boulevard in one-point perspective, meeting the hills #}
+<path d="M0 600 L168 404 L232 404 L400 600 Z" fill="{{ sky }}" opacity="0.32"/>
+<path d="M0 600 L168 404 L176 404 L44 600 Z" fill="#f7f0e1" opacity="0.18"/>
+<g stroke="#f7f0e1" stroke-width="5" opacity="0.8">
+  {% for y1, y2 in [(594, 552), (532, 500), (484, 460), (448, 430), (420, 408)] %}
     <line x1="200" y1="{{ y1 }}" x2="200" y2="{{ y2 }}"/>
   {% endfor %}
 </g>
 
-{# palms, taller as they come forward #}
-<g>
-  {% for x, base, height in [(48, 600, 250), (110, 566, 200), (152, 528, 158),
-                              (248, 528, 158), (290, 566, 200), (352, 600, 250)] %}
-    <path d="M{{ x }} {{ base }} Q{{ x + 5 }} {{ base - height / 2 }} {{ x }} {{ base - height }}
-             L{{ x + 8 }} {{ base - height }} Q{{ x + 13 }} {{ base - height / 2 }} {{ x + 8 }} {{ base }} Z"
-          fill="{{ warm }}"/>
-    {% for angle in [-58, -22, 22, 58] %}
-      <ellipse cx="{{ x + 26 }}" cy="{{ base - height - 2 }}" rx="27" ry="6.5" fill="{{ warm }}"
-               opacity="0.9" transform="rotate({{ angle }} {{ x + 4 }} {{ base - height - 2 }})"/>
-    {% endfor %}
-  {% endfor %}
-</g>
+{# palms: trunk and crown in one group each, largest nearest. Fronds are broad
+   blades drawn out and back with different curvature, so they read as leaves
+   rather than as scratched lines. #}
+{% for x, base, scale in [(148, 512, 0.72), (252, 512, 0.72),
+                          (98, 556, 0.92), (302, 556, 0.92),
+                          (34, 604, 1.18), (366, 604, 1.18)] %}
+  <g transform="translate({{ x }} {{ base }}) scale({{ scale }})" fill="{{ warm }}">
+    {# trunk, thicker at the foot and leaning slightly #}
+    <path d="M0 0 C 3 -60 9 -110 6 -152 L20 -152 C 22 -110 17 -60 16 0 Z"/>
+    {# collar where the fronds meet the trunk, so nothing floats #}
+    <path d="M3 -148 L23 -148 L20 -160 L6 -160 Z"/>
+    <g>
+      <path d="M13 -158 C -12 -180 -44 -186 -70 -172 C -44 -170 -16 -160 8 -146 Z"/>
+      <path d="M13 -158 C 38 -182 70 -188 96 -174 C 70 -172 42 -162 18 -146 Z"/>
+      <path d="M13 -160 C -6 -190 -26 -212 -50 -220 C -32 -198 -20 -176 -4 -152 Z"/>
+      <path d="M13 -160 C 32 -192 54 -214 78 -220 C 58 -198 44 -176 30 -152 Z"/>
+      <path d="M13 -162 C 4 -190 4 -216 12 -238 C 24 -214 26 -190 22 -160 Z"/>
+    </g>
+    {# coconuts under the crown #}
+    <circle cx="8" cy="-142" r="5" fill="{{ gold }}"/>
+    <circle cx="19" cy="-138" r="5" fill="{{ gold }}"/>
+  </g>
+{% endfor %}
