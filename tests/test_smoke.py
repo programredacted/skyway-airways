@@ -211,12 +211,25 @@ class RouteTests(unittest.TestCase):
     def test_every_destination_has_a_poster_and_a_plan(self):
         import destinations
 
+        posters = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                               "templates", "posters")
         for code, guide in destinations.DESTINATIONS.items():
             with self.subTest(code=code):
-                self.assertIn(guide["motif"],
-                              {"peaks", "skyline", "bridge", "surf", "dome", "spire"})
+                # Each city draws its own landmark, not a shared shape.
+                self.assertTrue(os.path.exists(os.path.join(posters, f"{code.lower()}.html")),
+                                f"no poster artwork for {code}")
                 self.assertEqual(len(guide["palette"]), 3)
                 self.assertGreaterEqual(len(guide["things"]), 3)
+
+    def test_destination_panel_fragment_renders(self):
+        import destinations
+
+        for code in destinations.DESTINATIONS:
+            with self.subTest(code=code):
+                response = self.client.get(f"/destinations/{code}/panel")
+                self.assertEqual(response.status_code, 200)
+                self.assertIn("itinerary__item", response.get_data(as_text=True))
+        self.assertEqual(self.client.get("/destinations/ZZZ/panel").status_code, 404)
 
     def test_every_airport_we_fly_to_has_a_guide(self):
         import destinations

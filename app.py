@@ -170,6 +170,15 @@ def register_routes(app):
         return render_template("destinations.html",
                                destinations=destinations.all_destinations())
 
+    @app.route("/destinations/<code>/panel")
+    def destination_panel(code):
+        """HTML fragment for the panel the map opens beneath itself."""
+        guide = destinations.get(code)
+        if guide is None:
+            abort(404)
+        return render_template("_destination_panel.html",
+                               destination=dict(guide, code=code.upper()))
+
     @app.route("/destinations/<code>")
     def destination_detail(code):
         guide = destinations.get(code)

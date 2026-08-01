@@ -648,12 +648,66 @@ a:hover { color: var(--orange-dk); }
    in height so the timetable stays visible on the same screen. */
 /* A wider side column makes the map itself narrower, and therefore shorter --
    the only way to buy vertical space without distorting the projection. */
-.routemap--compact { grid-template-columns: minmax(0, 1fr) 17rem; gap: 1.1rem; margin-bottom: 0.9rem; }
-.routemap--compact .routemap__readout { height: 19rem; padding: 0.9rem 1rem; }
+.routemap--compact { grid-template-columns: minmax(0, 1fr) 17rem; gap: 1.1rem; margin-bottom: 0.7rem; }
+.routemap--compact .routemap__readout { height: 17.5rem; padding: 0.9rem 1rem; }
 .routemap--compact .routemap__number { font-size: 1.2rem; }
 .routemap--compact .routemap__route { margin-bottom: 0.6rem; }
 .routemap--compact .routemap__facts { font-size: 0.75rem; }
-.routemap--compact .legend--map { margin-top: 0.7rem; padding-top: 0.6rem; font-size: 0.72rem; }
+
+/* ------------------------------------------------------ inline guide panel -- */
+
+.destpanel {
+  position: relative;
+  margin: 0 0 1.25rem;
+  padding: 1.4rem 1.6rem;
+  background: var(--paper-2);
+  border: var(--rule);
+  border-top: 8px solid var(--teal);
+  box-shadow: var(--shadow);
+}
+
+.destpanel.is-loading { min-height: 12rem; }
+
+.destpanel__close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.6rem;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--ink-soft);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.destpanel__close:hover { color: var(--oxblood); }
+
+.destpanel__inner {
+  display: grid;
+  grid-template-columns: 13rem minmax(0, 1fr);
+  gap: 1.75rem;
+  align-items: start;
+}
+
+.destpanel__poster .poster { box-shadow: 4px 4px 0 var(--paper-3); }
+
+.destpanel__city {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.9rem;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.destpanel__tagline { margin: 0.2rem 0 1rem; color: var(--teal-dk); font-size: 1rem; }
+.destpanel__actions { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 1.1rem 0 0; }
+.destpanel__error { margin: 0; color: var(--oxblood); }
+
+.itinerary--compact .itinerary__item { padding: 0.55rem 0; }
+.itinerary--compact .itinerary__detail { font-size: 0.86rem; }
 
 /* On the departures page the heading, padding and filters all give up some
    breathing room, so the map and the first departures share one screen. */
@@ -739,20 +793,30 @@ a:hover { color: var(--orange-dk); }
 .routemap__svg.is-focused .port.is-dimmed .port__code { opacity: 0.3; }
 .port:focus-visible .port__halo { fill: none; stroke: var(--orange); stroke-width: 2.5; }
 
-/* Fixed height on purpose. The panel swaps between a hint and a five-row
+/* Fixed height on purpose. The panel swaps between a hint and a six-row
    detail as you sweep across routes; if it resized, every hover would shunt
-   the departure board up and down underneath it. */
+   the departure board up and down underneath it. The height is sized to the
+   tallest state so nothing can spill out of the bottom. */
 .routemap__readout {
   display: flex;
   flex-direction: column;
-  height: 21rem;
-  padding: 1.1rem 1.25rem;
+  height: 18.5rem;
+  overflow: hidden;
+  padding: 1rem 1.15rem;
   background: var(--paper-2);
   border: var(--rule);
   border-top: 8px solid var(--orange);
 }
 
-.routemap__readout .legend--map { margin-top: auto; }
+.routemap__cue {
+  margin: 0.7rem 0 0;
+  font-family: var(--font-display);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: var(--track-mid);
+  text-transform: uppercase;
+  color: var(--orange-dk);
+}
 
 .routemap__hint { margin: 0; font-size: 0.85rem; color: var(--teal-dk); }
 
@@ -788,15 +852,8 @@ a:hover { color: var(--orange-dk); }
 .routemap__facts dt { color: var(--teal-dk); }
 .routemap__facts dd { margin: 0; font-family: var(--font-mono); text-align: right; }
 
-/* Stacked inside the map's side column. */
-.legend--map {
-  flex-direction: column;
-  gap: 0.4rem;
-  margin: 1rem 0 0;
-  padding-top: 0.8rem;
-  border-top: 1px dotted var(--ink-soft);
-  font-size: 0.76rem;
-}
+.legend--map { gap: 0.5rem 1.4rem; margin: 0 0 0.9rem; font-size: 0.78rem; }
+.legend__item--hint { color: var(--ink-soft); font-style: italic; }
 
 .legend__line { width: 1.6rem; height: 0; border-top: 3px solid var(--teal); }
 .legend__line--open { border-color: #4f9a86; }
@@ -1451,6 +1508,8 @@ a:hover { color: var(--orange-dk); }
   .guide__poster { max-width: 20rem; }
   .routemap { grid-template-columns: 1fr; }
   .routemap__readout, .routemap--compact .routemap__readout { height: auto; min-height: 13rem; }
+  .destpanel__inner { grid-template-columns: 1fr; gap: 1.1rem; }
+  .destpanel__poster { max-width: 15rem; }
   .seatmap { grid-template-columns: 1fr; }
 
   /* Pinned to the bottom of the viewport, so it must stay shallow: the desktop

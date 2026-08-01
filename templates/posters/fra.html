@@ -1,0 +1,52 @@
+{# Frankfurt — timber-framed houses in the old square, towers behind #}
+<circle cx="322" cy="150" r="30" fill="{{ gold }}" opacity="0.5"/>
+
+{# modern skyline, kept pale and distant #}
+<g fill="{{ sky }}" opacity="0.4">
+  <rect x="34" y="242" width="30" height="180"/>
+  <rect x="72" y="284" width="24" height="138"/>
+  <rect x="252" y="256" width="34" height="166"/>
+  <rect x="294" y="300" width="26" height="122"/>
+  <rect x="330" y="270" width="30" height="152"/>
+  <rect x="44" y="212" width="4" height="34"/>
+  <rect x="266" y="228" width="4" height="30"/>
+</g>
+{# cathedral spire #}
+<g fill="{{ sky }}" opacity="0.55">
+  <rect x="180" y="286" width="26" height="136"/>
+  <path d="M180 286 L193 232 L206 286 Z"/>
+</g>
+
+{# the row of gabled houses #}
+<g>
+  {% for x, w, h in [(58, 62, 150), (124, 54, 172), (182, 66, 158),
+                     (252, 52, 176), (308, 60, 146)] %}
+    {% set top = 470 - h %}
+    <path d="M{{ x }} 470 L{{ x }} {{ top + 26 }} L{{ x + w / 2 }} {{ top }}
+             L{{ x + w }} {{ top + 26 }} L{{ x + w }} 470 Z" fill="#f7f0e1"/>
+    {# timber framing: posts, rails and a cross brace #}
+    <g stroke="{{ warm }}" stroke-width="4" opacity="0.85">
+      <line x1="{{ x + 3 }}" y1="{{ top + 26 }}" x2="{{ x + 3 }}" y2="470"/>
+      <line x1="{{ x + w - 3 }}" y1="{{ top + 26 }}" x2="{{ x + w - 3 }}" y2="470"/>
+      <line x1="{{ x }}" y1="{{ top + 26 }}" x2="{{ x + w / 2 }}" y2="{{ top }}"/>
+      <line x1="{{ x + w / 2 }}" y1="{{ top }}" x2="{{ x + w }}" y2="{{ top + 26 }}"/>
+      <line x1="{{ x }}" y1="{{ top + 62 }}" x2="{{ x + w }}" y2="{{ top + 62 }}"/>
+      <line x1="{{ x }}" y1="{{ top + 106 }}" x2="{{ x + w }}" y2="{{ top + 106 }}"/>
+      <line x1="{{ x + 3 }}" y1="{{ top + 62 }}" x2="{{ x + w - 3 }}" y2="{{ top + 106 }}"/>
+    </g>
+    <g fill="{{ sky }}" opacity="0.45">
+      <rect x="{{ x + 10 }}" y="{{ top + 70 }}" width="{{ w / 3 }}" height="26"/>
+      <rect x="{{ x + w / 2 + 4 }}" y="{{ top + 70 }}" width="{{ w / 3 }}" height="26"/>
+      <rect x="{{ x + w / 2 - 11 }}" y="{{ top + 118 }}" width="22" height="{{ 470 - top - 118 }}"/>
+    </g>
+  {% endfor %}
+</g>
+
+<rect x="0" y="470" width="400" height="130" fill="{{ gold }}" opacity="0.35"/>
+<rect x="0" y="470" width="400" height="6" fill="{{ warm }}"/>
+{# cobbles #}
+<g fill="{{ warm }}" opacity="0.22">
+  {% for i in range(30) %}
+    <ellipse cx="{{ 14 + (i % 10) * 40 + (i // 10) * 14 }}" cy="{{ 492 + (i // 10) * 22 }}" rx="12" ry="5"/>
+  {% endfor %}
+</g>

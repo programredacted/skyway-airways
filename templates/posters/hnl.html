@@ -1,0 +1,39 @@
+{# Honolulu — Diamond Head, palms and a surfer on a long wave #}
+<circle cx="290" cy="150" r="44" fill="{{ gold }}" opacity="0.85"/>
+
+{# the crater headland #}
+<path d="M180 372 L232 292 L268 306 L306 274 L400 372 Z" fill="{{ sky }}" opacity="0.62"/>
+<path d="M232 292 L268 306 L306 274 L286 300 L258 316 Z" fill="{{ warm }}" opacity="0.3"/>
+<path d="M0 372 Q90 352 180 372 L180 392 L0 392 Z" fill="{{ sky }}" opacity="0.35"/>
+
+{# palms leaning in from the left #}
+<g fill="{{ warm }}">
+  <path d="M52 470 Q42 400 62 344 L70 346 Q54 402 62 470 Z"/>
+  <path d="M104 470 Q100 414 114 372 L121 375 Q108 418 113 470 Z"/>
+</g>
+<g fill="{{ sky }}" opacity="0.75">
+  {% for cx, cy, rot in [(66, 342, -46), (66, 342, -8), (66, 342, 32), (66, 342, 74),
+                          (117, 370, -38), (117, 370, 4), (117, 370, 46)] %}
+    <ellipse cx="{{ cx + 22 }}" cy="{{ cy }}" rx="24" ry="6"
+             transform="rotate({{ rot }} {{ cx }} {{ cy }})"/>
+  {% endfor %}
+</g>
+
+{# ocean and the long breaking wave #}
+<rect x="0" y="392" width="400" height="208" fill="{{ sky }}" opacity="0.55"/>
+<path d="M-10 470 Q80 418 200 448 Q300 472 410 440 L410 600 L-10 600 Z"
+      fill="{{ sky }}" opacity="0.45"/>
+<path d="M-10 470 Q80 418 200 448 Q140 452 60 486 Q10 500 -10 496 Z"
+      fill="#f7f0e1" opacity="0.9"/>
+<g stroke="#f7f0e1" stroke-width="4" fill="none" opacity="0.5">
+  <path d="M180 508 Q260 496 340 508 T460 504"/>
+  <path d="M40 542 Q140 530 240 542 T440 538"/>
+</g>
+
+{# surfer #}
+<g fill="{{ warm }}">
+  <path d="M126 468 L166 460 L168 466 L128 474 Z"/>
+  <path d="M144 460 L148 436 L152 436 L154 458 Z"/>
+  <circle cx="150" cy="430" r="6"/>
+  <path d="M150 440 L138 432 L140 428 L152 434 Z"/>
+</g>

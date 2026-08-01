@@ -1,0 +1,53 @@
+{# Anchorage — a float plane on a still lake under the range #}
+<circle cx="308" cy="140" r="30" fill="{{ gold }}" opacity="0.55"/>
+{# northern lights #}
+<g stroke="{{ gold }}" stroke-width="9" fill="none" opacity="0.28">
+  <path d="M-10 168 Q90 118 190 162 T400 140"/>
+  <path d="M-10 202 Q110 152 230 194 T400 176"/>
+</g>
+
+{# the range, deep snow #}
+<path d="M0 400 L58 292 L104 352 L156 246 L226 350 L272 300 L332 366 L400 306 L400 400 Z"
+      fill="{{ sky }}" opacity="0.6"/>
+<path d="M124 292 L156 246 L192 296 L176 288 L156 302 L140 290 Z" fill="#f7f0e1"/>
+<path d="M36 330 L58 292 L84 330 L72 324 L58 336 L48 326 Z" fill="#f7f0e1"/>
+<path d="M0 400 Q100 378 200 396 T400 388 L400 424 L0 424 Z" fill="{{ sky }}" opacity="0.4"/>
+
+{# spruce along the shore #}
+<g fill="{{ sky }}" opacity="0.75">
+  {% for x, h in [(20, 54), (44, 68), (66, 46), (90, 60), (300, 50), (326, 66), (352, 44), (376, 58)] %}
+    <path d="M{{ x }} 428 L{{ x + 9 }} {{ 428 - h }} L{{ x + 18 }} 428 Z"/>
+    <path d="M{{ x + 2 }} 410 L{{ x + 9 }} {{ 424 - h }} L{{ x + 16 }} 410 Z"/>
+  {% endfor %}
+</g>
+
+{# lake #}
+<rect x="0" y="428" width="400" height="172" fill="{{ sky }}" opacity="0.5"/>
+
+{# the float plane, side on: nose left, tall tail right, wing over the cabin #}
+<g fill="#f7f0e1">
+  {# fuselage #}
+  <path d="M108 474 Q124 460 168 458 L236 460 L266 466 L262 480 L150 484 Q118 484 108 474 Z"/>
+  {# fin and tailplane #}
+  <path d="M238 460 L256 420 L266 421 L262 461 Z"/>
+  <path d="M244 432 L288 426 L290 433 L246 440 Z"/>
+  {# high wing, seen edge-on above the cabin #}
+  <rect x="140" y="446" width="104" height="8" rx="3"/>
+  <rect x="176" y="452" width="7" height="9"/>
+</g>
+<g fill="{{ sky }}" opacity="0.55">
+  <path d="M126 470 L146 464 L146 476 L128 477 Z"/>
+  <rect x="154" y="463" width="17" height="12" rx="2"/>
+  <rect x="177" y="463" width="17" height="12" rx="2"/>
+</g>
+{# floats and their struts #}
+<g fill="{{ warm }}">
+  <path d="M118 500 L246 496 Q254 500 246 508 L124 510 Q112 506 118 500 Z"/>
+  <rect x="146" y="484" width="6" height="16"/>
+  <rect x="212" y="483" width="6" height="16"/>
+  <circle cx="106" cy="472" r="5"/>
+</g>
+<g stroke="#f7f0e1" stroke-width="2.5" fill="none" opacity="0.35">
+  <path d="M60 528 Q140 520 220 528 T380 526"/>
+  <path d="M100 556 Q180 548 260 556 T420 552"/>
+</g>

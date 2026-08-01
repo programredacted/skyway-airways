@@ -1,0 +1,52 @@
+{# Sydney — the Opera House shells with the Harbour Bridge behind #}
+<circle cx="308" cy="164" r="38" fill="{{ gold }}" opacity="0.8"/>
+
+<g fill="{{ sky }}" opacity="0.4">
+  <rect x="24" y="268" width="26" height="122"/>
+  <rect x="58" y="236" width="20" height="154"/>
+  <rect x="86" y="284" width="30" height="106"/>
+  <path d="M132 390 L132 250 L140 190 L148 250 L148 390 Z"/>
+  <rect x="160" y="272" width="24" height="118"/>
+</g>
+
+{# bridge: arch, deck, pylons #}
+<g stroke="{{ warm }}" stroke-width="9" fill="none">
+  <path d="M212 340 Q296 246 386 340"/>
+</g>
+<rect x="196" y="336" width="204" height="9" fill="{{ warm }}"/>
+{# hangers: y values follow the arch above, written out rather than computed #}
+<g stroke="{{ warm }}" stroke-width="2.5" opacity="0.85">
+  {% for x, top in [(228, 322), (247, 304), (266, 292), (285, 286),
+                    (304, 286), (323, 292), (342, 304), (361, 322)] %}
+    <line x1="{{ x }}" y1="336" x2="{{ x }}" y2="{{ top }}"/>
+  {% endfor %}
+</g>
+<g fill="{{ warm }}">
+  <rect x="202" y="306" width="17" height="46"/>
+  <rect x="374" y="306" width="17" height="46"/>
+</g>
+
+{# opera house: overlapping shells on a podium #}
+<g fill="#f7f0e1">
+  <path d="M60 406 Q78 318 132 406 Z"/>
+  <path d="M96 406 Q120 296 182 406 Z"/>
+  <path d="M140 406 Q168 306 216 406 Z"/>
+  <path d="M190 406 Q210 348 240 406 Z"/>
+</g>
+<g fill="{{ warm }}" opacity="0.35">
+  <path d="M112 406 Q126 330 150 406 Z"/>
+  <path d="M158 406 Q176 336 196 406 Z"/>
+</g>
+<rect x="48" y="406" width="204" height="16" fill="{{ warm }}"/>
+
+<rect x="0" y="422" width="400" height="178" fill="{{ sky }}" opacity="0.55"/>
+<g stroke="#f7f0e1" stroke-width="4" fill="none" opacity="0.5">
+  <path d="M-10 452 Q60 442 130 452 T280 452 T420 448"/>
+  <path d="M-10 486 Q80 474 170 486 T340 484"/>
+</g>
+{# a little sail, as every Sydney poster has #}
+<g fill="#f7f0e1">
+  <path d="M300 470 L300 424 L326 470 Z"/>
+  <path d="M296 470 L296 440 L282 470 Z"/>
+  <path d="M272 470 L334 470 L324 482 L282 482 Z"/>
+</g>

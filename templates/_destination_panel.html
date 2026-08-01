@@ -1,0 +1,32 @@
+{# Fragment served to the map's inline panel. Same content as the full guide
+   page, laid out to sit under the map rather than fill a page. #}
+<div class="destpanel__inner">
+  <div class="destpanel__poster">
+    {% include "_poster.html" %}
+  </div>
+
+  <div class="destpanel__body">
+    <p class="eyebrow">{{ destination.region }}</p>
+    <h2 class="destpanel__city">{{ destination.city }}</h2>
+    <p class="destpanel__tagline">{{ destination.tagline }}.</p>
+
+    <ol class="itinerary itinerary--compact">
+      {% for title, detail in destination.things %}
+        <li class="itinerary__item">
+          <span class="itinerary__day">Day {{ loop.index }}</span>
+          <div>
+            <p class="itinerary__title">{{ title }}</p>
+            <p class="itinerary__detail">{{ detail }}</p>
+          </div>
+        </li>
+      {% endfor %}
+    </ol>
+
+    <p class="destpanel__actions" data-panel-actions>
+      <a class="btn btn--small"
+         href="{{ url_for('destination_detail', code=destination.code) }}">
+        Full {{ destination.city }} guide
+      </a>
+    </p>
+  </div>
+</div>

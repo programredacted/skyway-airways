@@ -1,0 +1,40 @@
+{# Istanbul — the great dome and its minarets above the Bosphorus #}
+<circle cx="88" cy="150" r="30" fill="{{ gold }}" opacity="0.55"/>
+{# crescent, as on every poster of the city #}
+<path d="M330 132 A30 30 0 1 0 330 190 A24 24 0 1 1 330 132 Z" fill="{{ gold }}" opacity="0.75"/>
+
+{# main mosque: central dome, half domes, arcaded base #}
+<g fill="#f7f0e1">
+  <path d="M132 330 A68 68 0 0 1 268 330 Z"/>
+  <path d="M112 356 A34 34 0 0 1 180 356 Z"/>
+  <path d="M220 356 A34 34 0 0 1 288 356 Z"/>
+  <rect x="108" y="356" width="184" height="86"/>
+  <rect x="196" y="248" width="6" height="18"/>
+  <circle cx="199" cy="243" r="6"/>
+</g>
+<g fill="{{ sky }}" opacity="0.45">
+  {% for x in [122, 156, 190, 224, 258] %}
+    <path d="M{{ x }} 442 L{{ x }} 400 Q{{ x + 9 }} 388 {{ x + 18 }} 400 L{{ x + 18 }} 442 Z"/>
+  {% endfor %}
+</g>
+
+{# four minarets #}
+<g fill="#f7f0e1">
+  {% for x in [82, 106, 292, 316] %}
+    <rect x="{{ x }}" y="266" width="11" height="176"/>
+    <path d="M{{ x }} 266 L{{ x + 5.5 }} 236 L{{ x + 11 }} 266 Z"/>
+    <rect x="{{ x - 3 }}" y="304" width="17" height="6"/>
+  {% endfor %}
+</g>
+
+{# water, and a ferry crossing between the continents #}
+<rect x="0" y="442" width="400" height="158" fill="{{ sky }}" opacity="0.55"/>
+<g fill="{{ warm }}">
+  <path d="M96 486 L206 486 L196 506 L106 506 Z"/>
+  <rect x="126" y="466" width="52" height="20"/>
+  <rect x="146" y="450" width="7" height="18"/>
+</g>
+<g stroke="#f7f0e1" stroke-width="3.5" fill="none" opacity="0.4">
+  <path d="M-10 522 Q80 510 170 522 T350 520"/>
+  <path d="M60 552 Q160 540 260 552 T440 548"/>
+</g>

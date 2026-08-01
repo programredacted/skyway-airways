@@ -58,6 +58,7 @@
     fields.aircraft.textContent = arc.dataset.aircraft;
     fields.seats.textContent = arc.dataset.seats;
     fields.fare.textContent = arc.dataset.fare;
+    if (cueCity) cueCity.textContent = arc.dataset.destCity;
     hint.hidden = true;
     detail.hidden = false;
 
@@ -84,6 +85,7 @@
     fields.aircraft.textContent = "--";
     fields.seats.textContent = "--";
     fields.fare.textContent = "--";
+    if (cueCity) cueCity.textContent = port.dataset.city;
     hint.hidden = true;
     detail.hidden = false;
 
@@ -112,6 +114,86 @@
     if (port) return showPort(port);
   }
 
+  // --- the guide panel -------------------------------------------------------
+
+  var panel = document.getElementById("dest-panel");
+  var panelBody = document.getElementById("dest-body");
+  var closeButton = document.getElementById("dest-close");
+  var cueCity = document.getElementById("map-dest-city");
+  var openCode = null;
+
+  /* Load a city's poster and itinerary into the panel under the map.
+     `action` is an optional extra button — booking a flight, or listing an
+     airport's departures — appended to whatever the fragment already has. */
+  function openGuide(code, action) {
+    if (!panel) return;
+    if (openCode === code) {                 // clicking the same thing closes it
+      return closeGuide();
+    }
+    openCode = code;
+    panel.hidden = false;
+    panel.classList.add("is-loading");
+
+    fetch("/destinations/" + code + "/panel", { headers: { Accept: "text/html" } })
+      .then(function (response) {
+        if (!response.ok) throw new Error("no guide for " + code);
+        return response.text();
+      })
+      .then(function (html) {
+        panelBody.innerHTML = html;
+        panel.classList.remove("is-loading");
+
+        if (action) {
+          var actions = panelBody.querySelector("[data-panel-actions]");
+          var link = document.createElement("a");
+          link.className = "btn btn--small btn--primary";
+          link.href = action.href;
+          link.textContent = action.label;
+          actions.insertBefore(link, actions.firstChild);
+        }
+        closeButton.focus({ preventScroll: true });
+      })
+      .catch(function () {
+        panel.classList.remove("is-loading");
+        panelBody.innerHTML = '<p class="destpanel__error">That guide could not be loaded.</p>';
+      });
+  }
+
+  function closeGuide() {
+    openCode = null;
+    panel.hidden = true;
+    panelBody.innerHTML = "";
+  }
+
+  if (closeButton) {
+    closeButton.addEventListener("click", closeGuide);
+  }
+
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape" && panel && !panel.hidden) closeGuide();
+  });
+
+  /* Clicks on the map open the guide instead of navigating. Without the
+     script these are ordinary links and still work as links. */
+  svg.addEventListener("click", function (event) {
+    var arc = event.target.closest(".arc");
+    if (arc) {
+      event.preventDefault();
+      return openGuide(arc.dataset.dest, {
+        href: arc.dataset.book,
+        label: "Book " + arc.dataset.flightNumber
+      });
+    }
+    var port = event.target.closest(".port");
+    if (port) {
+      event.preventDefault();
+      openGuide(port.dataset.code, {
+        href: port.getAttribute("href"),
+        label: "Departures from " + port.dataset.city
+      });
+    }
+  });
+
   svg.addEventListener("mouseover", handle);
   svg.addEventListener("focusin", handle);
   svg.addEventListener("mouseleave", reset);
@@ -131,20 +213,39 @@
     return svg.querySelector('.arc[data-flight-id="' + row.dataset.flightId + '"]');
   }
 
+  function clearRows() {
+    board.querySelectorAll(".board__row.is-linked")
+         .forEach(function (row) { row.classList.remove("is-linked"); });
+  }
+
   function linkRow(event) {
     var row = event.target.closest(".board__row");
     if (!row) return;
     var arc = arcForRow(row);
     if (!arc) return;
+    // Clear first: moving between rows fires mouseover on the new one without
+    // any mouseout for the old, which used to leave a trail lit up behind you.
+    clearRows();
     row.classList.add("is-linked");
     showRoute(arc, event.type === "mouseover");
   }
 
   function unlinkRows() {
-    board.querySelectorAll(".board__row.is-linked")
-         .forEach(function (row) { row.classList.remove("is-linked"); });
+    clearRows();
     reset();
   }
+
+  /* Clicking a departure opens the same guide the map does. Clicks on the
+     row's own links (flight number, Select) are left alone. */
+  board.addEventListener("click", function (event) {
+    if (event.target.closest("a, button")) return;
+    var row = event.target.closest(".board__row");
+    if (!row || !row.dataset.destCode) return;
+    openGuide(row.dataset.destCode, {
+      href: "/flights/" + row.dataset.flightId,
+      label: "Book this flight"
+    });
+  });
 
   board.addEventListener("mouseover", linkRow);
   board.addEventListener("focusin", linkRow);

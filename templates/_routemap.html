@@ -40,6 +40,8 @@
            data-codes="{{ flight.origin_code }}-{{ flight.dest_code }}"
            data-origin="{{ flight.origin_code }}"
            data-dest="{{ flight.dest_code }}"
+           data-dest-city="{{ flight.dest_city }}"
+           data-book="{{ url_for('flight_detail', flight_id=flight.id) }}"
            data-aircraft="{{ flight.aircraft_model }}"
            data-departs="{{ flight.departs_at | daystamp }} {{ flight.departs_at | clock }}"
            data-duration="{{ flight.duration_minutes | duration }}"
@@ -86,15 +88,23 @@
         <div><dt>Seats free</dt><dd id="map-seats"></dd></div>
         <div><dt>From</dt><dd id="map-fare"></dd></div>
       </dl>
+      <p class="routemap__cue">Click for a guide to {{ '' }}<span id="map-dest-city"></span></p>
     </div>
-
-    {# The key lives in the side column rather than under the map: below it, it
-       pushed the departure board off the first screen. #}
-    <ul class="legend legend--map">
-      <li class="legend__item"><span class="legend__line legend__line--open"></span> Plenty of seats</li>
-      <li class="legend__item"><span class="legend__line legend__line--filling"></span> Filling up</li>
-      <li class="legend__item"><span class="legend__line legend__line--full"></span> Nearly full</li>
-      <li class="legend__item"><span class="legend__swatch legend__swatch--port"></span> Airport</li>
-    </ul>
   </div>
 </div>
+
+{# One row under the map. It used to live inside the side panel, where a long
+   readout pushed it out through the bottom and over the departure board. #}
+<ul class="legend legend--map">
+  <li class="legend__item"><span class="legend__line legend__line--open"></span> Plenty of seats</li>
+  <li class="legend__item"><span class="legend__line legend__line--filling"></span> Filling up</li>
+  <li class="legend__item"><span class="legend__line legend__line--full"></span> Nearly full</li>
+  <li class="legend__item"><span class="legend__swatch legend__swatch--port"></span> Airport</li>
+  <li class="legend__item legend__item--hint">Click any route or city for its travel guide</li>
+</ul>
+
+{# Opened by clicking a route, a city, or a row in the departure board. #}
+<section class="destpanel" id="dest-panel" hidden aria-live="polite">
+  <button type="button" class="destpanel__close" id="dest-close" aria-label="Close guide">&times;</button>
+  <div id="dest-body"></div>
+</section>

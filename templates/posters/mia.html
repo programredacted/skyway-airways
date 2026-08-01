@@ -1,0 +1,47 @@
+{# Miami — an art deco hotel front, palms and a flat evening sea #}
+<circle cx="312" cy="164" r="40" fill="{{ gold }}" opacity="0.8"/>
+
+{# the hotel: stepped centre, eyebrow ledges, a finial #}
+<g fill="#f7f0e1">
+  <rect x="96" y="292" width="208" height="164"/>
+  <path d="M156 292 L156 250 L244 250 L244 292 Z"/>
+  <path d="M178 250 L178 222 L222 222 L222 250 Z"/>
+  <rect x="196" y="196" width="8" height="28"/>
+  <circle cx="200" cy="192" r="7"/>
+</g>
+<g fill="{{ warm }}" opacity="0.85">
+  {% for y in [312, 356, 400] %}
+    <rect x="90" y="{{ y }}" width="220" height="7"/>
+  {% endfor %}
+  <rect x="150" y="268" width="100" height="6"/>
+</g>
+<g fill="{{ sky }}" opacity="0.5">
+  {% for row_y in [324, 368, 412] %}
+    {% for x in [112, 148, 184, 220, 256] %}
+      <rect x="{{ x }}" y="{{ row_y }}" width="24" height="26" rx="3"/>
+    {% endfor %}
+  {% endfor %}
+</g>
+{# neon script over the door #}
+<rect x="168" y="428" width="64" height="28" fill="{{ warm }}" opacity="0.8"/>
+<rect x="176" y="436" width="48" height="4" fill="#f7f0e1"/>
+<rect x="182" y="444" width="36" height="4" fill="#f7f0e1"/>
+
+{# palms flanking #}
+<g fill="{{ warm }}">
+  {% for x, top in [(44, 300), (348, 288)] %}
+    <path d="M{{ x }} 456 Q{{ x + 6 }} {{ (456 + top) / 2 }} {{ x }} {{ top }}
+             L{{ x + 9 }} {{ top }} Q{{ x + 15 }} {{ (456 + top) / 2 }} {{ x + 9 }} 456 Z"/>
+    {% for angle in [-56, -20, 20, 56] %}
+      <ellipse cx="{{ x + 28 }}" cy="{{ top - 2 }}" rx="28" ry="7" opacity="0.9"
+               transform="rotate({{ angle }} {{ x + 4 }} {{ top - 2 }})"/>
+    {% endfor %}
+  {% endfor %}
+</g>
+
+<rect x="0" y="456" width="400" height="60" fill="{{ gold }}" opacity="0.5"/>
+<rect x="0" y="516" width="400" height="84" fill="{{ sky }}" opacity="0.6"/>
+<g stroke="#f7f0e1" stroke-width="3.5" fill="none" opacity="0.4">
+  <path d="M-10 540 Q80 528 170 540 T350 538"/>
+  <path d="M40 570 Q140 558 240 570 T440 566"/>
+</g>

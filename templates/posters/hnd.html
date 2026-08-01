@@ -1,0 +1,41 @@
+{# Tokyo — Fuji behind a pagoda, with a rising-sun disc #}
+<circle cx="206" cy="182" r="76" fill="{{ warm }}" opacity="0.35"/>
+
+{# the mountain: symmetrical cone with a notched snow cap #}
+<path d="M40 452 L206 232 L372 452 Z" fill="{{ sky }}" opacity="0.72"/>
+<path d="M152 304 L206 232 L262 304 L246 296 L230 308 L214 298 L196 310 L178 300 L166 310 Z"
+      fill="#f7f0e1"/>
+<path d="M206 232 L262 304 L240 452 L206 452 Z" fill="#14212e" opacity="0.12"/>
+
+{# treeline #}
+<g fill="{{ sky }}" opacity="0.5">
+  {% for x in [0, 26, 52, 78, 300, 326, 352, 378] %}
+    <path d="M{{ x }} 452 L{{ x + 13 }} 414 L{{ x + 26 }} 452 Z"/>
+  {% endfor %}
+</g>
+
+{# five-storey pagoda #}
+<g fill="{{ warm }}">
+  <rect x="90" y="284" width="4" height="22"/>
+  <circle cx="92" cy="280" r="5"/>
+  {% for y, half in [(306, 30), (338, 34), (370, 38), (402, 42), (434, 46)] %}
+    <path d="M{{ 92 - half }} {{ y + 10 }} Q92 {{ y - 6 }} {{ 92 + half }} {{ y + 10 }}
+             L{{ 92 + half - 8 }} {{ y + 14 }} L{{ 92 - half + 8 }} {{ y + 14 }} Z"/>
+  {% endfor %}
+</g>
+<g fill="#f7f0e1" opacity="0.92">
+  {% for y in [320, 352, 384, 416] %}
+    <rect x="76" y="{{ y }}" width="32" height="18"/>
+  {% endfor %}
+  <rect x="72" y="448" width="40" height="22"/>
+</g>
+
+<rect x="0" y="452" width="400" height="148" fill="{{ gold }}" opacity="0.3"/>
+<rect x="0" y="452" width="400" height="5" fill="{{ warm }}"/>
+{# a few blossom sprigs along the base #}
+<g fill="{{ warm }}" opacity="0.55">
+  {% for x in [232, 258, 284, 310, 336] %}
+    <circle cx="{{ x }}" cy="{{ 470 + (x % 3) * 6 }}" r="4"/>
+    <circle cx="{{ x + 9 }}" cy="{{ 480 + (x % 2) * 5 }}" r="3"/>
+  {% endfor %}
+</g>

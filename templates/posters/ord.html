@@ -1,0 +1,49 @@
+{# Chicago — the lakefront towers and an elevated train #}
+<circle cx="70" cy="152" r="30" fill="{{ gold }}" opacity="0.5"/>
+
+<g fill="#f7f0e1" opacity="0.95">
+  <rect x="30" y="300" width="30" height="150"/>
+  <rect x="68" y="262" width="26" height="188"/>
+  {# the tapered black tower with its two antennae #}
+  <path d="M104 450 L104 236 L150 236 L150 450 Z"/>
+  <rect x="112" y="196" width="4" height="42"/>
+  <rect x="138" y="188" width="4" height="50"/>
+  <rect x="160" y="286" width="30" height="164"/>
+  {# the tapered one with the braced X faces #}
+  <path d="M200 450 L214 250 L252 250 L266 450 Z"/>
+  <rect x="276" y="300" width="26" height="150"/>
+  <rect x="312" y="270" width="30" height="180"/>
+  <rect x="352" y="316" width="24" height="134"/>
+</g>
+
+<g stroke="{{ warm }}" stroke-width="2.2" opacity="0.7" fill="none">
+  {% for y in [278, 320, 362, 404] %}
+    <path d="M206 {{ y }} L260 {{ y + 38 }}"/>
+    <path d="M260 {{ y }} L206 {{ y + 38 }}"/>
+  {% endfor %}
+</g>
+<g fill="{{ warm }}" opacity="0.55">
+  {% for i in range(48) %}
+    <rect x="{{ 34 + (i % 8) * 44 }}" y="{{ 316 + (i // 8) * 22 }}" width="5" height="7"/>
+  {% endfor %}
+</g>
+
+{# elevated line across the foreground #}
+<rect x="0" y="452" width="400" height="10" fill="{{ warm }}"/>
+<g fill="{{ warm }}">
+  {% for x in [28, 108, 188, 268, 348] %}<rect x="{{ x }}" y="462" width="9" height="42"/>{% endfor %}
+</g>
+<g fill="{{ gold }}">
+  <rect x="60" y="414" width="150" height="38" rx="5"/>
+  <rect x="216" y="414" width="120" height="38" rx="5"/>
+</g>
+<g fill="{{ sky }}" opacity="0.65">
+  {% for x in [70, 100, 130, 160, 190, 226, 256, 286, 316] %}
+    <rect x="{{ x }}" y="424" width="20" height="16"/>
+  {% endfor %}
+</g>
+
+<rect x="0" y="504" width="400" height="96" fill="{{ sky }}" opacity="0.4"/>
+<g stroke="#f7f0e1" stroke-width="3" fill="none" opacity="0.3">
+  <path d="M-10 534 Q90 522 190 534 T400 530"/>
+</g>

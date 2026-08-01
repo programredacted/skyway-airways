@@ -1,0 +1,37 @@
+{# Los Angeles — palm-lined boulevard running into the hills at sunset #}
+<circle cx="200" cy="286" r="62" fill="{{ gold }}" opacity="0.9"/>
+<g stroke="{{ warm }}" stroke-width="9" opacity="0.35">
+  {% for y in [258, 282, 306] %}<line x1="138" y1="{{ y }}" x2="262" y2="{{ y }}"/>{% endfor %}
+</g>
+
+{# hills #}
+<path d="M0 348 Q70 300 150 336 Q230 300 300 340 Q350 318 400 344 L400 400 L0 400 Z"
+      fill="{{ sky }}" opacity="0.55"/>
+<g fill="#f7f0e1" opacity="0.75">
+  {% for x, y in [(52, 322), (68, 318), (84, 320), (100, 316), (116, 320),
+                  (132, 322), (148, 326), (164, 324), (180, 322)] %}
+    <rect x="{{ x }}" y="{{ y }}" width="9" height="13"/>
+  {% endfor %}
+</g>
+
+{# the boulevard, in one-point perspective #}
+<path d="M0 600 L166 400 L234 400 L400 600 Z" fill="{{ sky }}" opacity="0.35"/>
+<g stroke="#f7f0e1" stroke-width="5" opacity="0.75">
+  {% for y1, y2 in [(596, 556), (536, 506), (490, 468), (454, 438), (426, 414)] %}
+    <line x1="200" y1="{{ y1 }}" x2="200" y2="{{ y2 }}"/>
+  {% endfor %}
+</g>
+
+{# palms, taller as they come forward #}
+<g>
+  {% for x, base, height in [(48, 600, 250), (110, 566, 200), (152, 528, 158),
+                              (248, 528, 158), (290, 566, 200), (352, 600, 250)] %}
+    <path d="M{{ x }} {{ base }} Q{{ x + 5 }} {{ base - height / 2 }} {{ x }} {{ base - height }}
+             L{{ x + 8 }} {{ base - height }} Q{{ x + 13 }} {{ base - height / 2 }} {{ x + 8 }} {{ base }} Z"
+          fill="{{ warm }}"/>
+    {% for angle in [-58, -22, 22, 58] %}
+      <ellipse cx="{{ x + 26 }}" cy="{{ base - height - 2 }}" rx="27" ry="6.5" fill="{{ warm }}"
+               opacity="0.9" transform="rotate({{ angle }} {{ x + 4 }} {{ base - height - 2 }})"/>
+    {% endfor %}
+  {% endfor %}
+</g>

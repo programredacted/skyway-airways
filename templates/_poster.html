@@ -1,6 +1,9 @@
 {# A travel poster in the 1960s airline style: flat colour, hard edges, big
    type. Pure SVG so it costs no image request and scales to any size.
-   Expects `destination` (see destinations.py) and an optional `poster_size`. #}
+   Expects `destination` (see destinations.py) and an optional `poster_size`.
+
+   The scene itself lives in templates/posters/<code>.html — one landmark per
+   city, drawn to that city rather than picked from a set of generic shapes. #}
 {% set sky = destination.palette[0] %}
 {% set gold = destination.palette[1] %}
 {% set warm = destination.palette[2] %}
@@ -29,126 +32,28 @@
 
   <g clip-path="url(#frame-{{ uid }})">
     <rect width="400" height="600" fill="#f2ead8"/>
-    <rect x="0" y="0" width="400" height="470" fill="url(#sky-{{ uid }})"/>
+    <rect x="0" y="0" width="400" height="520" fill="url(#sky-{{ uid }})"/>
 
     {# The aircraft is on every poster, the way the airline's own always were. #}
-    <g fill="#f7f0e1" opacity="0.92">
-      <ellipse cx="96" cy="112" rx="34" ry="5.5"/>
-      <path d="M96 108 L112 92 L120 92 L106 108 Z"/>
-      <path d="M92 114 L74 128 L82 128 L98 116 Z"/>
-      <path d="M126 106 L136 98 L139 100 L130 110 Z"/>
+    <g fill="#f7f0e1" opacity="0.9">
+      <ellipse cx="96" cy="112" rx="30" ry="5"/>
+      <path d="M96 108 L110 94 L117 94 L104 108 Z"/>
+      <path d="M92 114 L76 127 L83 127 L98 116 Z"/>
+      <path d="M122 106 L131 99 L134 101 L126 110 Z"/>
     </g>
 
-    {% if destination.motif == "peaks" %}
-      <path d="M0 470 L70 470 L140 300 L200 400 L250 320 L330 470 L400 470 Z" fill="{{ warm }}" opacity="0.45"/>
-      <path d="M40 470 L150 250 L215 355 L268 285 L400 470 Z" fill="#f7f0e1" opacity="0.9"/>
-      <path d="M110 320 L150 250 L192 315 L170 305 L150 325 L132 310 Z" fill="{{ sky }}" opacity="0.25"/>
-      <rect x="0" y="470" width="400" height="130" fill="{{ gold }}" opacity="0.35"/>
-      <path d="M0 470 Q100 452 200 470 T400 470 L400 500 L0 500 Z" fill="{{ warm }}" opacity="0.55"/>
+    {% include "posters/" ~ destination.code | lower ~ ".html" %}
 
-    {% elif destination.motif == "skyline" %}
-      <g fill="{{ sky }}" opacity="0.55">
-        <rect x="20" y="300" width="46" height="170"/>
-        <rect x="300" y="330" width="52" height="140"/>
-      </g>
-      <g fill="#f7f0e1" opacity="0.95">
-        <rect x="78" y="230" width="44" height="240"/>
-        <rect x="132" y="180" width="34" height="290"/>
-        <path d="M149 180 L149 140"/>
-        <rect x="146" y="128" width="6" height="54"/>
-        <rect x="176" y="260" width="52" height="210"/>
-        <rect x="238" y="205" width="40" height="265"/>
-        <rect x="288" y="285" width="30" height="185"/>
-      </g>
-      <g fill="{{ warm }}" opacity="0.75">
-        {% for row in range(9) %}{% for col in range(3) %}
-          <rect x="{{ 84 + col * 13 }}" y="{{ 246 + row * 22 }}" width="7" height="10"/>
-        {% endfor %}{% endfor %}
-        {% for row in range(8) %}{% for col in range(3) %}
-          <rect x="{{ 182 + col * 15 }}" y="{{ 276 + row * 22 }}" width="8" height="10"/>
-        {% endfor %}{% endfor %}
-      </g>
-      <rect x="0" y="470" width="400" height="130" fill="{{ gold }}" opacity="0.4"/>
-
-    {% elif destination.motif == "bridge" %}
-      <rect x="0" y="430" width="400" height="170" fill="{{ sky }}" opacity="0.5"/>
-      <g stroke="{{ warm }}" stroke-width="9" fill="none">
-        <path d="M-10 300 Q100 420 210 300"/>
-        <path d="M210 300 Q310 400 410 320"/>
-      </g>
-      <rect x="0" y="392" width="400" height="12" fill="{{ warm }}"/>
-      <g fill="{{ warm }}">
-        <rect x="46" y="230" width="16" height="174"/>
-        <rect x="202" y="212" width="18" height="192"/>
-        <rect x="38" y="252" width="32" height="9"/>
-        <rect x="194" y="238" width="34" height="9"/>
-      </g>
-      <g stroke="{{ warm }}" stroke-width="2.5" opacity="0.8">
-        {% for i in range(12) %}
-          <line x1="{{ 20 + i * 16 }}" y1="392" y2="{{ 316 + (i - 6) * (i - 6) * 2.4 }}" x2="{{ 20 + i * 16 }}"/>
-        {% endfor %}
-      </g>
-      <path d="M0 470 Q100 452 200 470 T400 470 L400 600 L0 600 Z" fill="#f7f0e1" opacity="0.25"/>
-
-    {% elif destination.motif == "surf" %}
-      <rect x="0" y="415" width="400" height="185" fill="{{ sky }}" opacity="0.55"/>
-      <circle cx="300" cy="180" r="46" fill="{{ gold }}" opacity="0.85"/>
-      <g fill="#f7f0e1" opacity="0.97">
-        <path d="M196 160 L196 402 L108 402 Z"/>
-        <path d="M204 186 L204 402 L268 402 Z"/>
-      </g>
-      <path d="M92 400 L286 400 L262 434 L118 434 Z" fill="{{ warm }}"/>
-      <rect x="194" y="152" width="5" height="252" fill="{{ warm }}" opacity="0.9"/>
-      <g stroke="#f7f0e1" stroke-width="7" fill="none" opacity="0.85">
-        <path d="M-10 470 Q60 452 130 470 T280 470 T420 466"/>
-        <path d="M-10 508 Q70 490 150 508 T300 506 T420 502"/>
-      </g>
-      <path d="M0 540 Q100 522 200 540 T400 536 L400 600 L0 600 Z" fill="{{ gold }}" opacity="0.4"/>
-
-    {% elif destination.motif == "dome" %}
-      <rect x="0" y="440" width="400" height="160" fill="{{ gold }}" opacity="0.35"/>
-      <g fill="#f7f0e1" opacity="0.95">
-        <path d="M120 330 A80 80 0 0 1 280 330 Z"/>
-        <rect x="112" y="330" width="176" height="112"/>
-        <rect x="192" y="228" width="7" height="46"/>
-        <circle cx="195.5" cy="222" r="8"/>
-        <rect x="72" y="266" width="17" height="176"/>
-        <path d="M72 266 L80.5 238 L89 266 Z"/>
-        <rect x="312" y="266" width="17" height="176"/>
-        <path d="M312 266 L320.5 238 L329 266 Z"/>
-      </g>
-      <g fill="{{ sky }}" opacity="0.55">
-        <path d="M150 442 L150 392 A22 22 0 0 1 194 392 L194 442 Z"/>
-        <path d="M212 442 L212 400 A18 18 0 0 1 248 400 L248 442 Z"/>
-      </g>
-      <rect x="0" y="440" width="400" height="7" fill="{{ warm }}"/>
-
-    {% else %}{# spire #}
-      <rect x="0" y="450" width="400" height="150" fill="{{ gold }}" opacity="0.35"/>
-      <g fill="#f7f0e1" opacity="0.95">
-        <path d="M176 120 L184 120 L196 210 L164 210 Z"/>
-        <path d="M156 210 L204 210 L222 320 L138 320 Z"/>
-        <path d="M130 320 L230 320 L256 450 L104 450 Z"/>
-        <rect x="176" y="86" width="8" height="38"/>
-      </g>
-      <g stroke="{{ warm }}" stroke-width="3.5" opacity="0.85" fill="none">
-        <path d="M150 250 L210 250"/>
-        <path d="M136 330 L224 330"/>
-        <path d="M118 392 L242 392"/>
-      </g>
-      <g fill="{{ sky }}" opacity="0.4">
-        <rect x="40" y="384" width="54" height="66"/>
-        <rect x="286" y="360" width="62" height="90"/>
-      </g>
-      <rect x="0" y="450" width="400" height="7" fill="{{ warm }}"/>
-    {% endif %}
+    {# The type sits on a paper band, as it did on the printed originals. #}
+    <rect x="0" y="500" width="400" height="100" fill="#f2ead8"/>
+    <rect x="0" y="500" width="400" height="4" fill="#14212e" opacity="0.75"/>
 
     <text class="poster__airline" x="200" y="58">SKYWAY AIR LINES</text>
-    <text class="poster__city" x="200" y="546"
+    <text class="poster__city" x="200" y="552"
           style="font-size: {{ '%.1f' % city_size }}px"
           {% if city_length > 8 %}textLength="{{ city_max }}" lengthAdjust="spacingAndGlyphs"{% endif %}
           >{{ destination.city | upper }}</text>
-    <text class="poster__region" x="200" y="576">{{ destination.region | upper }}</text>
+    <text class="poster__region" x="200" y="580">{{ destination.region | upper }}</text>
   </g>
 
   <rect x="4" y="4" width="392" height="592" fill="none" stroke="#14212e" stroke-width="7"/>

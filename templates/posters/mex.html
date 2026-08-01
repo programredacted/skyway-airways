@@ -1,0 +1,39 @@
+{# Mexico City — the stepped pyramid at Teotihuacan under two volcanoes #}
+<circle cx="306" cy="140" r="38" fill="{{ gold }}" opacity="0.75"/>
+
+{# volcanoes on the horizon #}
+<path d="M0 372 L74 268 L134 372 Z" fill="{{ sky }}" opacity="0.45"/>
+<path d="M96 372 L164 292 L226 372 Z" fill="{{ sky }}" opacity="0.32"/>
+<path d="M52 300 L74 268 L98 302 L86 296 L74 306 L62 296 Z" fill="#f7f0e1" opacity="0.8"/>
+
+{# pyramid: five terraces with a central stair #}
+<g fill="#f7f0e1">
+  {% for y, half in [(288, 40), (320, 62), (352, 84), (384, 106), (416, 128)] %}
+    <path d="M{{ 200 - half }} {{ y + 32 }} L{{ 200 - half + 14 }} {{ y }}
+             L{{ 200 + half - 14 }} {{ y }} L{{ 200 + half }} {{ y + 32 }} Z"/>
+  {% endfor %}
+</g>
+<g fill="{{ warm }}" opacity="0.55">
+  {% for y, half in [(288, 40), (320, 62), (352, 84), (384, 106), (416, 128)] %}
+    <rect x="{{ 200 - half + 6 }}" y="{{ y + 26 }}" width="{{ half * 2 - 12 }}" height="6"/>
+  {% endfor %}
+</g>
+{# stairway #}
+<path d="M182 448 L190 288 L210 288 L218 448 Z" fill="{{ warm }}" opacity="0.75"/>
+<g stroke="#f7f0e1" stroke-width="1.8" opacity="0.7">
+  {% for y in range(9) %}
+    <line x1="{{ 184 + y }}" y1="{{ 440 - y * 17 }}" x2="{{ 216 - y }}" y2="{{ 440 - y * 17 }}"/>
+  {% endfor %}
+</g>
+
+<rect x="0" y="448" width="400" height="152" fill="{{ gold }}" opacity="0.35"/>
+<rect x="0" y="448" width="400" height="6" fill="{{ warm }}"/>
+{# agave along the causeway #}
+<g fill="{{ sky }}" opacity="0.5">
+  {% for x in [36, 88, 320, 368] %}
+    {% for angle in [-40, -14, 14, 40] %}
+      <ellipse cx="{{ x }}" cy="{{ 480 }}" rx="5" ry="20"
+               transform="rotate({{ angle }} {{ x }} 490)"/>
+    {% endfor %}
+  {% endfor %}
+</g>

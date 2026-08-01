@@ -1,0 +1,44 @@
+{# Rio — the Redeemer on Corcovado with Sugarloaf across the bay #}
+<circle cx="316" cy="146" r="36" fill="{{ gold }}" opacity="0.6"/>
+
+{# Sugarloaf and its neighbour #}
+<path d="M258 424 Q296 300 336 424 Z" fill="{{ sky }}" opacity="0.6"/>
+<path d="M330 424 Q356 350 384 424 Z" fill="{{ sky }}" opacity="0.45"/>
+{# cable car wire #}
+<line x1="300" y1="308" x2="360" y2="356" stroke="{{ warm }}" stroke-width="1.6" opacity="0.7"/>
+<rect x="322" y="326" width="12" height="8" fill="{{ warm }}"/>
+
+{# Corcovado, the peak the statue stands on #}
+<path d="M12 440 Q92 250 176 440 Z" fill="{{ sky }}" opacity="0.75"/>
+<path d="M94 268 Q140 320 176 440 L94 440 Z" fill="#14212e" opacity="0.14"/>
+
+{# the statue: arms straight out, robe falling to a stepped plinth #}
+<g fill="#f7f0e1">
+  {# plinth #}
+  <rect x="70" y="286" width="48" height="14"/>
+  <rect x="78" y="270" width="32" height="18"/>
+  {# robe, wider at the hem #}
+  <path d="M80 272 L86 206 L102 206 L108 272 Z"/>
+  {# outstretched arms, one continuous bar with draped sleeves #}
+  <rect x="36" y="196" width="116" height="11" rx="3"/>
+  <path d="M36 207 L52 207 L48 236 L38 236 Z"/>
+  <path d="M136 207 L152 207 L150 236 L140 236 Z"/>
+  {# shoulders and head #}
+  <path d="M84 206 Q94 190 104 206 Z"/>
+  <rect x="90" y="176" width="8" height="16"/>
+  <circle cx="94" cy="170" r="10"/>
+</g>
+<path d="M86 206 L102 206 L106 272 L98 272 Z" fill="{{ sky }}" opacity="0.12"/>
+
+{# bay #}
+<rect x="0" y="440" width="400" height="160" fill="{{ sky }}" opacity="0.5"/>
+<g stroke="#f7f0e1" stroke-width="3.5" fill="none" opacity="0.45">
+  <path d="M-10 474 Q70 462 150 474 T310 474 T420 470"/>
+  <path d="M-10 508 Q90 496 190 508 T400 504"/>
+</g>
+
+{# the famous pavement wave, in the sand band #}
+<rect x="0" y="536" width="400" height="64" fill="{{ gold }}" opacity="0.45"/>
+<g stroke="#f7f0e1" stroke-width="7" fill="none" opacity="0.65">
+  <path d="M-10 560 Q30 540 70 560 T150 560 T230 560 T310 560 T410 560"/>
+</g>

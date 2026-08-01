@@ -1,8 +1,8 @@
-"""Destination posters and what to do when you land.
+﻿"""Destination posters and what to do when you land.
 
-One entry per airport we serve. `motif` picks which stylised scene the poster
-draws (see templates/_poster.html); `palette` recolours it. Kept deliberately
-short — a poster and four things worth doing, not a guidebook.
+One entry per airport we serve. `palette` colours that city's poster; the
+artwork itself lives in templates/posters/<code>.html, one landmark per city.
+Kept deliberately short - a poster and four things worth doing, not a guidebook.
 """
 
 DESTINATIONS = {
@@ -10,7 +10,6 @@ DESTINATIONS = {
         "city": "New York",
         "region": "New York, U.S.A.",
         "tagline": "The island that never sits still",
-        "motif": "skyline",
         "palette": ("#1b3a5c", "#e0a52e", "#c1541f"),
         "things": [
             ("Ride to the top", "The observation deck at dusk, when the grid lights up all at once."),
@@ -23,7 +22,6 @@ DESTINATIONS = {
         "city": "Los Angeles",
         "region": "California, U.S.A.",
         "tagline": "Sunshine and open road",
-        "motif": "surf",
         "palette": ("#2b7fa8", "#f0b429", "#d4622a"),
         "things": [
             ("Drive the coast", "The highway north out of Santa Monica, roof down, no particular hurry."),
@@ -36,7 +34,6 @@ DESTINATIONS = {
         "city": "San Francisco",
         "region": "California, U.S.A.",
         "tagline": "Fog, hills and the great red bridge",
-        "motif": "bridge",
         "palette": ("#2f5f7a", "#e05a34", "#f0c46a"),
         "things": [
             ("Cross the bridge", "On foot, into the fog, with the cables humming overhead."),
@@ -49,7 +46,6 @@ DESTINATIONS = {
         "city": "Chicago",
         "region": "Illinois, U.S.A.",
         "tagline": "Broad shoulders on a big lake",
-        "motif": "skyline",
         "palette": ("#20455f", "#d9a227", "#a8451a"),
         "things": [
             ("Architecture cruise", "The river route, where the whole skyline leans over you."),
@@ -62,7 +58,6 @@ DESTINATIONS = {
         "city": "Miami",
         "region": "Florida, U.S.A.",
         "tagline": "Pastel evenings on the water",
-        "motif": "surf",
         "palette": ("#1f7d8c", "#f2c14e", "#e8734a"),
         "things": [
             ("Ocean Drive", "Neon, pastel facades and a lot of people watching each other."),
@@ -75,7 +70,6 @@ DESTINATIONS = {
         "city": "Anchorage",
         "region": "Alaska, U.S.A.",
         "tagline": "Where the map runs out",
-        "motif": "peaks",
         "palette": ("#28506b", "#cfe3ee", "#e0a52e"),
         "things": [
             ("Glacier day trip", "Ice that groans and cracks while you stand and watch it."),
@@ -88,7 +82,6 @@ DESTINATIONS = {
         "city": "Honolulu",
         "region": "Hawaii, U.S.A.",
         "tagline": "Mid-ocean, mid-afternoon, no hurry",
-        "motif": "surf",
         "palette": ("#12787f", "#f2c14e", "#e2643c"),
         "things": [
             ("Learn to surf", "Waikiki's long slow rollers are the kindest classroom there is."),
@@ -101,7 +94,6 @@ DESTINATIONS = {
         "city": "Mexico City",
         "region": "Mexico",
         "tagline": "A capital built on a lake bed",
-        "motif": "dome",
         "palette": ("#1f5f5e", "#e8a13a", "#c1441f"),
         "things": [
             ("Pyramids at dawn", "Teotihuacan before the coaches arrive, all to yourself."),
@@ -114,7 +106,6 @@ DESTINATIONS = {
         "city": "Rio de Janeiro",
         "region": "Brazil",
         "tagline": "Mountains that fall into the sea",
-        "motif": "peaks",
         "palette": ("#146b6b", "#f2b544", "#d4562a"),
         "things": [
             ("Sugarloaf cable car", "Two stages up, and the whole bay opens underneath you."),
@@ -127,7 +118,6 @@ DESTINATIONS = {
         "city": "London",
         "region": "England",
         "tagline": "Fog, river and a very long history",
-        "motif": "spire",
         "palette": ("#2b4a63", "#d9c9a8", "#c1541f"),
         "things": [
             ("River walk", "South bank from the bridges east, past every century at once."),
@@ -140,7 +130,6 @@ DESTINATIONS = {
         "city": "Paris",
         "region": "France",
         "tagline": "An afternoon that lasts all evening",
-        "motif": "spire",
         "palette": ("#33556e", "#e6c98f", "#b8432a"),
         "things": [
             ("Left bank hours", "Coffee, a paper, and no plan whatsoever until lunch."),
@@ -153,7 +142,6 @@ DESTINATIONS = {
         "city": "Rome",
         "region": "Italy",
         "tagline": "Three thousand years, all still in use",
-        "motif": "dome",
         "palette": ("#3d5a52", "#e8c07a", "#b5462a"),
         "things": [
             ("The Forum at opening", "Ruins in low morning light, before the heat arrives."),
@@ -166,10 +154,9 @@ DESTINATIONS = {
         "city": "Frankfurt",
         "region": "Germany",
         "tagline": "Old square, new skyline",
-        "motif": "skyline",
         "palette": ("#294b63", "#dcc38e", "#c1541f"),
         "things": [
-            ("Römerberg square", "Timber-framed houses around a plaza that rebuilt itself."),
+            ("Romerberg square", "Timber-framed houses around a plaza that rebuilt itself."),
             ("Museum embankment", "A dozen museums along one stretch of the river."),
             ("Apple wine tavern", "Sachsenhausen, long shared tables, ribbed grey jugs."),
             ("Rhine day trip", "An hour out: castles, vineyards and a slow boat."),
@@ -179,7 +166,6 @@ DESTINATIONS = {
         "city": "Istanbul",
         "region": "Turkey",
         "tagline": "Two continents, one ferry ride",
-        "motif": "dome",
         "palette": ("#1d5566", "#e3b556", "#c04a2a"),
         "things": [
             ("Cross the Bosphorus", "Ferry from Europe to Asia for the price of a tram ticket."),
@@ -192,7 +178,6 @@ DESTINATIONS = {
         "city": "Hong Kong",
         "region": "Hong Kong",
         "tagline": "Harbour lights and mountain trails",
-        "motif": "skyline",
         "palette": ("#17475e", "#e8b93f", "#cc4b28"),
         "things": [
             ("Peak tram", "Straight up the hillside to the view everyone photographs."),
@@ -205,7 +190,6 @@ DESTINATIONS = {
         "city": "Tokyo",
         "region": "Japan",
         "tagline": "Neon streets, quiet gardens",
-        "motif": "peaks",
         "palette": ("#2a4a6b", "#e8e2d4", "#c9432f"),
         "things": [
             ("Fish market breakfast", "Be there before six. Eat the freshest thing you ever will."),
@@ -218,7 +202,6 @@ DESTINATIONS = {
         "city": "Sydney",
         "region": "Australia",
         "tagline": "A harbour city with its shoes off",
-        "motif": "surf",
         "palette": ("#12667f", "#f2c14e", "#e0623c"),
         "things": [
             ("Harbour ferry", "To Manly and back; the best cheap tour in the country."),
@@ -241,3 +224,4 @@ def all_destinations():
         ({"code": code, **entry} for code, entry in DESTINATIONS.items()),
         key=lambda entry: entry["city"],
     )
+

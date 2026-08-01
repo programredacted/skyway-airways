@@ -1,0 +1,46 @@
+{# New York — Liberty against the skyline at night #}
+<g fill="{{ sky }}" opacity="0.5">
+  <rect x="0" y="300" width="34" height="170"/>
+  <rect x="44" y="340" width="26" height="130"/>
+  <rect x="256" y="318" width="34" height="152"/>
+  <rect x="298" y="286" width="26" height="184"/>
+  <rect x="332" y="336" width="38" height="134"/>
+  <rect x="378" y="308" width="22" height="162"/>
+</g>
+<g fill="{{ warm }}" opacity="0.45">
+  {% for i in range(46) %}
+    <rect x="{{ 6 + (i % 7) * 9 + (i % 3) * 2 }}" y="{{ 312 + (i // 7) * 22 }}" width="4" height="6"/>
+  {% endfor %}
+  {% for i in range(40) %}
+    <rect x="{{ 262 + (i % 6) * 22 }}" y="{{ 300 + (i // 6) * 24 }}" width="5" height="7"/>
+  {% endfor %}
+</g>
+
+{# the searchlight beam of the 1927 poster #}
+<path d="M330 96 L196 176 L214 202 L360 130 Z" fill="#f7f0e1" opacity="0.16"/>
+
+<g fill="#f7f0e1">
+  <path d="M182 470 L246 470 L240 424 L188 424 Z" opacity="0.85"/>
+  <path d="M186 424 L242 424 L236 396 L192 396 Z" opacity="0.92"/>
+</g>
+
+<g fill="{{ gold }}">
+  {# robed figure #}
+  <path d="M200 396 L200 320 Q206 296 214 292 L226 292 Q234 300 232 322 L236 396 Z"/>
+  <path d="M214 292 L214 264 L228 264 L228 292 Z"/>
+  <circle cx="221" cy="252" r="15"/>
+  {# crown: seven spikes, written out so the shape is obvious #}
+  {% for x, tip in [(206, 236), (211, 230), (216, 226), (221, 224),
+                    (226, 226), (231, 230), (236, 236)] %}
+    <path d="M221 244 L{{ x }} {{ tip }} L{{ x + 3 }} 245 Z"/>
+  {% endfor %}
+  {# raised arm and torch #}
+  <path d="M228 300 L246 246 L254 250 L238 304 Z"/>
+  <rect x="242" y="228" width="14" height="20" rx="2"/>
+</g>
+<path d="M249 228 Q243 210 249 200 Q255 210 249 228 Z" fill="#f7f0e1"/>
+
+<rect x="0" y="470" width="400" height="130" fill="{{ sky }}" opacity="0.35"/>
+<g stroke="#f7f0e1" stroke-width="2" opacity="0.3" fill="none">
+  <path d="M20 496 H150"/><path d="M250 512 H380"/><path d="M60 528 H210"/>
+</g>

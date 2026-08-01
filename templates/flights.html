@@ -77,7 +77,8 @@
     </thead>
     <tbody>
       {% for flight in flights %}
-      <tr class="board__row" data-flight-id="{{ flight.id }}">
+      <tr class="board__row" data-flight-id="{{ flight.id }}"
+          data-dest-code="{{ flight.dest_code }}" data-dest-city="{{ flight.dest_city }}">
         <td class="flap flap--key">
           <a href="{{ url_for('flight_detail', flight_id=flight.id) }}"
              ><span data-flap>{{ flight.flight_number }}</span></a>
