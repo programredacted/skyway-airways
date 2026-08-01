@@ -1,16 +1,25 @@
 {# Rome — the Colosseum in low sun, umbrella pines behind #}
 <circle cx="316" cy="164" r="44" fill="{{ gold }}" opacity="0.72"/>
 
-{# umbrella pines: trunk and canopy joined, not a ball on a stick #}
-{% for x, top, spread in [(44, 262, 38), (88, 286, 30), (352, 268, 34)] %}
-  <g fill="{{ sky }}" opacity="0.5">
-    <path d="M{{ x + 10 }} 452 Q{{ x + 14 }} {{ (452 + top) / 2 }} {{ x + 12 }} {{ top + 8 }}
-             L{{ x + 20 }} {{ top + 8 }} Q{{ x + 18 }} {{ (452 + top) / 2 }} {{ x + 20 }} 452 Z"/>
-    <path d="M{{ x + 16 }} {{ top + 12 }}
-             Q{{ x - spread + 16 }} {{ top + 14 }} {{ x - spread + 22 }} {{ top - 2 }}
-             Q{{ x - spread / 2 + 16 }} {{ top - 18 }} {{ x + 16 }} {{ top - 14 }}
-             Q{{ x + spread / 2 + 16 }} {{ top - 18 }} {{ x + spread + 10 }} {{ top - 2 }}
-             Q{{ x + spread + 16 }} {{ top + 14 }} {{ x + 16 }} {{ top + 12 }} Z"/>
+{# Umbrella pines: a bare leaning trunk that forks near the top, carrying a
+   wide flat canopy. The forks are what stop it reading as a lollipop. #}
+{% for x, top, spread, tilt in [(44, 258, 40, -6), (92, 288, 32, 4), (350, 266, 36, 5)] %}
+  <g fill="{{ sky }}" opacity="0.52">
+    <path d="M{{ x + 11 }} 452
+             C {{ x + 15 }} 390 {{ x + 13 + tilt }} 330 {{ x + 14 + tilt }} {{ top + 26 }}
+             L {{ x + 21 + tilt }} {{ top + 26 }}
+             C {{ x + 21 + tilt }} 330 {{ x + 22 }} 390 {{ x + 20 }} 452 Z"/>
+    {# branches reaching up into the canopy #}
+    <path d="M{{ x + 16 + tilt }} {{ top + 30 }} L {{ x - 4 + tilt }} {{ top + 6 }}
+             L {{ x + 1 + tilt }} {{ top + 4 }} L {{ x + 18 + tilt }} {{ top + 24 }} Z"/>
+    <path d="M{{ x + 18 + tilt }} {{ top + 30 }} L {{ x + 38 + tilt }} {{ top + 8 }}
+             L {{ x + 42 + tilt }} {{ top + 12 }} L {{ x + 20 + tilt }} {{ top + 26 }} Z"/>
+    {# the canopy: flat underneath, lumpy on top, like the real thing #}
+    <path d="M{{ x + 17 + tilt - spread }} {{ top + 10 }}
+             C {{ x + 17 + tilt - spread }} {{ top - 10 }} {{ x + 17 + tilt - spread * 0.55 }} {{ top - 22 }} {{ x + 17 + tilt - spread * 0.3 }} {{ top - 18 }}
+             C {{ x + 17 + tilt - spread * 0.1 }} {{ top - 32 }} {{ x + 17 + tilt + spread * 0.2 }} {{ top - 32 }} {{ x + 17 + tilt + spread * 0.35 }} {{ top - 20 }}
+             C {{ x + 17 + tilt + spread * 0.7 }} {{ top - 26 }} {{ x + 17 + tilt + spread }} {{ top - 12 }} {{ x + 17 + tilt + spread }} {{ top + 10 }}
+             Z"/>
   </g>
 {% endfor %}
 

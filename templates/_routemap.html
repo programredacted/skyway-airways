@@ -54,11 +54,19 @@
             <path class="arc__line" d="{{ segment.d }}"/>
             {# Which way round the route runs. Tiny on purpose: they should
                read as tick marks until you look for them. #}
-            {# The <g> carries the placement; the path inside carries the shape,
-               so CSS can scale the head on hover without losing the rotation. #}
+            {# A tiny aeroplane seen from above, nose pointing along the route.
+               The <g> carries the placement; the path inside carries the shape,
+               so CSS can scale it on hover without losing the rotation. #}
             {% for arrow in segment.arrows %}
-              <g class="arc__arrow" transform="translate({{ arrow.x }} {{ arrow.y }}) rotate({{ arrow.angle }})">
-                <path d="M -2.6 -2.1 L 2.8 0 L -2.6 2.1 L -1.4 0 Z"/>
+              <g class="arc__plane" transform="translate({{ arrow.x }} {{ arrow.y }}) rotate({{ arrow.angle }})">
+                <path d="M 3.2 0
+                         C 2.4 -0.56 1 -0.68 0.24 -0.68
+                         L -2 -2.9 L -2.7 -2.9 L -1.36 -0.68
+                         L -2.7 -0.64 L -3.6 -1.6 L -4.1 -1.6 L -3.7 -0.56
+                         L -4.1 0
+                         L -3.7 0.56 L -4.1 1.6 L -3.6 1.6 L -2.7 0.64
+                         L -1.36 0.68 L -2.7 2.9 L -2 2.9 L 0.24 0.68
+                         C 1 0.68 2.4 0.56 3.2 0 Z"/>
               </g>
             {% endfor %}
           {% endfor %}

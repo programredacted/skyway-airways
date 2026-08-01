@@ -776,31 +776,36 @@ a:hover { color: var(--orange-dk); }
 .arc--filling .arc__line { stroke: var(--gold); }
 .arc--full .arc__line { stroke: var(--orange); stroke-dasharray: 5 4; }
 
-/* Direction arrows: same colour as their route, outlined in the sea colour so
-   they stay readable on the dashed "nearly full" lines, and scaled up with the
-   line when the route is picked out. */
-.arc__arrow { pointer-events: none; }
+/* Little aircraft flying along each route: same colour as their line, outlined
+   in the sea colour so they stay readable on the dashed "nearly full" routes,
+   and scaled up with the line when the route is picked out.
 
-.arc__arrow path {
+   transform-box: fill-box is essential. Without it `transform-origin: center`
+   resolves against the SVG view-box, so scaling throws every aircraft outward
+   from the middle of the map instead of growing it where it stands. */
+.arc__plane { pointer-events: none; }
+
+.arc__plane path {
   fill: #4f9a86;
   stroke: var(--board);
-  stroke-width: 0.7;
+  stroke-width: 0.6;
   stroke-linejoin: round;
+  transform-box: fill-box;
   transform-origin: center;
   transition: transform 0.15s ease, fill 0.15s ease;
 }
 
-.arc--filling .arc__arrow path { fill: var(--gold); }
-.arc--full .arc__arrow path { fill: var(--orange); stroke-width: 1.1; }
+.arc--filling .arc__plane path { fill: var(--gold); }
+.arc--full .arc__plane path { fill: var(--orange); stroke-width: 0.9; }
 
-.routemap__svg.is-focused .arc.is-dimmed .arc__arrow { opacity: 0.18; }
+.routemap__svg.is-focused .arc.is-dimmed .arc__plane { opacity: 0.18; }
 
-.arc.is-active .arc__arrow path,
-.arc:focus-visible .arc__arrow path {
+.arc.is-active .arc__plane path,
+.arc:focus-visible .arc__plane path {
   fill: var(--paper);
   stroke: var(--teal-dk);
-  stroke-width: 0.9;
-  transform: scale(1.85);
+  stroke-width: 0.75;
+  transform: scale(1.7);
 }
 
 .routemap__svg.is-focused .arc.is-dimmed .arc__line { opacity: 0.18; }

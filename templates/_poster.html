@@ -37,26 +37,28 @@
     <rect x="0" y="0" width="400" height="520" fill="url(#sky-{{ uid }})"/>
 
     {# The aircraft is on every poster, the way the airline's own always were.
-       Fuselage, fin and tailplane are one path, so the tail cannot read as a
-       separate piece floating behind the body. #}
-    <g class="poster__plane" opacity="0.94">
-      <path fill="#f7f0e1"
-            d="M64 113
-               C 70 107 84 104 100 104
-               L 121 105
-               L 133 99 L 137 100 L 130 106
-               L 137 107 C 141 109 141 113 137 114
-               L 128 116
-               L 118 121 L 114 121 L 120 116
-               L 100 118 C 84 118 70 118 64 113 Z"/>
-      {# wing and tailplane, joined at the fuselage line #}
-      <path fill="#f7f0e1" d="M96 110 L78 128 L86 128 L104 113 Z"/>
-      <path fill="#f7f0e1" opacity="0.75" d="M99 108 L88 96 L94 96 L106 107 Z"/>
-      {# window line, the detail that makes it an airliner and not a dart #}
-      <g fill="{{ sky }}" opacity="0.45">
-        {% for i in range(7) %}<rect x="{{ 78 + i * 6 }}" y="109" width="3" height="2.2" rx="1"/>{% endfor %}
+       Nose at the left, tail at the right, so every wing sweeps backwards.
+       Left deliberately quiet: it is a passing detail, not the subject. #}
+    <g class="poster__plane" fill="#f7f0e1" opacity="0.8">
+      {# fuselage, tail cone and fin in one path #}
+      <path d="M58 113
+               C 64 106 80 103 100 103
+               L 121 104
+               L 128 90 L 133 90 L 135 105
+               L 143 110 C 145 111 145 114 143 115
+               L 121 118
+               L 100 119
+               C 80 119 64 118 58 113 Z"/>
+      {# near wing, swept back from mid-fuselage #}
+      <path d="M92 115 L101 133 L113 133 L110 115 Z"/>
+      {# far wing, above the body and also swept back #}
+      <path d="M96 106 L105 93 L113 93 L111 106 Z" opacity="0.62"/>
+      {# tailplane #}
+      <path d="M124 109 L137 103 L142 104 L131 110 Z"/>
+      {# window line: what makes it an airliner rather than a dart #}
+      <g fill="{{ sky }}" opacity="0.4">
+        {% for i in range(7) %}<rect x="{{ 76 + i * 6 }}" y="109" width="3" height="2.2" rx="1"/>{% endfor %}
       </g>
-      <path fill="{{ warm }}" opacity="0.85" d="M126 107 L137 108 C 141 109 141 113 137 114 L127 115 Z"/>
     </g>
 
     {# a few clouds and birds, so the sky is not an empty wash #}

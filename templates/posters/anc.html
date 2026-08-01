@@ -13,11 +13,30 @@
 <path d="M36 330 L58 292 L84 330 L72 324 L58 336 L48 326 Z" fill="#f7f0e1"/>
 <path d="M0 400 Q100 378 200 396 T400 388 L400 424 L0 424 Z" fill="{{ sky }}" opacity="0.4"/>
 
-{# spruce along the shore #}
-<g fill="{{ sky }}" opacity="0.75">
-  {% for x, h in [(20, 54), (44, 68), (66, 46), (90, 60), (300, 50), (326, 66), (352, 44), (376, 58)] %}
-    <path d="M{{ x }} 428 L{{ x + 9 }} {{ 428 - h }} L{{ x + 18 }} 428 Z"/>
-    <path d="M{{ x + 2 }} 410 L{{ x + 9 }} {{ 424 - h }} L{{ x + 16 }} 410 Z"/>
+{# Sitka spruce along the shore: narrow, tiered, with drooping branch ends —
+   drawn as one zig-zag silhouette per tree rather than stacked triangles. #}
+<g fill="{{ sky }}" opacity="0.78">
+  {% for x, h in [(18, 62), (42, 82), (64, 52), (88, 70), (110, 58),
+                  (292, 56), (318, 78), (344, 48), (368, 66)] %}
+    {% set w = h * 0.30 %}
+    <path d="M{{ x }} 430
+             L{{ x - w * 0.28 }} 430
+             L{{ x + w * 0.30 }} {{ 430 - h * 0.30 }}
+             L{{ x + w * 0.05 }} {{ 430 - h * 0.30 }}
+             L{{ x + w * 0.46 }} {{ 430 - h * 0.56 }}
+             L{{ x + w * 0.24 }} {{ 430 - h * 0.56 }}
+             L{{ x + w * 0.58 }} {{ 430 - h * 0.78 }}
+             L{{ x + w * 0.42 }} {{ 430 - h * 0.78 }}
+             L{{ x + w * 0.70 }} {{ 430 - h }}
+             L{{ x + w * 0.98 }} {{ 430 - h * 0.78 }}
+             L{{ x + w * 0.82 }} {{ 430 - h * 0.78 }}
+             L{{ x + w * 1.16 }} {{ 430 - h * 0.56 }}
+             L{{ x + w * 0.94 }} {{ 430 - h * 0.56 }}
+             L{{ x + w * 1.35 }} {{ 430 - h * 0.30 }}
+             L{{ x + w * 1.10 }} {{ 430 - h * 0.30 }}
+             L{{ x + w * 1.68 }} 430
+             Z"/>
+    <rect x="{{ x + w * 0.62 }}" y="424" width="{{ w * 0.16 }}" height="8"/>
   {% endfor %}
 </g>
 
