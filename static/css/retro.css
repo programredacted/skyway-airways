@@ -1522,9 +1522,11 @@ a:hover { color: var(--orange-dk); }
      aircraft is — around row 12 of a 24-row 707. */
   transform: translate(-50%, -73.3%);
   pointer-events: none;
-  /* Behind the cabin without touching it: the shell is statically positioned,
-     so anything positioned here would otherwise paint on top of it. */
-  z-index: -1;
+  /* Above the shell, not behind it: the wing's own fill is what opens the wall
+     where it arrives, and behind the shell it could not. It reaches only 9
+     viewBox units past the wall — about 16px, well inside the shell's 1rem
+     padding — so it can never reach a seat. */
+  z-index: 1;
   /* Sized in rem, like the 34rem cabin, and with nothing capping it — so the
      two hold their proportion at every zoom level and window size. A share of
      the viewport cannot: zoom shrinks the CSS viewport while the cabin stays
@@ -1540,41 +1542,38 @@ a:hover { color: var(--orange-dk); }
   width: 99rem;
 }
 
-/* The silhouette pass. Filled as well as stroked so wing and engine merge
-   into one shape; the fills drawn afterwards cover the half of the stroke
-   that falls inside, so the weight showing is half of stroke-width.
+/* Open strokes, so nothing is ever drawn across the wing root: the shell's
+   border simply continues into the wing's edge and the two read as one
+   contour rather than two shapes that meet.
 
-   non-scaling-stroke because the SVG is scaled to the viewport: without it
-   the line thickens and thins with the window while the shell's border does
-   not move, and the two only agree at one window size. */
-/* On the shapes, not the group: vector-effect is not an inherited property,
-   so setting it on the <g> silently did nothing and every stroke scaled with
-   the SVG — at 1.76x, a 2px line drew 3.5px and the teal band drew 14px. */
-.cabin-wings__ink > *,
-.cabin-wings__teal > * { vector-effect: non-scaling-stroke; }
+   non-scaling-stroke on the shapes themselves — it is not an inherited
+   property, and on a group it silently does nothing while every stroke scales
+   with the SVG. */
+.cabin-wings__edge,
+.cabin-wings__inline,
+.cabin-wings__band {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+  stroke-linejoin: round;
+}
 
-.cabin-wings__ink,
-.cabin-wings__teal { stroke-linejoin: round; }
+/* The shell's own weights, measured off it rather than derived from its rule:
+   its left border paints 2px, and its right edge 7px once the shadow is
+   counted. The heavy side lays the teal down and the ink over it, the same
+   pair in the same order. */
+.cabin-wings__edge { stroke: var(--ink); stroke-width: 2; }
 
-/* The shell's own two bands, not an approximation of their total: its border
-   is ink, and on its right that border sits over teal shadow. The teal is laid
-   down first and the ink drawn over it, so the teal shows beyond the ink line
-   — the same pair, in the same order.
+/* The starboard band, drawn before the wing is filled so the fill buries its
+   inner half — 8 centred leaves 8 showing outside, and the ink line lands on
+   the boundary over it, exactly as the border sits on the shell's shadow. */
+.cabin-wings__band { stroke: var(--teal-dk); stroke-width: 16; }
 
-   Widths measured off the shell rather than derived from its rule: its left
-   border paints 2px and its right edge paints 7px, the shadow overlapping the
-   border by one. 4 and 14 give exactly those, since half of every stroke falls
-   inside the shape and is buried by the fill that follows. */
-.cabin-wings__ink  { fill: var(--ink);     stroke: var(--ink);     stroke-width: 4; }
-.cabin-wings__teal { fill: var(--teal-dk); stroke: var(--teal-dk); stroke-width: 14; }
+/* the shell's inset ring, carried out along the wing and back */
+.cabin-wings__inline { stroke: var(--paper); stroke-width: 6; }
 
-/* A shade below the cabin's interior, so the wing reads as behind it. Painting
-   it the cabin's own colour and breaking the border to merge the two was worse
-   on both counts: the wings flattened into slabs, and the join stayed a hard
-   edge rather than becoming a merge. */
-.cabin-wings__skin { fill: var(--paper-3); }
-/* one step deeper again so the pods read against the wing */
-.cabin-wings__pod { fill: #cbbb99; }
+/* the shell's own interior, so wing and cabin are the same material */
+.cabin-wings__skin { fill: var(--paper-2); }
+.cabin-wings__pod { fill: #ddd0b4; }
 
 @media (max-width: 55rem) {
   /* the sidebar drops below, so the cabin is centred on the page after all */
