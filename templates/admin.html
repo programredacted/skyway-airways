@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Accounts &middot; Skyway Airways{% endblock %}
+{% block main_class %}site-main--wide{% endblock %}
+
+{% block content %}
+<p class="eyebrow">Crew only</p>
+<h1 class="page-title">Accounts</h1>
+<p class="lede">
+  {{ accounts | length }} account{{ '' if accounts | length == 1 else 's' }} on
+  this database. Deleting one leaves its bookings confirmed and the seats sold —
+  they simply stop belonging to an account.
+</p>
+
+<div class="admin">
+  <table class="admin__table">
+    <caption class="visually-hidden">Registered accounts, newest first</caption>
+    <thead>
+      <tr>
+        <th scope="col">Username</th>
+        <th scope="col">Email</th>
+        <th scope="col">Joined</th>
+        <th scope="col" class="admin__numeric">Bookings</th>
+        <th scope="col"><span class="visually-hidden">Actions</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in accounts %}
+        <tr>
+          <td>
+            <span class="admin__name">{{ row.username }}</span>
+            {% if row.is_admin %}<span class="admin__badge">Admin</span>{% endif %}
+          </td>
+          <td class="admin__email">{{ row.email }}</td>
+          <td>{{ row.created_at | daystamp }}</td>
+          <td class="admin__numeric">{{ row.booking_count }}</td>
+          <td class="admin__actions">
+            {% if row.id == admin.id %}
+              <span class="admin__self">This is you</span>
+            {% else %}
+              <form method="post"
+                    action="{{ url_for('admin_delete_user', user_id=row.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <button type="submit" class="btn btn--small btn--danger"
+                        data-confirm="Delete the account '{{ row.username }}'? Their {{ row.booking_count }} booking(s) stay confirmed.">
+                  Delete
+                </button>
+              </form>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/confirm.js') }}" defer></script>
+{% endblock %}

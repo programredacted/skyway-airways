@@ -10,8 +10,8 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urlparse
 
-from flask import (Flask, abort, current_app, flash, g, jsonify, redirect,
-                   render_template, request, session, url_for)
+from flask import (Flask, abort, current_app, flash, g, jsonify, make_response,
+                   redirect, render_template, request, session, url_for)
 
 import accounts
 import bookings
@@ -411,11 +411,26 @@ def register_routes(app):
 
     @app.route("/bookings/<reference>/cancel", methods=["POST"])
     def cancel(reference):
+        booking = db.get_booking_by_reference(get_db(), reference)
+        if booking is None:
+            abort(404)
+
+        # A booking made from an account belongs to that account. Knowing the
+        # reference is enough to look a booking up, but not to cancel someone
+        # else's trip.
+        user = current_user()
+        if booking["user_id"] is not None and (
+            user is None or user["id"] != booking["user_id"]
+        ):
+            abort(403)
+
         if bookings.cancel_booking(get_db(), reference):
             flash("Booking cancelled. The seat is back on sale.", "success")
         else:
             flash("That booking was already cancelled.", "error")
-        return redirect(url_for("boarding_pass", reference=reference.upper()))
+
+        return redirect(safe_next(request.form.get("next"))
+                        or url_for("boarding_pass", reference=reference.upper()))
 
     # --- accounts ------------------------------------------------------------
 
@@ -424,23 +439,36 @@ def register_routes(app):
         if current_user():
             return redirect(url_for("flight_list"))
 
-        values, errors = {"username": "", "email": ""}, {}
+        values = {"username": "", "email": "", "password": "", "confirm": ""}
+        errors = {}
         target = safe_next(request.args.get("next"))
 
         if request.method == "POST":
             try:
                 user = accounts.register(get_db(), request.form)
             except accounts.RegistrationError as rejected:
-                values = {"username": request.form.get("username", "").strip(),
-                          "email": request.form.get("email", "").strip()}
+                # Everything they typed comes back, passwords included: a taken
+                # username should not cost them the whole form.
+                values = {
+                    "username": request.form.get("username", "").strip(),
+                    "email": request.form.get("email", "").strip(),
+                    "password": request.form.get("password", ""),
+                    "confirm": request.form.get("confirm", ""),
+                }
                 errors = rejected.errors
             else:
                 sign_in(user)
                 flash(f"Welcome aboard, {user['username']}.", "success")
                 return redirect(target or url_for("flight_list"))
 
-        return render_template("register.html", values=values, errors=errors,
-                               next=target), (400 if errors else 200)
+        page = render_template("register.html", values=values, errors=errors,
+                               next=target)
+        response = make_response(page, 400 if errors else 200)
+        if errors:
+            # that page now carries a password in its markup — keep it out of
+            # the browser's disk cache and any proxy along the way
+            response.headers["Cache-Control"] = "no-store"
+        return response
 
     @app.route("/login", methods=["GET", "POST"])
     def login():
@@ -504,6 +532,46 @@ def register_routes(app):
             trips=accounts.bookings_for(get_db(), user["id"]),
         ), (400 if errors else 200)
 
+    # --- staff ---------------------------------------------------------------
+
+    def require_admin():
+        """The signed-in admin, or a response to return instead."""
+        user = current_user()
+        if user is None:
+            return None, redirect(url_for("login", next=url_for("admin")))
+        if not user["is_admin"]:
+            abort(403)
+        return user, None
+
+    @app.route("/admin")
+    def admin():
+        user, bounce = require_admin()
+        if bounce:
+            return bounce
+        return render_template("admin.html", admin=user,
+                               accounts=accounts.list_accounts(get_db()))
+
+    @app.route("/admin/users/<int:user_id>/delete", methods=["POST"])
+    def admin_delete_user(user_id):
+        user, bounce = require_admin()
+        if bounce:
+            return bounce
+
+        if user_id == user["id"]:
+            # Removing the account you are holding would lock the last admin
+            # out of the panel with no way back in.
+            flash("You can't delete the account you're signed in with.", "error")
+            return redirect(url_for("admin"))
+
+        doomed = accounts.get_by_id(get_db(), user_id)
+        if doomed is None:
+            abort(404)
+
+        accounts.delete_account(get_db(), user_id)
+        flash(f"Deleted the account '{doomed['username']}'. "
+              "Any bookings it made are still confirmed.", "success")
+        return redirect(url_for("admin"))
+
     @app.route("/lookup", methods=["GET", "POST"])
     def lookup():
         if request.method == "POST":
@@ -517,6 +585,11 @@ def register_routes(app):
     def healthz():
         """Render polls this to decide the service is up."""
         return {"status": "ok"}
+
+    @app.errorhandler(403)
+    def forbidden(error):
+        return render_template("error.html", code=403,
+                               message="Crew only beyond this point."), 403
 
     @app.errorhandler(404)
     def not_found(error):

@@ -52,11 +52,21 @@
         </aside>
       </article>
 
-      <p class="trips__actions">
+      <div class="trips__actions">
         <a class="btn btn--small" href="{{ url_for('boarding_pass', reference=trip.reference) }}">
           Open boarding pass
         </a>
-      </p>
+        {% if not cancelled %}
+          <form method="post" action="{{ url_for('cancel', reference=trip.reference) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <input type="hidden" name="next" value="{{ url_for('my_trips') }}">
+            <button type="submit" class="btn btn--small btn--danger"
+                    data-confirm="Cancel {{ trip.flight_number }} to {{ trip.dest_city }}, seat {{ trip.row_number }}{{ trip.seat_letter }}? The seat goes back on sale.">
+              Cancel booking
+            </button>
+          </form>
+        {% endif %}
+      </div>
     {% endfor %}
   </div>
 {% else %}
@@ -66,4 +76,8 @@
     passes will collect here.
   </p>
 {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/confirm.js') }}" defer></script>
 {% endblock %}

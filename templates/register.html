@@ -25,11 +25,14 @@
     {% if errors.email %}<p class="form__error">{{ errors.email }}</p>{% endif %}
   </div>
 
+  {# Kept across a rejected submit, so a taken username does not cost you the
+     whole form. The response is sent no-store so it is not written to disk. #}
   {{ pw.field("password", "password", "Password", "new-password",
-              help="At least 8 characters.", error=errors.password) }}
+              help="At least 8 characters.", error=errors.password,
+              value=values.password) }}
 
   {{ pw.field("confirm", "confirm", "Confirm password", "new-password",
-              error=errors.confirm) }}
+              error=errors.confirm, value=values.confirm) }}
 
   <button class="btn btn--primary btn--large" type="submit">Create account</button>
   <p class="form__note">

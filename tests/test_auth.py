@@ -4,6 +4,7 @@ from werkzeug.security import check_password_hash
 
 import accounts
 import db as database
+import seed
 from app import create_app
 
 
@@ -92,7 +93,9 @@ def test_duplicate_username_or_email_is_rejected(client, conn, csrf, register):
     assert clash_email.status_code == 400
     assert "already registered" in clash_email.get_data(as_text=True)
 
-    assert database.count_rows(conn, "users") == 3  # 2 demo accounts + "taken"
+    # only "taken" got in; counted off the seed so adding a demo account to
+    # the fleet does not break this test
+    assert database.count_rows(conn, "users") == len(seed.DEMO_USERS) + 1
 
 
 def test_registration_validation(register):

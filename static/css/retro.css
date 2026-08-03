@@ -191,10 +191,85 @@ a:hover { color: var(--orange-dk); }
   border-left: 6px solid var(--oxblood);
 }
 
+/* Separates the airline's pages from yours. Sized in the nav's own terms so it
+   matches the cap height of the links either side of it. */
+.site-nav__rule {
+  align-self: center;
+  width: 2px;
+  height: 1.35rem;
+  background: var(--paper);
+  opacity: 0.45;
+}
+
 /* stacked boarding passes on My Trips */
 .trips { display: grid; gap: 0.5rem; }
 .pass--stacked { margin-top: 1.5rem; }
-.trips__actions { margin: 0 0 0.5rem; }
+
+.trips__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+  margin: 0 0 0.5rem;
+}
+
+.btn--danger {
+  background: var(--paper);
+  border-color: var(--oxblood);
+  color: var(--oxblood);
+}
+
+.btn--danger:hover { background: var(--oxblood); color: var(--paper); }
+
+/* --------------------------------------------------------------- admin -- */
+
+.admin { overflow-x: auto; }
+
+.admin__table {
+  width: 100%;
+  min-width: 40rem;
+  border-collapse: collapse;
+  background: var(--paper-2);
+  border: var(--rule);
+}
+
+.admin__table th,
+.admin__table td {
+  padding: 0.7rem 0.9rem;
+  text-align: left;
+  border-bottom: var(--hairline);
+}
+
+.admin__table thead th {
+  background: var(--teal-dk);
+  color: var(--paper);
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: var(--track-mid);
+  text-transform: uppercase;
+}
+
+.admin__table tbody tr:last-child td { border-bottom: none; }
+.admin__table tbody tr:hover { background: var(--paper-3); }
+
+.admin__name { font-family: var(--font-mono); }
+.admin__email { font-size: 0.86rem; color: var(--ink-soft); }
+.admin__numeric { text-align: right; font-family: var(--font-mono); }
+.admin__actions { text-align: right; }
+.admin__self { font-size: 0.78rem; color: var(--ink-soft); font-style: italic; }
+
+.admin__badge {
+  margin-left: 0.4rem;
+  padding: 0.1rem 0.4rem;
+  background: var(--gold);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: var(--track-mid);
+  text-transform: uppercase;
+}
 
 /* ------------------------------------------------------------- account -- */
 

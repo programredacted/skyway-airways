@@ -146,6 +146,7 @@ def seed_if_empty(connection, seed_date=None):
         # table existed still picks them up on the next start.
         _insert_airports_if_empty(connection)
         _insert_demo_users_if_empty(connection)
+        _ensure_an_admin_exists(connection)
 
         if db.count_rows(connection, "flights") > 0:
             return False
@@ -176,9 +177,12 @@ def _insert_airports_if_empty(connection):
 # Two accounts so a fresh deploy can be signed into immediately. Passwords are
 # hashed on the way in exactly like a real registration; the plaintext lives
 # only here, in the seed, and is documented in the README.
+# Accounts that exist on a fresh database, so the app can be demonstrated
+# without registering first. (username, email, password, is_admin)
 DEMO_USERS = [
-    ("demo", "demo@skyway.example", "Jetage1965!"),
-    ("captain", "captain@skyway.example", "Clipper707!"),
+    ("demo", "demo@skyway.example", "Jetage1965!", False),
+    ("captain", "captain@skyway.example", "Clipper707!", False),
+    ("admin", "admin@skyway.example", "Concorde001!", True),
 ]
 
 
@@ -190,9 +194,46 @@ def _insert_demo_users_if_empty(connection):
 
     created_at = datetime.now().isoformat(timespec="seconds")
     connection.executemany(
-        "INSERT INTO users (username, email, password_hash, created_at) VALUES (?, ?, ?, ?)",
-        [(username, email, generate_password_hash(password), created_at)
-         for username, email, password in DEMO_USERS],
+        """
+        INSERT INTO users (username, email, password_hash, created_at, is_admin)
+        VALUES (?, ?, ?, ?, ?)
+        """,
+        [(username, email, generate_password_hash(password), created_at, int(is_admin))
+         for username, email, password, is_admin in DEMO_USERS],
+    )
+    return True
+
+
+def _ensure_an_admin_exists(connection):
+    """Guarantee a way into the staff panel.
+
+    Guarded separately from the demo users, the same way airports are: a
+    database created before `is_admin` existed has accounts in it already, so
+    the block above never runs and it would otherwise have no admin at all.
+
+    A name already taken is left alone rather than promoted — silently handing
+    staff powers to whoever registered it first is exactly the wrong move.
+    `accounts.RESERVED_USERNAMES` stops anyone taking it in the first place.
+    """
+    if connection.execute("SELECT 1 FROM users WHERE is_admin = 1 LIMIT 1").fetchone():
+        return False
+
+    from werkzeug.security import generate_password_hash
+
+    username, email, password, _ = next(user for user in DEMO_USERS if user[3])
+    taken = connection.execute(
+        "SELECT 1 FROM users WHERE LOWER(username) = LOWER(?)", (username,)
+    ).fetchone()
+    if taken:
+        return False
+
+    connection.execute(
+        """
+        INSERT INTO users (username, email, password_hash, created_at, is_admin)
+        VALUES (?, ?, ?, ?, 1)
+        """,
+        (username, email, generate_password_hash(password),
+         datetime.now().isoformat(timespec="seconds")),
     )
     return True
 

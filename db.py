@@ -38,9 +38,29 @@ def transaction(connection):
     connection.execute("COMMIT")
 
 
+# CREATE TABLE IF NOT EXISTS leaves an existing table exactly as it is, so a
+# column added to schema.sql later would never appear in a database that was
+# already created. Backfilling here means an old file keeps working instead of
+# having to be deleted and reseeded.
+MIGRATIONS = {
+    "users": [("is_admin", "INTEGER NOT NULL DEFAULT 0")],
+}
+
+
 def init_db(connection):
     """Create tables and indexes. Safe to run against an existing database."""
     connection.executescript(SCHEMA_PATH.read_text(encoding="utf-8"))
+    add_missing_columns(connection)
+
+
+def add_missing_columns(connection):
+    """Add any column in MIGRATIONS that this database does not have yet."""
+    for table, columns in MIGRATIONS.items():
+        present = {row["name"]
+                   for row in connection.execute(f"PRAGMA table_info({table})")}
+        for name, definition in columns:
+            if name not in present:
+                connection.execute(f"ALTER TABLE {table} ADD COLUMN {name} {definition}")
 
 
 # --- flights -----------------------------------------------------------------

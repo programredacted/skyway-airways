@@ -256,6 +256,7 @@ requires an account**. An anonymous visitor who hits Confirm is sent to
 | `/login` · `/logout` | Flask session cookie |
 | `/my-trips` | that account's bookings, as a stack of boarding passes |
 | `/account` | username, email, member since, trips booked, and a password change |
+| `/admin` | staff only: every account, with a delete button |
 
 Every password field carries a Show/Hide button. It is rendered hidden and
 revealed by `password.js`, so a browser without JavaScript is never offered a
@@ -266,12 +267,42 @@ The account page shows no password, because there is none to show — see the
 security notes below. Changing it is the recovery path, and doing so requires
 the current password even though you are already signed in.
 
-Two demo accounts exist on a fresh seed:
+Three accounts are created by `seed.py`, so the app can be demonstrated without
+registering first. They are ordinary rows in `users` with hashed passwords —
+nothing special beyond `is_admin` on the last one.
 
-| Username | Password |
-|---|---|
-| `demo` | `Jetage1965!` |
-| `captain` | `Clipper707!` |
+| Username | Password | |
+|---|---|---|
+| `demo` | `Jetage1965!` | a normal passenger |
+| `captain` | `Clipper707!` | a normal passenger |
+| `admin` | `Concorde001!` | staff: can reach `/admin` and delete accounts |
+
+`seed.py` only populates an **empty** database, so re-running it after a change
+does nothing. Two things are guarded separately and do run against an existing
+file: the airport list, and the check that at least one admin exists — a
+database created before `is_admin` did would otherwise have no way into the
+panel. `db.MIGRATIONS` adds the column itself, since `CREATE TABLE IF NOT
+EXISTS` leaves an existing table alone.
+
+`admin` and a handful of similar names are in `accounts.RESERVED_USERNAMES` and
+cannot be registered. If a visitor claimed `admin` first, the seed would find
+the name taken and leave the database with no administrator at all; promoting
+whoever got there first would be worse.
+
+### Cancelling
+
+A booking can be cancelled from its boarding pass or from **My Trips**. The seat
+goes straight back on sale — availability is derived from `CONFIRMED` bookings,
+so nothing has to be recalculated.
+
+A reference is enough to *find* a booking at `/lookup`, but not to cancel one
+that belongs to an account: `/bookings/<ref>/cancel` checks `user_id` and
+returns 403 to anyone else. Guest bookings, including the seeded pre-sold seats,
+have no owner and stay cancellable by reference.
+
+Deleting an account does **not** cancel its bookings. The seats were paid for,
+so the rows stay `CONFIRMED` and their references keep working; they just stop
+belonging to an account.
 
 ### Security notes, stated honestly
 

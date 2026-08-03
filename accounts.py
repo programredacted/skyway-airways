@@ -17,6 +17,11 @@ USERNAME_PATTERN = re.compile(r"^[A-Za-z0-9]{3,20}$")
 EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[A-Za-z]{2,}$")
 MINIMUM_PASSWORD_LENGTH = 8
 
+# Names that must not be claimed by a visitor. "admin" is the account the seed
+# creates for the staff panel: if someone registered it first, the seed would
+# find the name taken and the database would end up with no admin at all.
+RESERVED_USERNAMES = {"admin", "administrator", "root", "staff", "crew", "skyway"}
+
 
 class RegistrationError(Exception):
     """Carries per-field messages back to a form. Also raised by change_password."""
@@ -38,6 +43,8 @@ def validate(form):
 
     if not USERNAME_PATTERN.match(values["username"]):
         errors["username"] = "3 to 20 letters and numbers, nothing else."
+    elif values["username"].lower() in RESERVED_USERNAMES:
+        errors["username"] = "That username is reserved. Please pick another."
     if not EMAIL_PATTERN.match(values["email"]):
         errors["email"] = "That doesn't look like an email address."
     if len(password) < MINIMUM_PASSWORD_LENGTH:
@@ -126,6 +133,35 @@ def change_password(connection, user_id, form):
 
 def get_by_id(connection, user_id):
     return connection.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+
+
+def list_accounts(connection):
+    """Every account with how many bookings it holds, newest first."""
+    return connection.execute(
+        """
+        SELECT u.id, u.username, u.email, u.created_at, u.is_admin,
+               COUNT(b.id) AS booking_count
+        FROM users u
+        LEFT JOIN bookings b ON b.user_id = u.id AND b.status = 'CONFIRMED'
+        GROUP BY u.id
+        ORDER BY u.id DESC
+        """
+    ).fetchall()
+
+
+def delete_account(connection, user_id):
+    """Remove an account, leaving its bookings in place but unowned.
+
+    Deleting the person should not silently free the seats they paid for, so
+    the bookings stay CONFIRMED and their references still work at /lookup —
+    they simply stop belonging to an account. Returns True if a row went.
+    """
+    with db.transaction(connection):
+        connection.execute(
+            "UPDATE bookings SET user_id = NULL WHERE user_id = ?", (user_id,)
+        )
+        cursor = connection.execute("DELETE FROM users WHERE id = ?", (user_id,))
+        return cursor.rowcount > 0
 
 
 def bookings_for(connection, user_id):
