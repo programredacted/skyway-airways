@@ -180,6 +180,23 @@ def safe_next(target):
     return target
 
 
+# The passenger's email, carried from a booking they could not confirm to the
+# register form they were sent to. Held in the session — a signed cookie — so
+# it never becomes a query string that could be shared, logged or bookmarked.
+SIGNUP_EMAIL_KEY = "signup_email"
+
+
+def remember_signup_email(email):
+    email = (email or "").strip()
+    if email:
+        session[SIGNUP_EMAIL_KEY] = email[:254]
+
+
+def take_signup_email():
+    """Read it and forget it: it is a one-time convenience, not a profile."""
+    return session.pop(SIGNUP_EMAIL_KEY, "")
+
+
 # --- input validation --------------------------------------------------------
 
 def validate_passenger(form):
@@ -374,6 +391,9 @@ def register_routes(app):
         # visitor to sign in and bring them back to this exact seat.
         user = current_user()
         if user is None:
+            # They typed an email one step ago and are about to be asked for
+            # one again on the register form. Carry it across.
+            remember_signup_email(request.form.get("email", ""))
             flash("Please sign in to confirm your booking.", "error")
             resume = url_for("passenger_form", flight_id=flight_id, seat_id=seat["id"])
             return redirect(url_for("login", next=resume))
@@ -443,6 +463,9 @@ def register_routes(app):
         values = {"username": "", "email": "", "password": "", "confirm": ""}
         errors = {}
         target = safe_next(request.args.get("next"))
+
+        if request.method == "GET":
+            values["email"] = take_signup_email()
 
         if request.method == "POST":
             try:

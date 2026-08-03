@@ -22,6 +22,9 @@
     <label for="email">Email <span class="req">required</span></label>
     <input type="email" id="email" name="email" value="{{ values.email }}"
            autocomplete="email">
+    {% if values.email and not errors.email %}
+      <p class="form__help">Carried over from the booking you started.</p>
+    {% endif %}
     {% if errors.email %}<p class="form__error">{{ errors.email }}</p>{% endif %}
   </div>
 

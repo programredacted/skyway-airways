@@ -161,8 +161,11 @@
   /* Load a city's poster and itinerary into the panel under the map, and keep
      that route selected on the map until the panel is dismissed. */
   function openGuide(code, action, pick) {
-    if (!panel) return;
-    if (openCode === code) return closeGuide();
+    if (!panel) return false;
+    if (openCode === code) {
+      closeGuide();
+      return false;      // it toggled shut; the caller should not sync filters
+    }
 
     openCode = code;
     selection = pick || null;
@@ -192,6 +195,8 @@
         panel.classList.remove("is-loading");
         panelBody.innerHTML = '<p class="destpanel__error">That guide could not be loaded.</p>';
       });
+
+    return true;
   }
 
   function closeGuide() {
@@ -230,16 +235,23 @@
     var arc = event.target.closest(".arc");
     if (arc) {
       event.preventDefault();
-      return openGuide(arc.dataset.dest,
-                       { href: arc.dataset.book, label: "Book " + arc.dataset.flightNumber },
-                       { kind: "arc", element: arc });
+      if (openGuide(arc.dataset.dest,
+                    { href: arc.dataset.book, label: "Book " + arc.dataset.flightNumber },
+                    { kind: "arc", element: arc })) {
+        syncFilters(arc.dataset.origin, arc.dataset.dest);
+      }
+      return;
     }
     var port = event.target.closest(".port");
     if (port) {
       event.preventDefault();
-      openGuide(port.dataset.code,
-                { href: port.getAttribute("href"), label: "Departures from " + port.dataset.city },
-                { kind: "port", element: port });
+      if (openGuide(port.dataset.code,
+                    { href: port.getAttribute("href"),
+                      label: "Departures from " + port.dataset.city },
+                    { kind: "port", element: port })) {
+        // an airport is a departure point, so it sets From and frees To
+        syncFilters(port.dataset.code, "");
+      }
     }
   });
 
@@ -283,6 +295,39 @@
     field.addEventListener("input", applyFilters);
   });
 
+  /* Setting a <select> from script fires no event, so anything else listening
+     for a change would never hear about it. Dispatching one keeps this the
+     same code path as a person using the dropdown. */
+  function setField(field, code) {
+    var value = code || "";
+    if (!field || field.value === value) return false;
+    // ignore a code the dropdown does not offer rather than blanking the field
+    if (value && !field.querySelector('option[value="' + value + '"]')) return false;
+
+    field.value = value;
+    field.dispatchEvent(new Event("change", { bubbles: true }));
+    return true;
+  }
+
+  var searchForm = document.querySelector(".search");
+
+  /* Picking a route is a statement of intent, so the From/To fields follow it.
+     Preview only, which is how these filters have always behaved: the board
+     itself still changes when the form is submitted. */
+  function syncFilters(origin, dest) {
+    var moved = setField(originField, origin);
+    if (setField(destField, dest)) moved = true;
+    if (moved && searchForm) searchForm.classList.add("is-synced");
+  }
+
+  // any hand-driven change clears the "we set this for you" cue
+  [originField, destField, dateField].forEach(function (field) {
+    if (!field) return;
+    field.addEventListener("input", function () {
+      if (searchForm) searchForm.classList.remove("is-synced");
+    });
+  });
+
   // --- the departure board drives the map too --------------------------------
 
   if (board) {
@@ -314,9 +359,11 @@
       var row = event.target.closest(".board__row");
       if (!row || !row.dataset.destCode) return;
       var arc = svg.querySelector('.arc[data-flight-id="' + row.dataset.flightId + '"]');
-      openGuide(row.dataset.destCode,
-                { href: "/flights/" + row.dataset.flightId, label: "Book this flight" },
-                arc ? { kind: "arc", element: arc } : null);
+      if (openGuide(row.dataset.destCode,
+                    { href: "/flights/" + row.dataset.flightId, label: "Book this flight" },
+                    arc ? { kind: "arc", element: arc } : null)) {
+        syncFilters(row.dataset.originCode, row.dataset.destCode);
+      }
     });
   }
 

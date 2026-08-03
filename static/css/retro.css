@@ -507,6 +507,15 @@ a:hover { color: var(--orange-dk); }
 
 .search--inline { margin: 0 0 2rem; box-shadow: 4px 4px 0 var(--paper-3); }
 
+/* Picking a route on the map or the board fills From and To for you. Briefly
+   marking the fields makes that visible — a value changing with no interaction
+   otherwise reads as a glitch. */
+.search.is-synced #origin,
+.search.is-synced #dest {
+  border-color: var(--orange);
+  box-shadow: 0 0 0 3px rgba(193, 84, 31, 0.22);
+}
+
 .search__field, .form__field { display: flex; flex-direction: column; gap: 0.3rem; }
 
 .search__field label,
