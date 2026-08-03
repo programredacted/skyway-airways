@@ -2,6 +2,8 @@
 {% import "_airframe.html" as airframe %}
 {% block title %}Seat map &middot; {{ flight.flight_number }}{% endblock %}
 {% block steps %}{% with step = 2 %}{% include "_steps.html" %}{% endwith %}{% endblock %}
+{# the wings need more room than the standard 66rem column gives them #}
+{% block main_class %}site-main--wide{% endblock %}
 
 {% block content %}
 <p class="crumbs">
