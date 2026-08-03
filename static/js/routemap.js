@@ -241,7 +241,7 @@
       if (openGuide(arc.dataset.dest,
                     { href: arc.dataset.book, label: "Book " + arc.dataset.flightNumber },
                     { kind: "arc", element: arc })) {
-        syncFilters(arc.dataset.origin, arc.dataset.dest);
+        syncFilters(arc.dataset.origin, arc.dataset.dest, arc.dataset.date);
       }
       return;
     }
@@ -252,8 +252,9 @@
                     { href: port.getAttribute("href"),
                       label: "Departures from " + port.dataset.city },
                     { kind: "port", element: port })) {
-        // an airport is a departure point, so it sets From and frees To
-        syncFilters(port.dataset.code, "");
+        // An airport is a departure point, not a departure: it sets From and
+        // frees the other two, since it names no route and no day.
+        syncFilters(port.dataset.code, "", "");
       }
     }
   });
@@ -318,6 +319,7 @@
 
       event.preventDefault();
       if (searchForm) searchForm.classList.remove("is-synced");
+      beforeSync = null;          // Clear means empty, not "back to before"
       [originField, destField, dateField].forEach(function (field) {
         setField(field, "");
       });
@@ -339,8 +341,11 @@
   function setField(field, code) {
     var value = code || "";
     if (!field || field.value === value) return false;
-    // ignore a code the dropdown does not offer rather than blanking the field
-    if (value && !field.querySelector('option[value="' + value + '"]')) return false;
+    // Ignore a code the dropdown does not offer rather than blanking the
+    // field. Guarded on SELECT: an <input type="date"> holds no options, so
+    // an unguarded check refused every date it was ever given.
+    if (value && field.tagName === "SELECT" &&
+        !field.querySelector('option[value="' + value + '"]')) return false;
 
     field.value = value;
     field.dispatchEvent(new Event("change", { bubbles: true }));
@@ -352,20 +357,35 @@
   /* Picking a route is a statement of intent, so the From/To fields follow it.
      Preview only, which is how these filters have always behaved: the board
      itself still changes when the form is submitted. */
-  function syncFilters(origin, dest) {
+  /* What the visitor had before we touched anything, so letting go restores
+     their filters rather than blanking them. */
+  var beforeSync = null;
+
+  function syncFilters(origin, dest, date) {
+    if (!beforeSync) {
+      beforeSync = {
+        origin: originField ? originField.value : "",
+        dest: destField ? destField.value : "",
+        date: dateField ? dateField.value : ""
+      };
+    }
     setField(originField, origin);
     setField(destField, dest);
+    setField(dateField, date);
     if (searchForm) searchForm.classList.add("is-synced");
     showClear();
   }
 
-  /* Give back the From/To we filled in, if they are still ours. The date is
-     never touched: picking a route says nothing about which day you wanted. */
+  /* Give the filters back, if they are still ours. */
   function releaseSyncedFilters() {
     if (!searchForm || !searchForm.classList.contains("is-synced")) return false;
     searchForm.classList.remove("is-synced");
-    setField(originField, "");
-    setField(destField, "");
+
+    var was = beforeSync || { origin: "", dest: "", date: "" };
+    beforeSync = null;
+    setField(originField, was.origin);
+    setField(destField, was.dest);
+    setField(dateField, was.date);
     showClear();
     return true;
   }
@@ -376,6 +396,7 @@
     if (!field) return;
     field.addEventListener("input", function () {
       if (searchForm) searchForm.classList.remove("is-synced");
+      beforeSync = null;          // their edit is the baseline now, not ours
       showClear();
     });
   });
@@ -414,7 +435,7 @@
       if (openGuide(row.dataset.destCode,
                     { href: "/flights/" + row.dataset.flightId, label: "Book this flight" },
                     arc ? { kind: "arc", element: arc } : null)) {
-        syncFilters(row.dataset.originCode, row.dataset.destCode);
+        syncFilters(row.dataset.originCode, row.dataset.destCode, row.dataset.date);
       }
     });
   }
