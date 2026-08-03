@@ -49,70 +49,6 @@
       <span class="seatmap__stamp" id="refresh-stamp" aria-hidden="true"></span>
     </div>
 
-    {# The wings are purely a silhouette behind the cabin — added alongside it,
-       never inside it, because the shell scrolls its own overflow and would
-       cut them off. Nothing about the shell itself changes. #}
-    <div class="cabin-stage">
-    <svg class="cabin-wings" viewBox="0 0 900 300" aria-hidden="true" focusable="false">
-      {# One path through the middle: the root sits behind the opaque cabin, so
-         there is no join to line up. 110 units of root chord against 888 of
-         span — a deeper chord reads as a fin bolted to a tube.
-
-         The tips are curved rather than cut square: a flat vertical edge out
-         there reads as the wing having been clipped off, and the cabin it
-         belongs to is all soft curves. #}
-      {# The outline traces the wing and its engine as one silhouette, never
-         each shape separately — an engine with its own ring round it reads as
-         a pill dropped on top rather than a pod slung under.
-
-         Done by drawing each side twice: first solid in ink and stroked, then
-         the same shapes filled over the top. The fills bury every line that
-         falls inside the silhouette and leave only its outer edge, so no union
-         geometry has to be worked out by hand. #}
-      {# Each root runs past the centreline (to x 470 and x 430) rather than
-         stopping at the wing's visible edge. That tab is always behind the
-         cabin whatever width the SVG is scaled to, so the wings can never come
-         away from it — which is exactly what happened when one path was split
-         into two and each stopped at its own root. #}
-
-      {# The starboard band goes down first, so the wing fill buries its inner
-         half and only the outer shows — the shell's shadow, in place. #}
-      <path class="cabin-wings__band"
-            d="M605 110 L870 244 C 894 252 894 268 870 276 L605 220"/>
-      <rect class="cabin-wings__band" x="706" y="150" width="52" height="72" rx="24"/>
-
-      {# The wing bodies, in the shell's own interior colour, rooted exactly on
-         its wall at x 295 and 605 — (49.5rem - 17rem) / 99rem of the viewBox,
-         which is fixed because both widths are. The strips reach 9 units
-         further in to cover the shell's border and inset ring, so the wall
-         opens where the wing arrives instead of running behind it. #}
-      <path class="cabin-wings__skin"
-            d="M295 110 L30 244 C 6 252 6 268 30 276 L295 220 Z"/>
-      <path class="cabin-wings__skin"
-            d="M605 110 L870 244 C 894 252 894 268 870 276 L605 220 Z"/>
-      <rect class="cabin-wings__skin" x="295" y="110" width="9" height="110"/>
-      <rect class="cabin-wings__skin" x="596" y="110" width="9" height="110"/>
-
-      {# the shell's inset ring, carried out along the wing and back #}
-      <path class="cabin-wings__inline"
-            d="M295 114 L34 248 C 13 254 13 266 34 272 L295 216"/>
-      <path class="cabin-wings__inline"
-            d="M605 114 L866 248 C 887 254 887 266 866 272 L605 216"/>
-
-      {# Open, not closed: nothing is drawn across the root, so the shell's
-         border runs straight into the wing's edge and the two are one contour
-         rather than two shapes that happen to touch. #}
-      <path class="cabin-wings__edge"
-            d="M295 110 L30 244 C 6 252 6 268 30 276 L295 220"/>
-      <path class="cabin-wings__edge"
-            d="M605 110 L870 244 C 894 252 894 268 870 276 L605 220"/>
-
-      {# Last, so they sit on the wing rather than being crossed by its leading
-         edge — a line running through the pod reads as a seam, not an engine. #}
-      <rect class="cabin-wings__pod" x="142" y="150" width="52" height="72" rx="24"/>
-      <rect class="cabin-wings__pod" x="706" y="150" width="52" height="72" rx="24"/>
-
-    </svg>
 
     <div class="cabin-shell" id="seat-grid"
          data-flight-id="{{ flight.id }}"
@@ -150,7 +86,6 @@
       {% endfor %}
 
       <p class="cabin-shell__tail">Tail</p>
-    </div>
     </div>
   </form>
 

@@ -46,13 +46,7 @@
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 
-/* `clip`, not `hidden`: it stops anything wider than the window producing a
-   sideways scrollbar without making the page a scroll container, so the
-   sticky header and selection panel go on working. The seat map's wings are
-   what need it — they are sized to hold their proportion to the cabin rather
-   than to fit, so on a narrow window or at deep zoom the tips run past the
-   edge instead of the aircraft changing shape. */
-html { scroll-behavior: smooth; overflow-x: clip; }
+html { scroll-behavior: smooth; }
 
 body {
   margin: 0;
@@ -1508,85 +1502,7 @@ a:hover { color: var(--orange-dk); }
 
 .seat-aisle { width: 1.4rem; }
 
-/* ------------------------------------------ wings, purely a silhouette -- */
-
-/* Added around the cabin, changing nothing about it. */
-.cabin-stage { position: relative; }
-
-.cabin-wings {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  /* -73.3% is where the wing root's trailing edge sits in the viewBox (y 220
-     of 300), so that edge lands on the cabin's midpoint whatever length the
-     aircraft is — around row 12 of a 24-row 707. */
-  transform: translate(-50%, -73.3%);
-  pointer-events: none;
-  /* Above the shell, not behind it: the wing's own fill is what opens the wall
-     where it arrives, and behind the shell it could not. It reaches only 9
-     viewBox units past the wall — about 16px, well inside the shell's 1rem
-     padding — so it can never reach a seat. */
-  z-index: 1;
-  /* Sized in rem, like the 34rem cabin, and with nothing capping it — so the
-     two hold their proportion at every zoom level and window size. A share of
-     the viewport cannot: zoom shrinks the CSS viewport while the cabin stays
-     34rem, which slid the span from 1.67x the cabin down to 0.72x.
-
-     Where there is no room the tips run past the window rather than the
-     aircraft changing shape; `overflow-x: clip` on the root keeps that from
-     producing a scrollbar.
-
-     99rem is the span it already had — 1588px, what the old viewport-capped
-     rule happened to give on a 1900px screen. Fixing the scaling was not a
-     reason to make it smaller. */
-  width: 99rem;
-}
-
-/* Open strokes, so nothing is ever drawn across the wing root: the shell's
-   border simply continues into the wing's edge and the two read as one
-   contour rather than two shapes that meet.
-
-   non-scaling-stroke on the shapes themselves — it is not an inherited
-   property, and on a group it silently does nothing while every stroke scales
-   with the SVG. */
-.cabin-wings__edge,
-.cabin-wings__inline,
-.cabin-wings__band {
-  fill: none;
-  vector-effect: non-scaling-stroke;
-  stroke-linejoin: round;
-}
-
-/* The shell's own weights, measured off it rather than derived from its rule:
-   its left border paints 2px, and its right edge 7px once the shadow is
-   counted. The heavy side lays the teal down and the ink over it, the same
-   pair in the same order. */
-.cabin-wings__edge { stroke: var(--ink); stroke-width: 2; }
-
-/* The starboard band, drawn before the wing is filled so the fill buries its
-   inner half — 8 centred leaves 8 showing outside, and the ink line lands on
-   the boundary over it, exactly as the border sits on the shell's shadow. */
-.cabin-wings__band { stroke: var(--teal-dk); stroke-width: 12; }
-
-/* the shell's inset ring, carried out along the wing and back */
-.cabin-wings__inline { stroke: var(--paper); stroke-width: 6; }
-
-/* the shell's own interior, so wing and cabin are the same material */
-.cabin-wings__skin { fill: var(--paper-2); }
-
-/* Plain pills, outlined all the way round. The starboard one sits over its
-   own band, laid down first so this fill buries the inner half — the same
-   trick the wing edge uses, so both sides read at the shell's weights. */
-.cabin-wings__pod {
-  fill: #ddd0b4;
-  stroke: var(--ink);
-  stroke-width: 2;
-  vector-effect: non-scaling-stroke;
-}
-
 @media (max-width: 55rem) {
-  /* the sidebar drops below, so the cabin is centred on the page after all */
-  .cabin-wings { width: min(260%, calc(100vw - 2rem)); }
 }
 
 /* ------------------------------------------------- live selection panel -- */
