@@ -49,6 +49,22 @@
       <span class="seatmap__stamp" id="refresh-stamp" aria-hidden="true"></span>
     </div>
 
+    {# The wings are purely a silhouette behind the cabin — added alongside it,
+       never inside it, because the shell scrolls its own overflow and would
+       cut them off. Nothing about the shell itself changes. #}
+    <div class="cabin-stage">
+    <svg class="cabin-wings" viewBox="0 0 900 300" aria-hidden="true" focusable="false">
+      {# One path through the middle: the root sits behind the opaque cabin, so
+         there is no join to line up. 110 units of root chord against 864 of
+         span — a deeper chord reads as a fin bolted to a tube. #}
+      <path class="cabin-wings__skin"
+            d="M291 110 L18 246 L18 274 L291 220
+               L609 220 L882 274 L882 246 L609 110 Z"/>
+      {# nacelles, longer fore-and-aft than across so they read as pods #}
+      <rect class="cabin-wings__pod" x="142" y="150" width="52" height="72" rx="24"/>
+      <rect class="cabin-wings__pod" x="706" y="150" width="52" height="72" rx="24"/>
+    </svg>
+
     <div class="cabin-shell" id="seat-grid"
          data-flight-id="{{ flight.id }}"
          data-base-fare="{{ flight.base_fare_cents }}"
@@ -85,6 +101,7 @@
       {% endfor %}
 
       <p class="cabin-shell__tail">Tail</p>
+    </div>
     </div>
   </form>
 

@@ -1497,6 +1497,36 @@ a:hover { color: var(--orange-dk); }
 
 .seat-aisle { width: 1.4rem; }
 
+/* ------------------------------------------ wings, purely a silhouette -- */
+
+/* Added around the cabin, changing nothing about it. */
+.cabin-stage { position: relative; }
+
+.cabin-wings {
+  position: absolute;
+  top: 34%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  /* Behind the cabin without touching it: the shell is statically positioned,
+     so anything positioned here would otherwise paint on top of it. */
+  z-index: -1;
+  /* Never clipped. The cabin is centred in the left grid column rather than on
+     the page, so the left edge binds first: its centre sits (100vw - 312px)/2
+     from that edge, which caps the span at 100vw - 312px — the sidebar's
+     17.5rem plus the 2rem gap. */
+  width: min(260%, calc(100vw - 19.5rem));
+}
+
+.cabin-wings__skin { fill: var(--paper-3); }
+/* one step deeper than the wing so the pods read against it */
+.cabin-wings__pod { fill: #cbbb99; }
+
+@media (max-width: 55rem) {
+  /* the sidebar drops below, so the cabin is centred on the page after all */
+  .cabin-wings { width: min(260%, calc(100vw - 2rem)); }
+}
+
 /* ------------------------------------------------- live selection panel -- */
 
 .summary {
