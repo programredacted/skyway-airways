@@ -1528,21 +1528,26 @@ a:hover { color: var(--orange-dk); }
    non-scaling-stroke because the SVG is scaled to the viewport: without it
    the line thickens and thins with the window while the shell's border does
    not move, and the two only agree at one window size. */
+/* On the shapes, not the group: vector-effect is not an inherited property,
+   so setting it on the <g> silently did nothing and every stroke scaled with
+   the SVG — at 1.76x, a 2px line drew 3.5px and the teal band drew 14px. */
+.cabin-wings__ink > *,
+.cabin-wings__teal > * { vector-effect: non-scaling-stroke; }
+
 .cabin-wings__ink,
-.cabin-wings__teal {
-  vector-effect: non-scaling-stroke;
-  stroke-linejoin: round;
-}
+.cabin-wings__teal { stroke-linejoin: round; }
 
-/* The shell's own two bands, not an approximation of their total. Its border
-   is 2px of ink; on its right that border sits over 6px of teal shadow. The
-   teal is laid down first and the ink drawn over it, so 6px of teal shows
-   beyond the 2px line — the same pair, in the same order.
+/* The shell's own two bands, not an approximation of their total: its border
+   is ink, and on its right that border sits over teal shadow. The teal is laid
+   down first and the ink drawn over it, so the teal shows beyond the ink line
+   — the same pair, in the same order.
 
-   Widths are doubled because half of every stroke falls inside the shape and
-   is buried by the fill that follows. */
+   Widths measured off the shell rather than derived from its rule: its left
+   border paints 2px and its right edge paints 7px, the shadow overlapping the
+   border by one. 4 and 14 give exactly those, since half of every stroke falls
+   inside the shape and is buried by the fill that follows. */
 .cabin-wings__ink  { fill: var(--ink);     stroke: var(--ink);     stroke-width: 4; }
-.cabin-wings__teal { fill: var(--teal-dk); stroke: var(--teal-dk); stroke-width: 16; }
+.cabin-wings__teal { fill: var(--teal-dk); stroke: var(--teal-dk); stroke-width: 14; }
 
 .cabin-wings__skin { fill: var(--paper-3); }
 /* one step deeper than the wing so the pods read against it */
