@@ -13,8 +13,10 @@
 {# Kept deliberately shallow. A nose in proportion to a fuselage this wide is
    ~300px tall, which is that much pale nothing above the first seat. #}
 <svg class="airframe__nose" viewBox="0 0 320 84" aria-hidden="true" focusable="false">
-  {# an ogive, not a semicircle: a dome the width of the hull reads as a hill #}
-  <path class="airframe__hull" d="M4 84 C 10 42 70 6 160 6 C 250 6 310 42 316 84 Z"/>
+  {# An ogive, not a semicircle: a dome the width of the hull reads as a hill.
+     The base runs the full viewBox so it meets the hull band exactly — inset
+     even slightly, the band's corners showed past it as square shoulders. #}
+  <path class="airframe__hull" d="M0 84 C 6 42 68 6 160 6 C 252 6 314 42 320 84 Z"/>
   {# flight-deck glazing: one wraparound band, framed rather than cut into panes #}
   <path class="airframe__glass" d="M116 40 C 130 24 144 17 160 17 C 176 17 190 24 204 40
                                    L196 47 C 184 34 173 30 160 30 C 147 30 136 34 124 47 Z"/>
@@ -35,30 +37,37 @@
 <div class="airframe__wingset" aria-hidden="true">
   <svg class="airframe__wings" viewBox="0 0 900 300" focusable="false">
     {# One path straight through the middle: the root is hidden behind the
-       cabin, so there is no seam to hide and no alignment to get wrong. #}
-    <path class="airframe__hull" d="M277 24 L623 24 L623 122 L882 228 L882 264 L566 212
-                                    L558 260 L342 260 L334 212 L18 264 L18 228 L277 122 Z"/>
-    {# Nacelles, longer fore-and-aft than across so they read as pods. Kept
-       inboard of x=101, where the surrounding column clips the wing — further
-       out they were sliced in half and read as wingtip fairings. #}
+       cabin, so there is no seam to hide and no alignment to get wrong.
+       A slender planform — 110 units of root chord against 864 of span. The
+       earlier wing carried 238 units of chord, which at this scale is a 360px
+       slab hanging off the fuselage and reads as a fin, not a wing. #}
+    <path class="airframe__hull" d="M291 110 L18 246 L18 274 L291 220
+                                    L609 220 L882 274 L882 246 L609 110 Z"/>
+    {# nacelles, longer fore-and-aft than across so they read as pods #}
     <g>
-      <rect class="airframe__nacelle" x="120" y="158" width="52" height="76" rx="24"/>
-      <rect class="airframe__nacelle" x="728" y="158" width="52" height="76" rx="24"/>
+      <rect class="airframe__nacelle" x="142" y="150" width="52" height="72" rx="24"/>
+      <rect class="airframe__nacelle" x="706" y="150" width="52" height="72" rx="24"/>
     </g>
   </svg>
 </div>
 {%- endmacro %}
 
 {% macro tail() -%}
-<svg class="airframe__tail" viewBox="0 0 800 300" aria-hidden="true" focusable="false">
-  {# the cone leaves the cabin at full width and tapers, with the stabilisers
-     sweeping out of it rather than off a separate stub #}
-  <path class="airframe__hull" d="M111 0 L689 0 L689 58 L782 190 L774 226 L664 152
-                                  C 654 220 620 266 570 290
-                                  C 526 312 274 312 230 290
-                                  C 180 266 146 220 136 152
-                                  L26 226 L18 190 L111 58 Z"/>
+{# Root x 144-656 is 64% of the viewBox, and the element is 175% of the cabin,
+   so the cone leaves the cabin at exactly the hull width. The extra 75% is
+   what the stabilisers overhang by: at 148% they cleared the fuselage by only
+   65px each side and read as nubs on a tub. #}
+<svg class="airframe__tail" viewBox="0 0 800 210" aria-hidden="true" focusable="false">
+  {# Taper is continuous from the root and closes to a fifth of it. Ending in a
+     wide half-round, as it did, put a pale bowl under the last row — that
+     bowl, not the span, was what made the back read as heavy. #}
+  <path class="airframe__hull" d="M144 0 L656 0 L640 40 L788 116 L776 148 L586 96
+                                  C 566 140 510 172 452 188
+                                  C 432 194 368 194 348 188
+                                  C 290 172 234 140 214 96
+                                  L24 148 L12 116 L160 40 Z"/>
   {# the fin, seen edge-on from above #}
-  <rect class="airframe__fin" x="376" y="24" width="48" height="228" rx="20"/>
+  <path class="airframe__fin" d="M392 16 C 392 10 408 10 408 16 L414 180
+                                 C 414 192 386 192 386 180 Z"/>
 </svg>
 {%- endmacro %}
