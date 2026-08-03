@@ -204,6 +204,9 @@
     selection = null;
     panel.hidden = true;
     panelBody.innerHTML = "";
+    // Deselecting undoes what selecting did. Only the filters we set go with
+    // it — `is-synced` is what tells those apart from ones typed by hand.
+    releaseSyncedFilters();
     reset();
   }
 
@@ -289,6 +292,41 @@
     reset();
   }
 
+  var clearLink = document.getElementById("clear-filters");
+
+  /* Offer Clear whenever a field holds anything, however it got there. */
+  function showClear() {
+    if (!clearLink) return;
+    clearLink.hidden = ![originField, destField, dateField].some(function (field) {
+      return field && field.value;
+    });
+  }
+
+  /* Whether the board itself was filtered, as opposed to only this form. */
+  function boardIsFiltered() {
+    var params = new URLSearchParams(window.location.search);
+    return ["origin", "dest", "date"].some(function (name) {
+      return (params.get(name) || "") !== "";
+    });
+  }
+
+  if (clearLink) {
+    clearLink.addEventListener("click", function (event) {
+      // A filtered board can only be undone by a fresh request, so let the
+      // link do what it says. A preview we set ourselves should not cost one.
+      if (boardIsFiltered()) return;
+
+      event.preventDefault();
+      if (searchForm) searchForm.classList.remove("is-synced");
+      [originField, destField, dateField].forEach(function (field) {
+        setField(field, "");
+      });
+      if (panel && !panel.hidden) closeGuide();
+      applyFilters();
+      showClear();
+    });
+  }
+
   [originField, destField, dateField].forEach(function (field) {
     if (!field) return;
     field.addEventListener("change", applyFilters);
@@ -315,16 +353,30 @@
      Preview only, which is how these filters have always behaved: the board
      itself still changes when the form is submitted. */
   function syncFilters(origin, dest) {
-    var moved = setField(originField, origin);
-    if (setField(destField, dest)) moved = true;
-    if (moved && searchForm) searchForm.classList.add("is-synced");
+    setField(originField, origin);
+    setField(destField, dest);
+    if (searchForm) searchForm.classList.add("is-synced");
+    showClear();
   }
 
-  // any hand-driven change clears the "we set this for you" cue
+  /* Give back the From/To we filled in, if they are still ours. The date is
+     never touched: picking a route says nothing about which day you wanted. */
+  function releaseSyncedFilters() {
+    if (!searchForm || !searchForm.classList.contains("is-synced")) return false;
+    searchForm.classList.remove("is-synced");
+    setField(originField, "");
+    setField(destField, "");
+    showClear();
+    return true;
+  }
+
+  /* Any hand-driven change makes the fields the visitor's, not ours: the cue
+     goes, and deselecting a route will no longer clear them. */
   [originField, destField, dateField].forEach(function (field) {
     if (!field) return;
     field.addEventListener("input", function () {
       if (searchForm) searchForm.classList.remove("is-synced");
+      showClear();
     });
   });
 
@@ -369,4 +421,5 @@
 
   // A filtered page load should arrive with the map already showing the filter.
   applyFilters();
+  showClear();
 })();

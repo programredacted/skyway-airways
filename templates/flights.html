@@ -36,9 +36,12 @@
     <input type="date" id="date" name="date" value="{{ criteria.date or '' }}">
   </div>
   <button class="btn" type="submit">Filter</button>
-  {% if criteria.origin or criteria.dest or criteria.date %}
-    <a class="btn btn--ghost" href="{{ url_for('flight_list') }}">Clear</a>
-  {% endif %}
+  {# Always rendered so the script can reveal it the moment picking a route
+     fills these fields — built conditionally, it was absent from the page
+     exactly when a selection had just set a filter there was no way to undo.
+     Hidden when there is nothing to clear; a link, so it works without JS. #}
+  <a class="btn btn--ghost" id="clear-filters" href="{{ url_for('flight_list') }}"
+     {{ '' if (criteria.origin or criteria.dest or criteria.date) else 'hidden' }}>Clear</a>
 </form>
 
 {# The map sits directly above the board so the network and the timetable are
