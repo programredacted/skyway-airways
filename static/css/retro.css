@@ -1565,36 +1565,16 @@ a:hover { color: var(--orange-dk); }
    border paints 2px and its right edge paints 7px, the shadow overlapping the
    border by one. 4 and 14 give exactly those, since half of every stroke falls
    inside the shape and is buried by the fill that follows. */
-/* Widened so the bands can nest: each layer is drawn over the last, and what
-   shows of any one is the difference between its width and the next. Outward
-   from the fill that ends up on top: 6px paper, 2px ink, 6px teal — the shell's
-   inset ring, its border, and its shadow, in that order. */
-.cabin-wings__ink    { fill: var(--ink);     stroke: var(--ink);     stroke-width: 16; }
-.cabin-wings__teal   { fill: var(--teal-dk); stroke: var(--teal-dk); stroke-width: 28; }
-.cabin-wings__inline { fill: var(--paper);   stroke: var(--paper);   stroke-width: 12; }
-.cabin-wings__inline > * { vector-effect: non-scaling-stroke; }
+.cabin-wings__ink  { fill: var(--ink);     stroke: var(--ink);     stroke-width: 4; }
+.cabin-wings__teal { fill: var(--teal-dk); stroke: var(--teal-dk); stroke-width: 14; }
 
-/* the shell's own interior, so the wing is the same material as the cabin */
-.cabin-wings__skin { fill: var(--paper-2); }
-.cabin-wings__pod  { fill: #ddd0b4; }
-
-/* The seam. The shell paints its border across the wing root, which is the one
-   line stopping the two reading as a single piece; this covers exactly that
-   strip — border and inset ring — in the interior colour.
-
-   Sized off the wing's own geometry: its root chord is y 110-220 of a 300-unit
-   viewBox on an SVG a third as tall as it is wide, so the chord is 9.17rem
-   deep and its trailing edge lands on the cabin's midpoint. */
-.cabin-wings__join {
-  position: absolute;
-  top: calc(50% - 9.17rem);
-  height: 9.17rem;
-  width: 8px;                 /* the shell's 2px border plus its 6px inset */
-  background: var(--paper-2);
-}
-
-.cabin-wings__join--port      { left: calc(50% - 17rem); }
-.cabin-wings__join--starboard { right: calc(50% - 17rem); }
+/* A shade below the cabin's interior, so the wing reads as behind it. Painting
+   it the cabin's own colour and breaking the border to merge the two was worse
+   on both counts: the wings flattened into slabs, and the join stayed a hard
+   edge rather than becoming a merge. */
+.cabin-wings__skin { fill: var(--paper-3); }
+/* one step deeper again so the pods read against the wing */
+.cabin-wings__pod { fill: #cbbb99; }
 
 @media (max-width: 55rem) {
   /* the sidebar drops below, so the cabin is centred on the page after all */
