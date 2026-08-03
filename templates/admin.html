@@ -215,12 +215,18 @@
 <h3 class="admin__subsection">Demo passengers</h3>
 {% for row in demo_accounts %}{{ account_card(row) }}{% endfor %}
 
-<h3 class="admin__subsection">Pre-sold seats</h3>
+<h3 class="admin__subsection" id="pre-sold">Pre-sold seats</h3>
 <p class="lede">
   {{ totals.seeded }} seats were sold to invented passengers, holding no
   account.
-  {% if totals.seeded > seeded_bookings | length %}
+  {% if showing_every_seat %}
+    Showing every one.
+    <a class="admin__more" href="{{ url_for('admin') }}#pre-sold">Show
+      the {{ seeded_shown }} most recent instead</a>
+  {% elif totals.seeded > seeded_bookings | length %}
     Showing the {{ seeded_bookings | length }} most recent.
+    <a class="admin__more" href="{{ url_for('admin', seeded='all') }}#pre-sold">Show
+      all {{ totals.seeded }}</a>
   {% endif %}
 </p>
 <div class="admin">{{ booking_rows(seeded_bookings) }}</div>

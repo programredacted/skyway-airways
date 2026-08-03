@@ -261,6 +261,14 @@ a:hover { color: var(--orange-dk); }
 .admin__name { font-family: var(--font-mono); }
 .admin__email { font-size: 0.86rem; color: var(--ink-soft); }
 
+/* Lifting the cap on the pre-sold list, offered where the cap is mentioned. */
+.admin__more {
+  margin-left: 0.15rem;
+  color: var(--oxblood);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 /* The flight number is the way through to the flight. Underlined only on
    approach, so a long list of bookings does not read as a wall of links. */
 .admin__flight {

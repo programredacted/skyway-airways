@@ -662,6 +662,11 @@ def register_routes(app):
 
         everyone = accounts.list_accounts(connection, seed.demo_usernames())
         seeded = [row for row in everyone if row["seeded"]]
+
+        # The pre-sold seats run to hundreds. Capped by default so the panel
+        # stays quick to open, but every one of them is reachable -- a cap you
+        # cannot lift is a cap that hides things.
+        show_every_seat = request.args.get("seeded") == "all"
         return render_template(
             "admin.html",
             admin=user,
@@ -671,7 +676,10 @@ def register_routes(app):
             staff_accounts=with_trips([row for row in seeded if row["is_admin"]]),
             demo_accounts=with_trips([row for row in seeded if not row["is_admin"]]),
             ghosts=sorted(ghosts.items()),
-            seeded_bookings=accounts.seeded_bookings(connection),
+            seeded_bookings=accounts.seeded_bookings(
+                connection, limit=None if show_every_seat else accounts.SEEDED_SHOWN),
+            showing_every_seat=show_every_seat,
+            seeded_shown=accounts.SEEDED_SHOWN,
             totals=accounts.booking_totals(connection),
         )
 
