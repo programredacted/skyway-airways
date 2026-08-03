@@ -14,6 +14,14 @@
   <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&family=Karla:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap">
 
+  {# The wordmark's aeroplane, on the brand tile. SVG first for anything that
+     takes it; the PNG is the fallback, and .ico is served at the root for
+     whatever asks by convention rather than by link. #}
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+  <link rel="icon" href="{{ url_for('static', filename='favicon-32.png') }}" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
+  <meta name="theme-color" content="#0c4145">
+
   <link rel="stylesheet" href="{{ url_for('static', filename='css/retro.css') }}">
 </head>
 <body>

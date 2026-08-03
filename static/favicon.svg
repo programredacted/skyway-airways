@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img"
+     aria-label="Skyway Airways">
+  <title>Skyway Airways</title>
+
+  <!-- The brand tile, so the mark reads on both light and dark browser chrome.
+       A bare gold aeroplane disappears against a light tab strip. -->
+  <rect width="32" height="32" rx="7" fill="#0c4145"/>
+
+  <!-- The same aeroplane the route map flies, nose up and to the right like
+       the wordmark's glyph. Drawn nose-right about the origin, so the
+       rotation is the only thing that aims it; the inner translate centres
+       the shape, which sits at x -5.6..4.4 in its own coordinates. -->
+  <path transform="translate(16 16) rotate(-45) scale(1.85) translate(0.6 0)"
+        fill="#d9a227"
+        d="M 4.4 0
+           C 3.3 -0.78 1.4 -0.95 0.33 -0.95
+           L -2.75 -4 L -3.7 -4 L -1.87 -0.95
+           L -3.7 -0.88 L -4.95 -2.2 L -5.6 -2.2 L -5.05 -0.78
+           L -5.6 0
+           L -5.05 0.78 L -5.6 2.2 L -4.95 2.2 L -3.7 0.88
+           L -1.87 0.95 L -3.7 4 L -2.75 4 L 0.33 0.95
+           C 1.4 0.95 3.3 0.78 4.4 0 Z"/>
+</svg>

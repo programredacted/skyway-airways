@@ -11,7 +11,8 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 from flask import (Flask, abort, current_app, flash, g, jsonify, make_response,
-                   redirect, render_template, request, session, url_for)
+                   redirect, render_template, request, send_from_directory,
+                   session, url_for)
 
 import accounts
 import bookings
@@ -580,6 +581,13 @@ def register_routes(app):
                 return redirect(url_for("boarding_pass", reference=reference.upper()))
             flash(f"No booking found for '{reference}'.", "error")
         return render_template("lookup.html")
+
+    @app.route("/favicon.ico")
+    def favicon():
+        """Browsers and bookmark tools ask for this by convention, whatever the
+        <link> tags say. Served from /static so there is only one copy."""
+        return send_from_directory(app.static_folder, "favicon.ico",
+                                   mimetype="image/vnd.microsoft.icon")
 
     @app.route("/healthz")
     def healthz():
