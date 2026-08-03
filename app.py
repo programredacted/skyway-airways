@@ -135,9 +135,14 @@ def sign_in(user):
     """Start a fresh session for this account.
 
     The old session id is dropped first so a token fixed before login cannot be
-    reused afterwards.
+    reused afterwards. The half-finished booking survives that: it is the
+    visitor's own typing, and losing it is what sent them back to an empty
+    form after registering.
     """
+    draft = session.get(PASSENGER_DRAFT_KEY)
     session.clear()
+    if draft:
+        session[PASSENGER_DRAFT_KEY] = draft
     session["user_id"] = user["id"]
 
 
@@ -180,21 +185,31 @@ def safe_next(target):
     return target
 
 
-# The passenger's email, carried from a booking they could not confirm to the
-# register form they were sent to. Held in the session — a signed cookie — so
-# it never becomes a query string that could be shared, logged or bookmarked.
-SIGNUP_EMAIL_KEY = "signup_email"
+# What the visitor typed on the passenger form before being told to sign in.
+# Held in the session — a signed cookie — so it never becomes a query string
+# that could be shared, logged or bookmarked.
+PASSENGER_DRAFT_KEY = "passenger_draft"
 
 
-def remember_signup_email(email):
-    email = (email or "").strip()
-    if email:
-        session[SIGNUP_EMAIL_KEY] = email[:254]
+def remember_passenger(form):
+    draft = {
+        "full_name": (form.get("full_name") or "").strip()[:120],
+        "email": (form.get("email") or "").strip()[:254],
+        "phone": (form.get("phone") or "").strip()[:40],
+    }
+    if any(draft.values()):
+        session[PASSENGER_DRAFT_KEY] = draft
 
 
-def take_signup_email():
-    """Read it and forget it: it is a one-time convenience, not a profile."""
-    return session.pop(SIGNUP_EMAIL_KEY, "")
+def passenger_draft():
+    """A peek, not a pop. Registering and then filling in the booking are two
+    separate requests and both need this, so it is dropped only once the
+    booking exists."""
+    return session.get(PASSENGER_DRAFT_KEY) or {}
+
+
+def forget_passenger():
+    session.pop(PASSENGER_DRAFT_KEY, None)
 
 
 # --- input validation --------------------------------------------------------
@@ -366,11 +381,18 @@ def register_routes(app):
         if seat is None:
             return redirect(url_for("seat_selection", flight_id=flight_id))
 
+        # Whatever they typed before being sent off to sign in comes back
+        # with them, so registering does not cost them the form.
+        draft = passenger_draft()
         return render_template(
             "passenger.html",
             flight=db.get_flight(connection, flight_id),
             seat=seat,
-            values={"full_name": "", "email": "", "phone": ""},
+            values={
+                "full_name": draft.get("full_name", ""),
+                "email": draft.get("email", ""),
+                "phone": draft.get("phone", ""),
+            },
             errors={},
         )
 
@@ -393,7 +415,7 @@ def register_routes(app):
         if user is None:
             # They typed an email one step ago and are about to be asked for
             # one again on the register form. Carry it across.
-            remember_signup_email(request.form.get("email", ""))
+            remember_passenger(request.form)
             flash("Please sign in to confirm your booking.", "error")
             resume = url_for("passenger_form", flight_id=flight_id, seat_id=seat["id"])
             return redirect(url_for("login", next=resume))
@@ -421,6 +443,7 @@ def register_routes(app):
         except bookings.SeatUnavailable:
             return _handle_lost_seat(connection, seat, values["email"], flight_id)
 
+        forget_passenger()      # the booking exists; the draft has done its job
         return redirect(url_for("boarding_pass", reference=reference))
 
     @app.route("/bookings/<reference>")
@@ -465,7 +488,7 @@ def register_routes(app):
         target = safe_next(request.args.get("next"))
 
         if request.method == "GET":
-            values["email"] = take_signup_email()
+            values["email"] = passenger_draft().get("email", "")
 
         if request.method == "POST":
             try:
@@ -572,8 +595,35 @@ def register_routes(app):
         user, bounce = require_admin()
         if bounce:
             return bounce
+        connection = get_db()
         return render_template("admin.html", admin=user,
-                               accounts=accounts.list_accounts(get_db()))
+                               accounts=accounts.list_accounts(connection),
+                               bookings=accounts.every_booking(connection),
+                               totals=accounts.booking_totals(connection))
+
+    @app.route("/admin/bookings/<reference>/cancel", methods=["POST"])
+    def admin_cancel_booking(reference):
+        """Staff can cancel anyone's booking.
+
+        Separate from /bookings/<ref>/cancel rather than loosening it: that
+        route deliberately refuses a booking belonging to another account, and
+        widening it for admins would put the ownership check behind a role
+        test on the same path.
+        """
+        _, bounce = require_admin()
+        if bounce:
+            return bounce
+
+        booking = db.get_booking_by_reference(get_db(), reference)
+        if booking is None:
+            abort(404)
+
+        if bookings.cancel_booking(get_db(), reference):
+            flash(f"Cancelled {booking['reference']}. The seat is back on sale.",
+                  "success")
+        else:
+            flash("That booking was already cancelled.", "error")
+        return redirect(url_for("admin"))
 
     @app.route("/admin/users/<int:user_id>/delete", methods=["POST"])
     def admin_delete_user(user_id):

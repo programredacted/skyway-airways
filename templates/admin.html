@@ -52,6 +52,81 @@
     </tbody>
   </table>
 </div>
+
+<h2 class="admin__section">Bookings</h2>
+<p class="lede">
+  {{ totals.confirmed }} confirmed of {{ totals.total }} in total. Cancelling
+  puts the seat back on sale immediately.
+  {% if totals.total > bookings | length %}
+    {# Said out loud rather than truncated quietly: most of the rest are the
+       seeded pre-sold seats, and a list that stops without saying so reads as
+       though it covered everything. #}
+    <br>Showing the {{ bookings | length }} most recent — the older
+    {{ totals.total - (bookings | length) }} are mostly seats pre-sold by the
+    seed and hold no account.
+  {% endif %}
+</p>
+
+<div class="admin">
+  <table class="admin__table">
+    <caption class="visually-hidden">Every booking, newest first</caption>
+    <thead>
+      <tr>
+        <th scope="col">Ref</th>
+        <th scope="col">Account</th>
+        <th scope="col">Passenger</th>
+        <th scope="col">Flight</th>
+        <th scope="col">Seat</th>
+        <th scope="col" class="admin__numeric">Paid</th>
+        <th scope="col">Status</th>
+        <th scope="col"><span class="visually-hidden">Actions</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for trip in bookings %}
+        <tr class="{{ 'is-void' if trip.status == 'CANCELLED' }}">
+          <td><span class="admin__name">{{ trip.reference }}</span></td>
+          <td>
+            {% if trip.username %}
+              {{ trip.username }}
+            {% else %}
+              <span class="admin__self">no account</span>
+            {% endif %}
+          </td>
+          <td class="admin__email">{{ trip.full_name }}</td>
+          <td>
+            {{ trip.flight_number }}
+            <span class="admin__email">
+              {{ trip.origin_code }}&rarr;{{ trip.dest_code }} &middot;
+              {{ trip.departs_at | daystamp }}
+            </span>
+          </td>
+          <td class="admin__numeric">{{ trip.row_number }}{{ trip.seat_letter }}</td>
+          <td class="admin__numeric">{{ trip.price_paid_cents | fare }}</td>
+          <td>
+            {% if trip.status == 'CANCELLED' %}
+              <span class="admin__self">Cancelled</span>
+            {% else %}
+              <span class="admin__badge admin__badge--live">Confirmed</span>
+            {% endif %}
+          </td>
+          <td class="admin__actions">
+            {% if trip.status != 'CANCELLED' %}
+              <form method="post"
+                    action="{{ url_for('admin_cancel_booking', reference=trip.reference) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <button type="submit" class="btn btn--small btn--danger"
+                        data-confirm="Cancel {{ trip.reference }} — {{ trip.flight_number }}, seat {{ trip.row_number }}{{ trip.seat_letter }}? The seat goes back on sale.">
+                  Cancel
+                </button>
+              </form>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 {% endblock %}
 
 {% block scripts %}

@@ -162,6 +162,114 @@ def test_the_admin_link_only_appears_for_admins(client, csrf, login, register):
     assert 'href="/admin"' in client.get("/flights").get_data(as_text=True)
 
 
+def test_the_panel_lists_every_booking_and_who_holds_it(client, csrf, login,
+                                                        register, book):
+    register(username="traveller")
+    reference = book().headers["Location"].rsplit("/", 1)[-1]
+    client.post("/logout", data={"csrf_token": csrf()})
+    login(*ADMIN)
+
+    body = client.get("/admin").get_data(as_text=True)
+    assert reference in body
+    assert "traveller" in body
+    assert "Jimmy Ngo" in body            # the passenger, not the account
+    assert "no account" in body           # the seeded pre-sold seats
+
+
+def test_the_booking_list_says_what_it_is_not_showing(client, conn, csrf, login):
+    """A list that stops without saying so reads as though it covered
+    everything. The seed alone pre-sells hundreds of seats."""
+    login(*ADMIN)
+    body = client.get("/admin").get_data(as_text=True)
+
+    total = conn.execute("SELECT COUNT(*) FROM bookings").fetchone()[0]
+    shown = body.count("/admin/bookings/")
+
+    assert total > accounts.BOOKINGS_SHOWN, "expected the seed to overflow the cap"
+    assert shown <= accounts.BOOKINGS_SHOWN
+    assert "Showing the" in body and "most recent" in body
+    assert str(total) in body
+
+
+def test_the_newest_bookings_are_the_ones_that_survive_the_cap(client, csrf, login,
+                                                               register, book):
+    """A booking made now must appear, however full the seeded history is."""
+    register(username="latest")
+    reference = book().headers["Location"].rsplit("/", 1)[-1]
+    client.post("/logout", data={"csrf_token": csrf()})
+    login(*ADMIN)
+
+    assert reference in client.get("/admin").get_data(as_text=True)
+
+
+def test_an_admin_can_cancel_someone_elses_booking(client, conn, csrf, login,
+                                                   register, book, free_seat):
+    import db as database
+
+    register(username="stranded")
+    flight_id, seat = free_seat(1)
+    reference = book(flight_id=flight_id, seat=seat).headers["Location"].rsplit("/", 1)[-1]
+    client.post("/logout", data={"csrf_token": csrf()})
+    login(*ADMIN)
+
+    response = client.post(f"/admin/bookings/{reference}/cancel",
+                           data={"csrf_token": csrf("/admin")})
+    assert response.status_code == 302
+    assert database.get_booking_by_reference(conn, reference)["status"] == "CANCELLED"
+
+    # and the seat is genuinely back on sale
+    freed = database.get_seats(conn, flight_id)
+    assert next(s for s in freed if s["id"] == seat["id"])["available"]
+
+
+def test_a_non_admin_cannot_cancel_through_the_staff_route(client, conn, csrf,
+                                                           register, book):
+    import db as database
+
+    register(username="mine")
+    reference = book().headers["Location"].rsplit("/", 1)[-1]
+    client.post("/logout", data={"csrf_token": csrf()})
+    register(username="meddler")
+
+    response = client.post(f"/admin/bookings/{reference}/cancel",
+                           data={"csrf_token": csrf()})
+    assert response.status_code == 403
+    assert database.get_booking_by_reference(conn, reference)["status"] == "CONFIRMED"
+
+
+def test_staff_cancelling_is_csrf_protected(client, conn, csrf, login, register, book):
+    import db as database
+
+    register(username="shieldedtrip")
+    reference = book().headers["Location"].rsplit("/", 1)[-1]
+    client.post("/logout", data={"csrf_token": csrf()})
+    login(*ADMIN)
+
+    assert client.post(f"/admin/bookings/{reference}/cancel").status_code == 400
+    assert database.get_booking_by_reference(conn, reference)["status"] == "CONFIRMED"
+
+
+def test_staff_cancelling_an_unknown_reference_is_a_404(client, csrf, login):
+    login(*ADMIN)
+    assert client.post("/admin/bookings/NOPE01/cancel",
+                       data={"csrf_token": csrf("/admin")}).status_code == 404
+
+
+def test_a_cancelled_booking_loses_its_cancel_button(client, csrf, login,
+                                                     register, book):
+    register(username="doneandgone")
+    reference = book().headers["Location"].rsplit("/", 1)[-1]
+    client.post("/logout", data={"csrf_token": csrf()})
+    login(*ADMIN)
+
+    client.post(f"/admin/bookings/{reference}/cancel",
+                data={"csrf_token": csrf("/admin")})
+
+    body = client.get("/admin").get_data(as_text=True)
+    assert reference in body                                   # still listed
+    assert f"/admin/bookings/{reference}/cancel" not in body    # but not actionable
+
+
 def test_an_older_database_gains_the_admin_column(tmp_path):
     """CREATE TABLE IF NOT EXISTS will not add a column to a table that already
     exists, so db.init_db backfills it rather than requiring a reseed."""

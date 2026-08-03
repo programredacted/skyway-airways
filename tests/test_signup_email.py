@@ -1,9 +1,12 @@
-"""The email typed at the passenger step, carried to the register form."""
+"""The passenger details, carried across the sign-in they were interrupted by.
 
-from conftest import DEMO_PASSWORD, DEMO_USERNAME  # noqa: F401  (fixtures use them)
+Typing a name and email, being told to register, and coming back to an empty
+form is the friction this removes.
+"""
 
 
-def _start_a_booking(client, csrf, free_seat, email="traveller@example.com"):
+def _start_a_booking(client, csrf, free_seat, email="traveller@example.com",
+                     name="Jimmy Ngo", phone="+1 555 0142"):
     """Fill in the passenger form while signed out. The confirm is refused and
     the visitor is sent to sign in."""
     flight_id, seat = free_seat(1)
@@ -11,13 +14,13 @@ def _start_a_booking(client, csrf, free_seat, email="traveller@example.com"):
         "csrf_token": csrf(f"/flights/{flight_id}/passenger?seat_id={seat['id']}"),
         "flight_id": flight_id,
         "seat_id": seat["id"],
-        "full_name": "Jimmy Ngo",
+        "full_name": name,
         "email": email,
-        "phone": "+1 555 0142",
+        "phone": phone,
     })
     assert response.status_code == 302
     assert "/login" in response.headers["Location"]
-    return response
+    return flight_id, seat
 
 
 def test_the_email_lands_in_the_register_form(client, csrf, free_seat):
@@ -28,23 +31,62 @@ def test_the_email_lands_in_the_register_form(client, csrf, free_seat):
     assert "Carried over from the booking you started" in body
 
 
-def test_it_is_used_once_and_then_forgotten(client, csrf, free_seat):
-    """A one-time convenience, not a stored profile."""
-    _start_a_booking(client, csrf, free_seat)
+def test_the_details_survive_registering_and_refill_the_form(client, csrf,
+                                                             free_seat, register):
+    """The whole point: sign_in clears the session to defeat fixation, and the
+    draft has to live through that or the form comes back blank."""
+    flight_id, seat = _start_a_booking(client, csrf, free_seat)
 
-    assert 'value="traveller@example.com"' in client.get("/register").get_data(as_text=True)
-    assert 'value="traveller@example.com"' not in client.get("/register").get_data(as_text=True)
+    assert register(username="returning").status_code == 302     # signs them in
+
+    body = client.get(
+        f"/flights/{flight_id}/passenger?seat_id={seat['id']}").get_data(as_text=True)
+    assert 'value="Jimmy Ngo"' in body
+    assert 'value="traveller@example.com"' in body
+    assert 'value="+1 555 0142"' in body
+
+
+def test_the_details_survive_signing_in_to_an_existing_account(client, csrf,
+                                                               free_seat, login):
+    flight_id, seat = _start_a_booking(client, csrf, free_seat)
+    assert login().status_code == 302
+
+    body = client.get(
+        f"/flights/{flight_id}/passenger?seat_id={seat['id']}").get_data(as_text=True)
+    assert 'value="Jimmy Ngo"' in body
+
+
+def test_the_draft_is_dropped_once_the_booking_exists(client, csrf, free_seat,
+                                                      register):
+    flight_id, seat = _start_a_booking(client, csrf, free_seat)
+    register(username="finisher")
+
+    confirmed = client.post("/bookings", data={
+        "csrf_token": csrf(f"/flights/{flight_id}/passenger?seat_id={seat['id']}"),
+        "flight_id": flight_id, "seat_id": seat["id"],
+        "full_name": "Jimmy Ngo", "email": "traveller@example.com",
+        "phone": "+1 555 0142",
+    })
+    assert confirmed.status_code == 302
+    assert "/bookings/" in confirmed.headers["Location"]
+
+    # a fresh booking starts from an empty form, not the last one's details
+    next_flight, next_seat = free_seat(2)
+    body = client.get(
+        f"/flights/{next_flight}/passenger?seat_id={next_seat['id']}").get_data(as_text=True)
+    assert 'value="Jimmy Ngo"' not in body
 
 
 def test_it_never_appears_in_a_url(client, csrf, free_seat):
     """It rides in the session cookie, so it cannot be shared or logged."""
-    response = _start_a_booking(client, csrf, free_seat)
-    assert "traveller" not in response.headers["Location"]
-    assert "@" not in response.headers["Location"]
+    flight_id, seat = _start_a_booking(client, csrf, free_seat)
+    response = client.get("/register")
+    assert response.status_code == 200
+    assert "traveller" not in response.headers.get("Location", "")
 
 
 def test_a_visitor_who_typed_nothing_gets_an_empty_field(client, csrf, free_seat):
-    _start_a_booking(client, csrf, free_seat, email="")
+    _start_a_booking(client, csrf, free_seat, email="", name="", phone="")
     body = client.get("/register").get_data(as_text=True)
     assert 'id="email" name="email" value=""' in body
     assert "Carried over" not in body

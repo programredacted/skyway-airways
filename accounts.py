@@ -149,6 +149,48 @@ def list_accounts(connection):
     ).fetchall()
 
 
+BOOKINGS_SHOWN = 80
+
+
+def booking_totals(connection):
+    """How many exist, so the page can say what it is not showing."""
+    return connection.execute(
+        """
+        SELECT COUNT(*) AS total,
+               SUM(CASE WHEN status = 'CONFIRMED' THEN 1 ELSE 0 END) AS confirmed
+        FROM bookings
+        """
+    ).fetchone()
+
+
+def every_booking(connection, limit=BOOKINGS_SHOWN):
+    """Bookings newest first, with the account that holds each one.
+
+    Capped: a seeded database carries hundreds of pre-sold seats, and drawing
+    all of them buries the handful that belong to real accounts. Newest first
+    means actual activity is what survives the cap. Left join, because those
+    pre-sold seats belong to nobody.
+    """
+    return connection.execute(
+        """
+        SELECT b.reference, b.status, b.price_paid_cents, b.created_at,
+               b.user_id, u.username,
+               p.full_name, p.email,
+               s.row_number, s.seat_letter, s.cabin_class,
+               f.flight_number, f.origin_code, f.dest_code, f.dest_city,
+               f.departs_at
+        FROM bookings b
+        JOIN passengers p ON p.id = b.passenger_id
+        JOIN seats s ON s.id = b.seat_id
+        JOIN flights f ON f.id = b.flight_id
+        LEFT JOIN users u ON u.id = b.user_id
+        ORDER BY b.id DESC
+        LIMIT ?
+        """,
+        (limit,),
+    ).fetchall()
+
+
 def delete_account(connection, user_id):
     """Remove an account, leaving its bookings in place but unowned.
 
