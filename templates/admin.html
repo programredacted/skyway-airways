@@ -28,7 +28,12 @@
           class="{{ 'is-void' if trip.status == 'CANCELLED' }}">
         <td><span class="admin__name">{{ trip.reference }}</span></td>
         <td>
-          {{ trip.flight_number }}
+          {# Opens away from the panel: checking a flight should not cost you
+             your place in a long list of accounts. #}
+          <a class="admin__flight"
+             href="{{ url_for('flight_detail', flight_id=trip.flight_id) }}"
+             target="_blank" rel="noopener"
+             title="Open {{ trip.flight_number }} in a new tab">{{ trip.flight_number }}</a>
           <span class="admin__email">
             {{ trip.origin_code }}&rarr;{{ trip.dest_code }} &middot;
             {{ trip.departs_at | daystamp }}

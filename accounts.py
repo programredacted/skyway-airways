@@ -223,6 +223,7 @@ def _bookings(connection, where, limit=None):
                b.user_id, b.former_username, u.username,
                p.full_name, p.email,
                s.row_number, s.seat_letter, s.cabin_class,
+               f.id AS flight_id,
                f.flight_number, f.origin_code, f.dest_code, f.dest_city,
                f.departs_at
         FROM bookings b

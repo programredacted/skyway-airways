@@ -260,6 +260,22 @@ a:hover { color: var(--orange-dk); }
 
 .admin__name { font-family: var(--font-mono); }
 .admin__email { font-size: 0.86rem; color: var(--ink-soft); }
+
+/* The flight number is the way through to the flight. Underlined only on
+   approach, so a long list of bookings does not read as a wall of links. */
+.admin__flight {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px solid var(--rule);
+}
+
+.admin__flight:hover,
+.admin__flight:focus-visible {
+  color: var(--oxblood);
+  border-bottom-color: currentColor;
+}
+
 .admin__numeric { text-align: right; font-family: var(--font-mono); }
 .admin__actions { text-align: right; }
 .admin__self { font-size: 0.78rem; color: var(--ink-soft); font-style: italic; }
