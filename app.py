@@ -381,19 +381,26 @@ def register_routes(app):
         if seat is None:
             return redirect(url_for("seat_selection", flight_id=flight_id))
 
-        # Whatever they typed before being sent off to sign in comes back
-        # with them, so registering does not cost them the form.
+        # Three sources, most specific first: what they typed before being sent
+        # off to sign in, then the account itself, then the details they last
+        # travelled under — an account carries an email but no passenger name,
+        # so the name can only come from a previous booking.
         draft = passenger_draft()
+        user = current_user()
+        before = accounts.last_passenger_details(connection, user["id"]) if user else None
+
+        values = {
+            "full_name": draft.get("full_name") or (before["full_name"] if before else ""),
+            "email": draft.get("email") or (user["email"] if user else ""),
+            "phone": draft.get("phone") or (before["phone"] if before else ""),
+        }
         return render_template(
             "passenger.html",
             flight=db.get_flight(connection, flight_id),
             seat=seat,
-            values={
-                "full_name": draft.get("full_name", ""),
-                "email": draft.get("email", ""),
-                "phone": draft.get("phone", ""),
-            },
+            values=values,
             errors={},
+            prefilled=bool(user) and not draft and any(values.values()),
         )
 
     @app.route("/bookings", methods=["POST"])

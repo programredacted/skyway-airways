@@ -23,6 +23,15 @@
   <p class="selection__price">{{ seat.price_cents | fare }}</p>
 </aside>
 
+{% if prefilled | default(false) %}
+  {# Said out loud: fields that fill themselves with no explanation read as a
+     glitch, and these are editable — you may be booking for someone else. #}
+  <p class="form__note form__note--filled">
+    Filled in from your account. Change anything that should be different —
+    you can book for someone else.
+  </p>
+{% endif %}
+
 <form class="form" method="post" action="{{ url_for('confirm_booking') }}" novalidate>
   <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
   <input type="hidden" name="flight_id" value="{{ flight.id }}">

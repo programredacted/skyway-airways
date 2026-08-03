@@ -624,6 +624,15 @@ a:hover { color: var(--orange-dk); }
 .form__error { margin: 0; color: var(--oxblood); font-size: 0.86rem; font-weight: 700; }
 .form__note { margin-top: 0.9rem; font-size: 0.8rem; color: var(--ink-soft); }
 
+/* sits above the form it describes, not after it */
+.form__note--filled {
+  max-width: 32rem;
+  margin: 0 0 1.1rem;
+  padding: 0.6rem 0.9rem;
+  background: var(--paper-2);
+  border-left: 4px solid var(--gold);
+}
+
 .req, .opt {
   font-family: var(--font-body);
   font-size: 0.62rem;

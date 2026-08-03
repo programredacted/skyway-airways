@@ -139,6 +139,26 @@ def get_by_id(connection, user_id):
     return connection.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
 
 
+def last_passenger_details(connection, user_id):
+    """The name and phone this account travelled under last time.
+
+    An account holds a username and an email, not a passenger name — so the
+    only place a returning traveller's name exists is on the booking they made
+    before. Newest first, since that is the one most likely still correct.
+    """
+    return connection.execute(
+        """
+        SELECT p.full_name, p.email, p.phone
+        FROM bookings b
+        JOIN passengers p ON p.id = b.passenger_id
+        WHERE b.user_id = ?
+        ORDER BY b.id DESC
+        LIMIT 1
+        """,
+        (user_id,),
+    ).fetchone()
+
+
 def list_accounts(connection, seeded_usernames=()):
     """Every account with how many bookings it holds, newest first.
 

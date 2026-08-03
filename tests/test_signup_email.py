@@ -70,11 +70,16 @@ def test_the_draft_is_dropped_once_the_booking_exists(client, csrf, free_seat,
     assert confirmed.status_code == 302
     assert "/bookings/" in confirmed.headers["Location"]
 
-    # a fresh booking starts from an empty form, not the last one's details
+    # Signing out is what proves it: a signed-in visitor legitimately sees
+    # these fields filled from their account, so an empty form only means
+    # anything once the account is out of the picture.
+    client.post("/logout", data={"csrf_token": csrf()})
+
     next_flight, next_seat = free_seat(2)
     body = client.get(
         f"/flights/{next_flight}/passenger?seat_id={next_seat['id']}").get_data(as_text=True)
     assert 'value="Jimmy Ngo"' not in body
+    assert 'value="traveller@example.com"' not in body
 
 
 def test_it_never_appears_in_a_url(client, csrf, free_seat):
