@@ -40,6 +40,12 @@ def create_app():
         SECRET_KEY=os.environ.get("SECRET_KEY", "dev-only-secret-change-in-production"),
         DATABASE_PATH=os.environ.get("DATABASE_PATH", str(PROJECT_ROOT / "flights.db")),
         AIRLINE_NAME="Skyway Airways",
+        # Cache assets hard. Safe because asset() stamps every URL with the
+        # file's mtime, so an edit changes the URL and the old one is never
+        # asked for again. Without this the browser refetches the stylesheet
+        # and every script on each navigation, and a small host drops some of
+        # that burst -- which reads as an unstyled page, not as a failed request.
+        SEND_FILE_MAX_AGE_DEFAULT=31536000,
     )
 
     prepare_database(app)

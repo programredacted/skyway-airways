@@ -5,7 +5,7 @@ A flight booking web app with an **interactive seat map**, styled as a
 a live cabin plan, enter passenger details, and get a retro boarding pass with a
 booking reference that persists to SQLite.
 
-**Live demo:** _(paste the Render URL here after deploying — see [Deploying](#deploying))_
+**Live demo:** <https://skyway-airways.onrender.com>
 
 > **Before a live demo:** open the URL a few minutes early. Render's free tier
 > sleeps after 15 minutes idle and takes ~50 seconds to wake.
@@ -238,6 +238,10 @@ if the table is empty — idempotent and safe to re-run.
 6. **Advanced** → **Health Check Path**: `/healthz`
 7. **Create Web Service** and wait for the first build (2–4 minutes).
 8. Open the URL, then paste it into the **Live demo** line at the top of this file.
+
+Render's own Web Service form does not read `render.yaml`, and the start command
+it guesses (`app:app`) will fail — this app has no module-level `app`, only the
+`create_app()` factory. Set the start command above by hand, or use a Blueprint.
 
 Alternatively, use **New + → Blueprint** and Render will read every setting from
 [`render.yaml`](render.yaml).
