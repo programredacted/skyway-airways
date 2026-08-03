@@ -1573,7 +1573,16 @@ a:hover { color: var(--orange-dk); }
 
 /* the shell's own interior, so wing and cabin are the same material */
 .cabin-wings__skin { fill: var(--paper-2); }
-.cabin-wings__pod { fill: #ddd0b4; }
+
+/* Plain pills, outlined all the way round. The starboard one sits over its
+   own band, laid down first so this fill buries the inner half — the same
+   trick the wing edge uses, so both sides read at the shell's weights. */
+.cabin-wings__pod {
+  fill: #ddd0b4;
+  stroke: var(--ink);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
 
 @media (max-width: 55rem) {
   /* the sidebar drops below, so the cabin is centred on the page after all */

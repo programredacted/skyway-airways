@@ -79,8 +79,7 @@
          half and only the outer shows — the shell's shadow, in place. #}
       <path class="cabin-wings__band"
             d="M605 110 L870 244 C 894 252 894 268 870 276 L605 220"/>
-      <path class="cabin-wings__band"
-            d="M758 187 L758 174 A 24 24 0 0 0 734 150 L730 150 A 24 24 0 0 0 709 162"/>
+      <rect class="cabin-wings__band" x="706" y="150" width="52" height="72" rx="24"/>
 
       {# The wing bodies, in the shell's own interior colour, rooted exactly on
          its wall at x 295 and 605 — (49.5rem - 17rem) / 99rem of the viewBox,
@@ -93,9 +92,6 @@
             d="M605 110 L870 244 C 894 252 894 268 870 276 L605 220 Z"/>
       <rect class="cabin-wings__skin" x="295" y="110" width="9" height="110"/>
       <rect class="cabin-wings__skin" x="596" y="110" width="9" height="110"/>
-
-      <rect class="cabin-wings__pod" x="142" y="150" width="52" height="72" rx="24"/>
-      <rect class="cabin-wings__pod" x="706" y="150" width="52" height="72" rx="24"/>
 
       {# the shell's inset ring, carried out along the wing and back #}
       <path class="cabin-wings__inline"
@@ -111,15 +107,11 @@
       <path class="cabin-wings__edge"
             d="M605 110 L870 244 C 894 252 894 268 870 276 L605 220"/>
 
-      {# Only the part of each nacelle that breaks the leading edge, drawn from
-         where it crosses to where it crosses back — solved off the rect's own
-         rx=24 corners, so the line sits on the fill it traces. A ring right
-         round the pod made it a pill lying on the wing rather than a pod
-         slung under it. #}
-      <path class="cabin-wings__edge"
-            d="M142 187 L142 174 A 24 24 0 0 1 166 150 L170 150 A 24 24 0 0 1 191 162"/>
-      <path class="cabin-wings__edge"
-            d="M758 187 L758 174 A 24 24 0 0 0 734 150 L730 150 A 24 24 0 0 0 709 162"/>
+      {# Last, so they sit on the wing rather than being crossed by its leading
+         edge — a line running through the pod reads as a seam, not an engine. #}
+      <rect class="cabin-wings__pod" x="142" y="150" width="52" height="72" rx="24"/>
+      <rect class="cabin-wings__pod" x="706" y="150" width="52" height="72" rx="24"/>
+
     </svg>
 
     <div class="cabin-shell" id="seat-grid"
