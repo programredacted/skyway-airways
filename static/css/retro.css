@@ -164,7 +164,9 @@ a:hover { color: var(--orange-dk); }
   color: var(--gold);
 }
 
-.site-nav__out { display: inline; }
+/* A flex item, like the links either side of it: as an inline form it sat on
+   its own baseline and the button rode a couple of pixels low. */
+.site-nav__out { display: flex; align-items: center; }
 
 .site-nav__out button {
   padding: 0 0 2px;
@@ -173,6 +175,9 @@ a:hover { color: var(--orange-dk); }
   background: none;
   color: var(--paper);
   font-family: var(--font-display);
+  /* buttons take line-height: normal from the UA rather than inheriting it,
+     which is a couple of pixels shorter than the links beside them */
+  line-height: inherit;
   font-size: 0.78rem;
   font-weight: 500;
   letter-spacing: var(--track-wide);
@@ -1514,11 +1519,18 @@ a:hover { color: var(--orange-dk); }
   /* Behind the cabin without touching it: the shell is statically positioned,
      so anything positioned here would otherwise paint on top of it. */
   z-index: -1;
-  /* Never clipped. The cabin is centred in the left grid column rather than on
-     the page, so the left edge binds first: its centre sits (100vw - 312px)/2
-     from that edge, which caps the span at 100vw - 312px — the sidebar's
-     17.5rem plus the 2rem gap. */
-  width: min(260%, calc(100vw - 19.5rem));
+  /* Sized in rem, like the 34rem cabin, so the two hold their proportion when
+     the page is zoomed. A percentage of the column or a share of the viewport
+     does not: zoom shrinks the CSS viewport while the cabin stays 34rem, and
+     the wings were sliding from 1.67x down to 0.72x of it across ordinary
+     zoom levels.
+
+     The viewport term is only a backstop against clipping. The cabin is
+     centred in the left grid column rather than on the page, so the left edge
+     runs out first: its centre sits (100vw - 312px)/2 from that edge, capping
+     the span at 100vw - 312px — the sidebar's 17.5rem plus the 2rem gap. At
+     75rem that backstop stays out of the way down to about 125% zoom. */
+  width: min(75rem, calc(100vw - 19.5rem));
 }
 
 /* The silhouette pass. Filled as well as stroked so wing and engine merge

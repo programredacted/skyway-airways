@@ -46,6 +46,8 @@
         <a href="{{ url_for('my_trips') }}">My Trips</a>
         <a href="{{ url_for('account') }}">Account</a>
         {% if current_user.is_admin %}<a href="{{ url_for('admin') }}">Admin</a>{% endif %}
+        {# signing out is leaving, not another place to go #}
+        <span class="site-nav__rule" aria-hidden="true"></span>
         <form class="site-nav__out" method="post" action="{{ url_for('logout') }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
           <button type="submit">Sign out</button>
