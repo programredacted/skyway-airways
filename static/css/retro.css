@@ -1566,7 +1566,7 @@ a:hover { color: var(--orange-dk); }
 /* The starboard band, drawn before the wing is filled so the fill buries its
    inner half — 8 centred leaves 8 showing outside, and the ink line lands on
    the boundary over it, exactly as the border sits on the shell's shadow. */
-.cabin-wings__band { stroke: var(--teal-dk); stroke-width: 16; }
+.cabin-wings__band { stroke: var(--teal-dk); stroke-width: 12; }
 
 /* the shell's inset ring, carried out along the wing and back */
 .cabin-wings__inline { stroke: var(--paper); stroke-width: 6; }

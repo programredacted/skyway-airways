@@ -79,6 +79,8 @@
          half and only the outer shows — the shell's shadow, in place. #}
       <path class="cabin-wings__band"
             d="M605 110 L870 244 C 894 252 894 268 870 276 L605 220"/>
+      <path class="cabin-wings__band"
+            d="M758 187 L758 174 A 24 24 0 0 0 734 150 L730 150 A 24 24 0 0 0 709 162"/>
 
       {# The wing bodies, in the shell's own interior colour, rooted exactly on
          its wall at x 295 and 605 — (49.5rem - 17rem) / 99rem of the viewBox,
@@ -108,6 +110,16 @@
             d="M295 110 L30 244 C 6 252 6 268 30 276 L295 220"/>
       <path class="cabin-wings__edge"
             d="M605 110 L870 244 C 894 252 894 268 870 276 L605 220"/>
+
+      {# Only the part of each nacelle that breaks the leading edge, drawn from
+         where it crosses to where it crosses back — solved off the rect's own
+         rx=24 corners, so the line sits on the fill it traces. A ring right
+         round the pod made it a pill lying on the wing rather than a pod
+         slung under it. #}
+      <path class="cabin-wings__edge"
+            d="M142 187 L142 174 A 24 24 0 0 1 166 150 L170 150 A 24 24 0 0 1 191 162"/>
+      <path class="cabin-wings__edge"
+            d="M758 187 L758 174 A 24 24 0 0 0 734 150 L730 150 A 24 24 0 0 0 709 162"/>
     </svg>
 
     <div class="cabin-shell" id="seat-grid"
