@@ -176,30 +176,53 @@ def test_the_panel_lists_every_booking_and_who_holds_it(client, csrf, login,
     assert "no account" in body           # the seeded pre-sold seats
 
 
-def test_the_booking_list_says_what_it_is_not_showing(client, conn, csrf, login):
+def test_the_seeded_list_says_what_it_is_not_showing(client, conn, csrf, login):
     """A list that stops without saying so reads as though it covered
     everything. The seed alone pre-sells hundreds of seats."""
     login(*ADMIN)
     body = client.get("/admin").get_data(as_text=True)
 
-    total = conn.execute("SELECT COUNT(*) FROM bookings").fetchone()[0]
-    shown = body.count("/admin/bookings/")
-
-    assert total > accounts.BOOKINGS_SHOWN, "expected the seed to overflow the cap"
-    assert shown <= accounts.BOOKINGS_SHOWN
+    seeded = conn.execute(
+        "SELECT COUNT(*) FROM bookings WHERE user_id IS NULL").fetchone()[0]
+    assert seeded > accounts.SEEDED_SHOWN, "expected the seed to overflow the cap"
     assert "Showing the" in body and "most recent" in body
-    assert str(total) in body
+    assert str(seeded) in body
 
 
-def test_the_newest_bookings_are_the_ones_that_survive_the_cap(client, csrf, login,
-                                                               register, book):
-    """A booking made now must appear, however full the seeded history is."""
+def test_real_bookings_are_never_capped(client, conn, csrf, login, register, book):
+    """The seeded seats are capped; the ones people made are not, and a booking
+    made now must appear however full the seeded history is."""
     register(username="latest")
     reference = book().headers["Location"].rsplit("/", 1)[-1]
     client.post("/logout", data={"csrf_token": csrf()})
     login(*ADMIN)
 
-    assert reference in client.get("/admin").get_data(as_text=True)
+    body = client.get("/admin").get_data(as_text=True)
+    assert reference in body
+
+    from_accounts = conn.execute(
+        "SELECT COUNT(*) FROM bookings WHERE user_id IS NOT NULL").fetchone()[0]
+    for row in conn.execute(
+            "SELECT reference FROM bookings WHERE user_id IS NOT NULL"):
+        assert row["reference"] in body, row["reference"]
+    assert f"All {from_accounts} of them" in body
+
+
+def test_seeded_data_is_kept_apart_from_real_activity(client, csrf, login,
+                                                      register, book):
+    register(username="genuine")
+    reference = book().headers["Location"].rsplit("/", 1)[-1]
+    client.post("/logout", data={"csrf_token": csrf()})
+    login(*ADMIN)
+
+    body = client.get("/admin").get_data(as_text=True)
+
+    # the demo logins live under their own heading, not with the real accounts
+    people = body.index("Passenger accounts")
+    fixtures = body.index("Seeded demo data")
+    assert people < body.index("genuine") < fixtures, "real account in the wrong box"
+    assert fixtures < body.index("demo@skyway.example"), "demo login in the wrong box"
+    assert people < body.index(reference) < fixtures, "real booking in the wrong box"
 
 
 def test_an_admin_can_cancel_someone_elses_booking(client, conn, csrf, login,
@@ -270,7 +293,102 @@ def test_a_cancelled_booking_loses_its_cancel_button(client, csrf, login,
     assert f"/admin/bookings/{reference}/cancel" not in body    # but not actionable
 
 
-def test_an_older_database_gains_the_admin_column(tmp_path):
+def test_locking_an_account_refuses_deletion(client, conn, csrf, login, register):
+    register(username="precious")
+    client.post("/logout", data={"csrf_token": csrf()})
+    login(*ADMIN)
+
+    user_id = _user(conn, "precious")["id"]
+    client.post(f"/admin/users/{user_id}/lock", data={"csrf_token": csrf("/admin")})
+    assert _user(conn, "precious")["is_locked"] == 1
+
+    response = client.post(f"/admin/users/{user_id}/delete",
+                           data={"csrf_token": csrf("/admin")},
+                           follow_redirects=True)
+    assert "is locked" in response.get_data(as_text=True)
+    assert _user(conn, "precious") is not None
+
+
+def test_the_lock_is_enforced_below_the_view(conn, register):
+    """Hiding the button is a courtesy; this is the rule. A direct call has to
+    be refused too."""
+    import accounts as accounts_module
+
+    register(username="guardedrow")
+    user_id = _user(conn, "guardedrow")["id"]
+    accounts_module.set_locked(conn, user_id, True)
+
+    try:
+        accounts_module.delete_account(conn, user_id)
+    except accounts_module.AccountLocked:
+        pass
+    else:
+        raise AssertionError("a locked account was deleted")
+
+    assert _user(conn, "guardedrow") is not None
+
+
+def test_unlocking_restores_deletion(client, conn, csrf, login, register):
+    register(username="releasable")
+    client.post("/logout", data={"csrf_token": csrf()})
+    login(*ADMIN)
+
+    user_id = _user(conn, "releasable")["id"]
+    client.post(f"/admin/users/{user_id}/lock", data={"csrf_token": csrf("/admin")})
+    client.post(f"/admin/users/{user_id}/lock", data={"csrf_token": csrf("/admin")})
+    assert _user(conn, "releasable")["is_locked"] == 0
+
+    client.post(f"/admin/users/{user_id}/delete", data={"csrf_token": csrf("/admin")})
+    assert _user(conn, "releasable") is None
+
+
+def test_a_locked_row_offers_no_delete_button(client, conn, csrf, login, register):
+    register(username="hidden")
+    client.post("/logout", data={"csrf_token": csrf()})
+    login(*ADMIN)
+
+    user_id = _user(conn, "hidden")["id"]
+    before = client.get("/admin").get_data(as_text=True)
+    assert f"/admin/users/{user_id}/delete" in before
+
+    client.post(f"/admin/users/{user_id}/lock", data={"csrf_token": csrf("/admin")})
+    after = client.get("/admin").get_data(as_text=True)
+    assert f"/admin/users/{user_id}/delete" not in after
+    assert "Locked" in after
+
+
+def test_every_account_row_offers_the_lock_toggle(client, conn, csrf, login, register):
+    register(username="togglable")
+    client.post("/logout", data={"csrf_token": csrf()})
+    login(*ADMIN)
+
+    body = client.get("/admin").get_data(as_text=True)
+    for row in conn.execute("SELECT id FROM users"):
+        assert f"/admin/users/{row['id']}/lock" in body, row["id"]
+
+
+def test_only_an_admin_can_lock(client, conn, csrf, register):
+    register(username="target")
+    client.post("/logout", data={"csrf_token": csrf()})
+    register(username="meddler2")
+
+    user_id = _user(conn, "target")["id"]
+    assert client.post(f"/admin/users/{user_id}/lock",
+                       data={"csrf_token": csrf()}).status_code == 403
+    assert _user(conn, "target")["is_locked"] == 0
+
+
+def test_locking_is_csrf_protected(client, conn, login, register, csrf):
+    register(username="nocsrf")
+    client.post("/logout", data={"csrf_token": csrf()})
+    login(*ADMIN)
+
+    user_id = _user(conn, "nocsrf")["id"]
+    assert client.post(f"/admin/users/{user_id}/lock").status_code == 400
+    assert _user(conn, "nocsrf")["is_locked"] == 0
+
+
+def test_an_older_database_gains_both_added_columns(tmp_path):
     """CREATE TABLE IF NOT EXISTS will not add a column to a table that already
     exists, so db.init_db backfills it rather than requiring a reseed."""
     path = tmp_path / "old.db"
@@ -285,13 +403,14 @@ def test_an_older_database_gains_the_admin_column(tmp_path):
         VALUES ('legacy', 'legacy@example.com', 'x', '2026-01-01T00:00:00');
         """
     )
-    assert "is_admin" not in {
-        row["name"] for row in connection.execute("PRAGMA table_info(users)")}
+    columns = {row["name"] for row in connection.execute("PRAGMA table_info(users)")}
+    assert "is_admin" not in columns and "is_locked" not in columns
 
     database.init_db(connection)
 
     row = connection.execute("SELECT * FROM users WHERE username = 'legacy'").fetchone()
     assert row["is_admin"] == 0
+    assert row["is_locked"] == 0
     connection.close()
 
 

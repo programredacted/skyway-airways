@@ -43,7 +43,10 @@ def transaction(connection):
 # already created. Backfilling here means an old file keeps working instead of
 # having to be deleted and reseeded.
 MIGRATIONS = {
-    "users": [("is_admin", "INTEGER NOT NULL DEFAULT 0")],
+    "users": [
+        ("is_admin", "INTEGER NOT NULL DEFAULT 0"),
+        ("is_locked", "INTEGER NOT NULL DEFAULT 0"),
+    ],
 }
 
 

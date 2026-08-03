@@ -272,6 +272,14 @@ a:hover { color: var(--orange-dk); }
 }
 
 .admin__badge--live { margin-left: 0; background: var(--teal); color: var(--paper); }
+.admin__badge--locked { background: var(--ink); color: var(--paper); }
+
+.admin__buttons {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  justify-content: flex-end;
+}
 
 .admin__section {
   margin: 2.6rem 0 0.4rem;
@@ -279,6 +287,25 @@ a:hover { color: var(--orange-dk); }
   font-size: 1.4rem;
   font-weight: 600;
   letter-spacing: 0.02em;
+}
+
+/* Everything under this heading is fixture data, so it is set back from the
+   real activity above rather than competing with it. */
+.admin__section--quiet {
+  margin-top: 3.4rem;
+  padding-top: 1.6rem;
+  border-top: 3px solid var(--ink);
+  color: var(--ink-soft);
+}
+
+.admin__subsection {
+  margin: 1.8rem 0 0.4rem;
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: var(--track-wide);
+  text-transform: uppercase;
+  color: var(--teal-dk);
 }
 
 /* a cancelled row is history, not a live record */

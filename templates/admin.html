@@ -2,18 +2,14 @@
 {% block title %}Accounts &middot; Skyway Airways{% endblock %}
 {% block main_class %}site-main--wide{% endblock %}
 
-{% block content %}
-<p class="eyebrow">Crew only</p>
-<h1 class="page-title">Accounts</h1>
-<p class="lede">
-  {{ accounts | length }} account{{ '' if accounts | length == 1 else 's' }} on
-  this database. Deleting one leaves its bookings confirmed and the seats sold —
-  they simply stop belonging to an account.
-</p>
+{# Real activity and seeded demo data are kept in separate boxes throughout.
+   Mixed together the seed's ~900 pre-sold seats bury the handful of bookings
+   people actually made, which is the only thing this page is useful for. #}
 
+{% macro account_table(rows, caption) %}
 <div class="admin">
   <table class="admin__table">
-    <caption class="visually-hidden">Registered accounts, newest first</caption>
+    <caption class="visually-hidden">{{ caption }}</caption>
     <thead>
       <tr>
         <th scope="col">Username</th>
@@ -24,52 +20,58 @@
       </tr>
     </thead>
     <tbody>
-      {% for row in accounts %}
+      {% for row in rows %}
         <tr>
           <td>
             <span class="admin__name">{{ row.username }}</span>
             {% if row.is_admin %}<span class="admin__badge">Admin</span>{% endif %}
+            {% if row.is_locked %}
+              <span class="admin__badge admin__badge--locked">Locked</span>
+            {% endif %}
           </td>
           <td class="admin__email">{{ row.email }}</td>
           <td>{{ row.created_at | daystamp }}</td>
           <td class="admin__numeric">{{ row.booking_count }}</td>
           <td class="admin__actions">
-            {% if row.id == admin.id %}
-              <span class="admin__self">This is you</span>
-            {% else %}
+            <div class="admin__buttons">
+              {# The lock is offered on every row, your own included: it is the
+                 guard against a mis-click on a crowded table. #}
               <form method="post"
-                    action="{{ url_for('admin_delete_user', user_id=row.id) }}">
+                    action="{{ url_for('admin_lock_user', user_id=row.id) }}">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                <button type="submit" class="btn btn--small btn--danger"
-                        data-confirm="Delete the account '{{ row.username }}'? Their {{ row.booking_count }} booking(s) stay confirmed.">
-                  Delete
+                <button type="submit" class="btn btn--small btn--ghost"
+                        aria-pressed="{{ 'true' if row.is_locked else 'false' }}">
+                  {{ 'Unlock' if row.is_locked else 'Lock' }}
                 </button>
               </form>
-            {% endif %}
+
+              {% if row.id == admin.id %}
+                <span class="admin__self">This is you</span>
+              {% elif row.is_locked %}
+                <span class="admin__self">Protected</span>
+              {% else %}
+                <form method="post"
+                      action="{{ url_for('admin_delete_user', user_id=row.id) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                  <button type="submit" class="btn btn--small btn--danger"
+                          data-confirm="Delete the account '{{ row.username }}'? Their {{ row.booking_count }} booking(s) stay confirmed.">
+                    Delete
+                  </button>
+                </form>
+              {% endif %}
+            </div>
           </td>
         </tr>
       {% endfor %}
     </tbody>
   </table>
 </div>
+{% endmacro %}
 
-<h2 class="admin__section">Bookings</h2>
-<p class="lede">
-  {{ totals.confirmed }} confirmed of {{ totals.total }} in total. Cancelling
-  puts the seat back on sale immediately.
-  {% if totals.total > bookings | length %}
-    {# Said out loud rather than truncated quietly: most of the rest are the
-       seeded pre-sold seats, and a list that stops without saying so reads as
-       though it covered everything. #}
-    <br>Showing the {{ bookings | length }} most recent — the older
-    {{ totals.total - (bookings | length) }} are mostly seats pre-sold by the
-    seed and hold no account.
-  {% endif %}
-</p>
-
+{% macro booking_table(rows, caption) %}
 <div class="admin">
   <table class="admin__table">
-    <caption class="visually-hidden">Every booking, newest first</caption>
+    <caption class="visually-hidden">{{ caption }}</caption>
     <thead>
       <tr>
         <th scope="col">Ref</th>
@@ -83,7 +85,7 @@
       </tr>
     </thead>
     <tbody>
-      {% for trip in bookings %}
+      {% for trip in rows %}
         <tr class="{{ 'is-void' if trip.status == 'CANCELLED' }}">
           <td><span class="admin__name">{{ trip.reference }}</span></td>
           <td>
@@ -127,6 +129,53 @@
     </tbody>
   </table>
 </div>
+{% endmacro %}
+
+{% block content %}
+<p class="eyebrow">Crew only</p>
+<h1 class="page-title">Flight operations</h1>
+
+<h2 class="admin__section">Passenger accounts</h2>
+{% if accounts %}
+  <p class="lede">
+    {{ accounts | length }} account{{ '' if accounts | length == 1 else 's' }}
+    registered here. Deleting one leaves its bookings confirmed and the seats
+    sold — they simply stop belonging to an account.
+  </p>
+  {{ account_table(accounts, "Registered accounts, newest first") }}
+{% else %}
+  <p class="empty">Nobody has registered yet.</p>
+{% endif %}
+
+<h2 class="admin__section">Bookings from those accounts</h2>
+{% if bookings %}
+  <p class="lede">
+    All {{ totals.from_accounts }} of them, newest first. Cancelling puts the
+    seat back on sale immediately.
+  </p>
+  {{ booking_table(bookings, "Bookings made from an account") }}
+{% else %}
+  <p class="empty">No bookings have been made from an account yet.</p>
+{% endif %}
+
+<h2 class="admin__section admin__section--quiet">Seeded demo data</h2>
+<p class="lede">
+  Created by <code>seed.py</code> so the timetable looks flown and the app can
+  be demonstrated without registering. Not real activity.
+</p>
+
+<h3 class="admin__subsection">Demo logins</h3>
+{{ account_table(seeded_accounts, "Accounts created by the seed") }}
+
+<h3 class="admin__subsection">Pre-sold seats</h3>
+<p class="lede">
+  {{ totals.seeded }} seats were sold to invented passengers, holding no
+  account.
+  {% if totals.seeded > seeded_bookings | length %}
+    Showing the {{ seeded_bookings | length }} most recent.
+  {% endif %}
+</p>
+{{ booking_table(seeded_bookings, "Seats pre-sold by the seed") }}
 {% endblock %}
 
 {% block scripts %}

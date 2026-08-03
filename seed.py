@@ -186,6 +186,12 @@ DEMO_USERS = [
 ]
 
 
+def demo_usernames():
+    """The accounts this module creates, so the staff panel can tell them from
+    the ones people registered themselves."""
+    return [username for username, _email, _password, _admin in DEMO_USERS]
+
+
 def _insert_demo_users_if_empty(connection):
     if db.count_rows(connection, "users") > 0:
         return False

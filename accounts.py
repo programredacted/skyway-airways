@@ -23,6 +23,10 @@ MINIMUM_PASSWORD_LENGTH = 8
 RESERVED_USERNAMES = {"admin", "administrator", "root", "staff", "crew", "skyway"}
 
 
+class AccountLocked(Exception):
+    """Someone tried to delete an account that is protected."""
+
+
 class RegistrationError(Exception):
     """Carries per-field messages back to a form. Also raised by change_password."""
 
@@ -135,11 +139,17 @@ def get_by_id(connection, user_id):
     return connection.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
 
 
-def list_accounts(connection):
-    """Every account with how many bookings it holds, newest first."""
-    return connection.execute(
+def list_accounts(connection, seeded_usernames=()):
+    """Every account with how many bookings it holds, newest first.
+
+    Each row is tagged `seeded` so the panel can keep the demo logins apart
+    from accounts people actually registered. Matched on name rather than a
+    column, because that is exactly what makes an account one of the seed's.
+    """
+    seeded = {name.lower() for name in seeded_usernames}
+    rows = connection.execute(
         """
-        SELECT u.id, u.username, u.email, u.created_at, u.is_admin,
+        SELECT u.id, u.username, u.email, u.created_at, u.is_admin, u.is_locked,
                COUNT(b.id) AS booking_count
         FROM users u
         LEFT JOIN bookings b ON b.user_id = u.id AND b.status = 'CONFIRMED'
@@ -147,30 +157,43 @@ def list_accounts(connection):
         ORDER BY u.id DESC
         """
     ).fetchall()
+    return [{**dict(row), "seeded": row["username"].lower() in seeded}
+            for row in rows]
 
 
-BOOKINGS_SHOWN = 80
+SEEDED_SHOWN = 40
 
 
 def booking_totals(connection):
-    """How many exist, so the page can say what it is not showing."""
+    """Counts on each side of the line, so the page can say what it is not
+    showing rather than stopping quietly."""
     return connection.execute(
         """
-        SELECT COUNT(*) AS total,
-               SUM(CASE WHEN status = 'CONFIRMED' THEN 1 ELSE 0 END) AS confirmed
+        SELECT
+          SUM(CASE WHEN user_id IS NOT NULL THEN 1 ELSE 0 END)  AS from_accounts,
+          SUM(CASE WHEN user_id IS NULL THEN 1 ELSE 0 END)      AS seeded,
+          SUM(CASE WHEN status = 'CONFIRMED' THEN 1 ELSE 0 END) AS confirmed,
+          COUNT(*)                                              AS total
         FROM bookings
         """
     ).fetchone()
 
 
-def every_booking(connection, limit=BOOKINGS_SHOWN):
-    """Bookings newest first, with the account that holds each one.
+def account_bookings(connection):
+    """Every booking made from an account — the real activity, never capped."""
+    return _bookings(connection, "b.user_id IS NOT NULL")
 
-    Capped: a seeded database carries hundreds of pre-sold seats, and drawing
-    all of them buries the handful that belong to real accounts. Newest first
-    means actual activity is what survives the cap. Left join, because those
-    pre-sold seats belong to nobody.
+
+def seeded_bookings(connection, limit=SEEDED_SHOWN):
+    """The pre-sold seats the seed invents to make the map look flown.
+
+    They hold no account and there are hundreds, so they are capped and kept
+    in their own list: mixed in, they buried the handful that are real.
     """
+    return _bookings(connection, "b.user_id IS NULL", limit)
+
+
+def _bookings(connection, where, limit=None):
     return connection.execute(
         """
         SELECT b.reference, b.status, b.price_paid_cents, b.created_at,
@@ -184,11 +207,20 @@ def every_booking(connection, limit=BOOKINGS_SHOWN):
         JOIN seats s ON s.id = b.seat_id
         JOIN flights f ON f.id = b.flight_id
         LEFT JOIN users u ON u.id = b.user_id
+        WHERE """ + where + """
         ORDER BY b.id DESC
         LIMIT ?
         """,
-        (limit,),
+        (limit if limit is not None else -1,),      # -1 is SQLite for "no limit"
     ).fetchall()
+
+
+def set_locked(connection, user_id, locked):
+    """Protect an account from deletion, or stop protecting it."""
+    with db.transaction(connection):
+        connection.execute("UPDATE users SET is_locked = ? WHERE id = ?",
+                           (1 if locked else 0, user_id))
+    return get_by_id(connection, user_id)
 
 
 def delete_account(connection, user_id):
@@ -197,7 +229,14 @@ def delete_account(connection, user_id):
     Deleting the person should not silently free the seats they paid for, so
     the bookings stay CONFIRMED and their references still work at /lookup —
     they simply stop belonging to an account. Returns True if a row went.
+
+    Refuses a locked account here rather than only in the view: hiding the
+    button is a courtesy, this is the actual rule.
     """
+    row = get_by_id(connection, user_id)
+    if row is not None and row["is_locked"]:
+        raise AccountLocked(row["username"])
+
     with db.transaction(connection):
         connection.execute(
             "UPDATE bookings SET user_id = NULL WHERE user_id = ?", (user_id,)

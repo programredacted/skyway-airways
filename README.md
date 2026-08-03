@@ -256,7 +256,7 @@ requires an account**. An anonymous visitor who hits Confirm is sent to
 | `/login` · `/logout` | Flask session cookie |
 | `/my-trips` | that account's bookings, as a stack of boarding passes |
 | `/account` | username, email, member since, trips booked, and a password change |
-| `/admin` | staff only: every account, with a delete button |
+| `/admin` | staff only: accounts and bookings, with delete, lock and cancel |
 
 Every password field carries a Show/Hide button. It is rendered hidden and
 revealed by `password.js`, so a browser without JavaScript is never offered a
@@ -288,6 +288,23 @@ EXISTS` leaves an existing table alone.
 cannot be registered. If a visitor claimed `admin` first, the seed would find
 the name taken and leave the database with no administrator at all; promoting
 whoever got there first would be worse.
+
+### The staff panel
+
+`/admin` keeps real activity and seeded demo data in separate boxes, because
+mixed together the seed's ~900 pre-sold seats bury the handful of bookings
+people actually made. Four groups: accounts people registered, the bookings
+those accounts hold, the demo logins, and the pre-sold seats.
+
+Bookings from accounts are never capped. The pre-sold ones are capped at 40 and
+the page says how many it is not showing — a list that stops without saying so
+reads as though it covered everything.
+
+Every account row carries a **Lock** toggle. A locked account cannot be
+deleted, and that is enforced in `accounts.delete_account`, not just by hiding
+the button: a direct POST to the delete route is refused too, and a test asserts
+it. You also cannot delete the account you are signed in with — the last admin
+locking themselves out has no way back in.
 
 ### Cancelling
 

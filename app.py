@@ -596,10 +596,18 @@ def register_routes(app):
         if bounce:
             return bounce
         connection = get_db()
-        return render_template("admin.html", admin=user,
-                               accounts=accounts.list_accounts(connection),
-                               bookings=accounts.every_booking(connection),
-                               totals=accounts.booking_totals(connection))
+        # Seeded demo data and real activity are kept apart: mixed together,
+        # the ~900 pre-sold seats bury the handful that people actually made.
+        everyone = accounts.list_accounts(connection, seed.demo_usernames())
+        return render_template(
+            "admin.html",
+            admin=user,
+            accounts=[row for row in everyone if not row["seeded"]],
+            seeded_accounts=[row for row in everyone if row["seeded"]],
+            bookings=accounts.account_bookings(connection),
+            seeded_bookings=accounts.seeded_bookings(connection),
+            totals=accounts.booking_totals(connection),
+        )
 
     @app.route("/admin/bookings/<reference>/cancel", methods=["POST"])
     def admin_cancel_booking(reference):
@@ -641,9 +649,32 @@ def register_routes(app):
         if doomed is None:
             abort(404)
 
-        accounts.delete_account(get_db(), user_id)
+        try:
+            accounts.delete_account(get_db(), user_id)
+        except accounts.AccountLocked:
+            flash(f"'{doomed['username']}' is locked. Unlock it first.", "error")
+            return redirect(url_for("admin"))
+
         flash(f"Deleted the account '{doomed['username']}'. "
               "Any bookings it made are still confirmed.", "success")
+        return redirect(url_for("admin"))
+
+    @app.route("/admin/users/<int:user_id>/lock", methods=["POST"])
+    def admin_lock_user(user_id):
+        """Toggle the guard that stops an account being deleted by mis-click."""
+        _, bounce = require_admin()
+        if bounce:
+            return bounce
+
+        target = accounts.get_by_id(get_db(), user_id)
+        if target is None:
+            abort(404)
+
+        locked = not target["is_locked"]
+        accounts.set_locked(get_db(), user_id, locked)
+        flash(f"'{target['username']}' is now "
+              + ("locked and cannot be deleted." if locked else "unlocked."),
+              "success")
         return redirect(url_for("admin"))
 
     @app.route("/lookup", methods=["GET", "POST"])

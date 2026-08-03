@@ -63,7 +63,10 @@ CREATE TABLE IF NOT EXISTS users (
     created_at    TEXT NOT NULL,
     -- Staff accounts, which may delete other accounts. Added after the first
     -- databases existed, so db.init_db backfills it; see MIGRATIONS there.
-    is_admin      INTEGER NOT NULL DEFAULT 0
+    is_admin      INTEGER NOT NULL DEFAULT 0,
+    -- Protected from deletion until an admin unlocks it, so a mis-click on a
+    -- crowded table cannot take an account with it.
+    is_locked     INTEGER NOT NULL DEFAULT 0
 );
 
 -- Case-insensitive uniqueness: "Jimmy" and "jimmy" are the same account.
