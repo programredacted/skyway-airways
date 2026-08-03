@@ -1528,18 +1528,21 @@ a:hover { color: var(--orange-dk); }
    non-scaling-stroke because the SVG is scaled to the viewport: without it
    the line thickens and thins with the window while the shell's border does
    not move, and the two only agree at one window size. */
-.cabin-wings__edge {
-  fill: var(--ink);
-  stroke: var(--ink);
+.cabin-wings__ink,
+.cabin-wings__teal {
   vector-effect: non-scaling-stroke;
   stroke-linejoin: round;
 }
 
-/* The cabin's two weights, taken literally: its border is 2px on the port
-   side, and on the starboard side that border plus its 6px shadow reads as
-   8px. Doubled here because half of each stroke is buried by the fill. */
-.cabin-wings__edge { stroke-width: 4; }
-.cabin-wings__edge--heavy { stroke-width: 16; }
+/* The shell's own two bands, not an approximation of their total. Its border
+   is 2px of ink; on its right that border sits over 6px of teal shadow. The
+   teal is laid down first and the ink drawn over it, so 6px of teal shows
+   beyond the 2px line — the same pair, in the same order.
+
+   Widths are doubled because half of every stroke falls inside the shape and
+   is buried by the fill that follows. */
+.cabin-wings__ink  { fill: var(--ink);     stroke: var(--ink);     stroke-width: 4; }
+.cabin-wings__teal { fill: var(--teal-dk); stroke: var(--teal-dk); stroke-width: 16; }
 
 .cabin-wings__skin { fill: var(--paper-3); }
 /* one step deeper than the wing so the pods read against it */

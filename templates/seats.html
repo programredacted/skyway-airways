@@ -69,20 +69,33 @@
          the same shapes filled over the top. The fills bury every line that
          falls inside the silhouette and leave only its outer edge, so no union
          geometry has to be worked out by hand. #}
-      <g class="cabin-wings__edge">
-        <path d="M291 110 L30 244 C 6 252 6 268 30 276 L291 220 Z"/>
+      {# Each root runs past the centreline (to x 470 and x 430) rather than
+         stopping at the wing's visible edge. That tab is always behind the
+         cabin whatever width the SVG is scaled to, so the wings can never come
+         away from it — which is exactly what happened when one path was split
+         into two and each stopped at its own root. #}
+
+      {# port: the shell's 2px border, and nothing else #}
+      <g class="cabin-wings__ink">
+        <path d="M470 110 L291 110 L30 244 C 6 252 6 268 30 276 L291 220 L470 220 Z"/>
         <rect x="142" y="150" width="52" height="72" rx="24"/>
       </g>
-      {# the starboard side is drawn heavy, the port side light #}
-      <g class="cabin-wings__edge cabin-wings__edge--heavy">
-        <path d="M609 220 L870 276 C 894 268 894 252 870 244 L609 110 Z"/>
+
+      {# starboard: the shell's 6px teal band, with that same 2px border over
+         it — the two together are what makes its right edge read heavier #}
+      <g class="cabin-wings__teal">
+        <path d="M430 110 L609 110 L870 244 C 894 252 894 268 870 276 L609 220 L430 220 Z"/>
+        <rect x="706" y="150" width="52" height="72" rx="24"/>
+      </g>
+      <g class="cabin-wings__ink">
+        <path d="M430 110 L609 110 L870 244 C 894 252 894 268 870 276 L609 220 L430 220 Z"/>
         <rect x="706" y="150" width="52" height="72" rx="24"/>
       </g>
 
       <path class="cabin-wings__skin"
-            d="M291 110 L30 244 C 6 252 6 268 30 276 L291 220 Z"/>
+            d="M470 110 L291 110 L30 244 C 6 252 6 268 30 276 L291 220 L470 220 Z"/>
       <path class="cabin-wings__skin"
-            d="M609 220 L870 276 C 894 268 894 252 870 244 L609 110 Z"/>
+            d="M430 110 L609 110 L870 244 C 894 252 894 268 870 276 L609 220 L430 220 Z"/>
       <rect class="cabin-wings__pod" x="142" y="150" width="52" height="72" rx="24"/>
       <rect class="cabin-wings__pod" x="706" y="150" width="52" height="72" rx="24"/>
     </svg>
