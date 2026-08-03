@@ -273,6 +273,33 @@ a:hover { color: var(--orange-dk); }
 
 .admin__badge--live { margin-left: 0; background: var(--teal); color: var(--paper); }
 .admin__badge--locked { background: var(--ink); color: var(--paper); }
+.admin__badge--gone { background: var(--oxblood); color: var(--paper); }
+
+/* an account that no longer exists, still holding seats */
+.acct--ghost { border-style: dashed; }
+.acct--ghost .acct__head { border-bottom-style: dashed; }
+
+/* the delete panel: a fork, asked in place */
+.danger { position: relative; }
+.danger > summary { list-style: none; cursor: pointer; display: inline-block; }
+.danger > summary::-webkit-details-marker { display: none; }
+
+.danger__panel {
+  position: absolute;
+  right: 0;
+  z-index: 5;
+  width: 19rem;
+  margin-top: 0.4rem;
+  padding: 0.9rem 1rem;
+  background: var(--paper);
+  border: var(--rule);
+  box-shadow: var(--shadow);
+  text-align: left;
+}
+
+.danger__question { margin: 0 0 0.7rem; font-size: 0.85rem; }
+.danger__choices { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.danger__note { margin: 0.7rem 0 0; font-size: 0.75rem; color: var(--ink-soft); }
 
 .admin__buttons {
   display: flex;

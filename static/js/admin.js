@@ -52,9 +52,18 @@
     var buttons = form.querySelectorAll("button");
     Array.prototype.forEach.call(buttons, function (b) { b.disabled = true; });
 
+    // FormData does not include the button that submitted the form, and the
+    // delete panel says keep-or-cancel entirely through which button was
+    // pressed. Without this every delete would take the first one's meaning.
+    var data = new FormData(form);
+    var pressed = event.submitter;
+    if (pressed && pressed.name && !data.has(pressed.name)) {
+      data.append(pressed.name, pressed.value);
+    }
+
     fetch(form.action, {
       method: "POST",
-      body: new FormData(form),
+      body: data,
       credentials: "same-origin",
       headers: { "X-Requested-With": "fetch" }
     })

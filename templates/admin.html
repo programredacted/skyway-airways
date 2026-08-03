@@ -95,13 +95,44 @@
       {% elif row.is_locked %}
         <span class="admin__self">Protected</span>
       {% else %}
-        <form method="post" action="{{ url_for('admin_delete_user', user_id=row.id) }}">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-          <button type="submit" class="btn btn--small btn--danger"
-                  data-confirm="Delete the account '{{ row.username }}'? Their {{ row.trips | length }} booking(s) stay confirmed.">
-            Delete account
-          </button>
-        </form>
+        {# A <details> rather than a dialog: the choice is a real fork, not a
+           yes/no, and this asks it without JavaScript and without navigating.
+           Two submit buttons sharing a name is plain HTML. #}
+        {% set live = row.trips | selectattr('status', 'equalto', 'CONFIRMED') | list %}
+        <details class="danger">
+          <summary class="btn btn--small btn--danger">Delete account</summary>
+          <form method="post" class="danger__panel"
+                action="{{ url_for('admin_delete_user', user_id=row.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <p class="danger__question">
+              {% if live %}
+                {{ row.username }} holds {{ live | length }} confirmed
+                booking{{ '' if live | length == 1 else 's' }}.
+                What should happen to {{ 'it' if live | length == 1 else 'them' }}?
+              {% else %}
+                {{ row.username }} holds no confirmed bookings.
+              {% endif %}
+            </p>
+            <div class="danger__choices">
+              <button type="submit" name="bookings" value="keep"
+                      class="btn btn--small btn--danger">
+                {{ 'Delete, keep the seats' if live else 'Delete account' }}
+              </button>
+              {% if live %}
+                <button type="submit" name="bookings" value="cancel"
+                        class="btn btn--small btn--danger">
+                  Delete and free the seats
+                </button>
+              {% endif %}
+            </div>
+            {% if live %}
+              <p class="danger__note">
+                Kept seats stay sold and appear under Left behind, where you can
+                still cancel them.
+              </p>
+            {% endif %}
+          </form>
+        </details>
       {% endif %}
     </div>
   </header>
@@ -135,6 +166,32 @@
   {% for row in accounts %}{{ account_card(row) }}{% endfor %}
 {% else %}
   <p class="empty">Nobody has registered yet.</p>
+{% endif %}
+
+{% if ghosts %}
+  <h2 class="admin__section" id="left-behind">Left behind</h2>
+  <p class="lede">
+    Seats still sold to accounts that have been deleted. They were kept on
+    purpose, so they stay here — findable and cancellable — rather than
+    disappearing among the seats the seed pre-sold.
+  </p>
+  {% for username, trips in ghosts %}
+    <article class="acct acct--ghost">
+      <header class="acct__head">
+        <div class="acct__who">
+          <h3 class="acct__name">
+            {{ username }}
+            <span class="admin__badge admin__badge--gone">Account deleted</span>
+          </h3>
+          <p class="acct__meta">
+            {{ trips | selectattr('status', 'equalto', 'CONFIRMED') | list | length }}
+            still confirmed of {{ trips | length }}
+          </p>
+        </div>
+      </header>
+      {{ booking_rows(trips) }}
+    </article>
+  {% endfor %}
 {% endif %}
 
 <h2 class="admin__section admin__section--quiet" id="seeded">Built in by the seed</h2>

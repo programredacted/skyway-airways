@@ -347,10 +347,125 @@ def test_every_action_returns_you_to_what_you_acted_on(client, conn, csrf, login
     refused = client.post(f"/admin/users/{user_id}/delete", data={"csrf_token": token})
     assert refused.headers["Location"].endswith(f"#user-{user_id}")
 
-    # the row is gone after a real delete, so it anchors to the table instead
+    # This account held a booking, so deleting it leaves something behind and
+    # sends you to that section rather than to a row that no longer exists.
     client.post(f"/admin/users/{user_id}/lock", data={"csrf_token": token})
     deleted = client.post(f"/admin/users/{user_id}/delete", data={"csrf_token": token})
+    assert deleted.headers["Location"].endswith("#left-behind")
+
+
+def test_deleting_an_account_that_held_nothing_goes_back_to_the_list(
+        client, conn, csrf, login, register):
+    """There is no Left behind section to send them to."""
+    register(username="emptyhanded")
+    client.post("/logout", data={"csrf_token": csrf()})
+    login(*ADMIN)
+
+    user_id = _user(conn, "emptyhanded")["id"]
+    deleted = client.post(f"/admin/users/{user_id}/delete",
+                          data={"csrf_token": csrf("/admin")})
     assert deleted.headers["Location"].endswith("#accounts")
+
+
+def test_deleting_can_keep_the_seats_and_says_who_held_them(
+        client, conn, csrf, login, register, book, free_seat):
+    """A kept seat has to stay findable. Without the former username on it, a
+    deliberately-kept booking is indistinguishable from a seeded one."""
+    import db as database
+
+    register(username="departing")
+    flight_id, seat = free_seat(1)
+    reference = book(flight_id=flight_id, seat=seat).headers["Location"].rsplit("/", 1)[-1]
+    client.post("/logout", data={"csrf_token": csrf()})
+    login(*ADMIN)
+
+    user_id = _user(conn, "departing")["id"]
+    client.post(f"/admin/users/{user_id}/delete",
+                data={"csrf_token": csrf("/admin"), "bookings": "keep"})
+
+    booking = database.get_booking_by_reference(conn, reference)
+    assert booking["status"] == "CONFIRMED"
+    assert booking["user_id"] is None
+    assert booking["former_username"] == "departing"
+
+    # the seat is still sold, and the panel shows it under Left behind
+    assert not next(s for s in database.get_seats(conn, flight_id)
+                    if s["id"] == seat["id"])["available"]
+    # searched from the heading onward: the success flash names the account
+    # near the top of the page, which an index comparison would trip over
+    body = client.get("/admin").get_data(as_text=True)
+    assert "Left behind" in body
+    section = body[body.index('id="left-behind"'):]
+    assert "departing" in section
+    assert "Account deleted" in section
+    assert f"/admin/bookings/{reference}/cancel" in section    # still cancellable
+
+
+def test_deleting_can_free_the_seats_instead(client, conn, csrf, login, register,
+                                             book, free_seat):
+    import db as database
+
+    register(username="releasing")
+    flight_id, seat = free_seat(1)
+    reference = book(flight_id=flight_id, seat=seat).headers["Location"].rsplit("/", 1)[-1]
+    client.post("/logout", data={"csrf_token": csrf()})
+    login(*ADMIN)
+
+    user_id = _user(conn, "releasing")["id"]
+    client.post(f"/admin/users/{user_id}/delete",
+                data={"csrf_token": csrf("/admin"), "bookings": "cancel"})
+
+    assert database.get_booking_by_reference(conn, reference)["status"] == "CANCELLED"
+    assert next(s for s in database.get_seats(conn, flight_id)
+                if s["id"] == seat["id"])["available"]
+
+
+def test_keeping_is_what_happens_if_the_form_says_nothing(client, conn, csrf,
+                                                          login, register, book):
+    """Only an explicit 'cancel' cancels. A malformed post must not quietly
+    release seats somebody paid for."""
+    import db as database
+
+    register(username="cautious")
+    reference = book().headers["Location"].rsplit("/", 1)[-1]
+    client.post("/logout", data={"csrf_token": csrf()})
+    login(*ADMIN)
+
+    user_id = _user(conn, "cautious")["id"]
+    client.post(f"/admin/users/{user_id}/delete", data={"csrf_token": csrf("/admin")})
+    assert database.get_booking_by_reference(conn, reference)["status"] == "CONFIRMED"
+
+
+def test_a_left_behind_seat_is_not_counted_as_seeded(client, conn, csrf, login,
+                                                     register, book):
+    """It has a name on it, so it belongs in its own box, not among the
+    hundreds the seed pre-sold."""
+    register(username="separate")
+    reference = book().headers["Location"].rsplit("/", 1)[-1]
+    client.post("/logout", data={"csrf_token": csrf()})
+    login(*ADMIN)
+
+    user_id = _user(conn, "separate")["id"]
+    client.post(f"/admin/users/{user_id}/delete",
+                data={"csrf_token": csrf("/admin"), "bookings": "keep"})
+
+    seeded = [row["reference"] for row in accounts.seeded_bookings(conn, limit=None)]
+    assert reference not in seeded
+    ghosts = [row["reference"] for row in accounts.ghost_bookings(conn)]
+    assert reference in ghosts
+
+
+def test_the_delete_panel_offers_both_choices(client, conn, csrf, login,
+                                              register, book):
+    register(username="choosy")
+    book()
+    client.post("/logout", data={"csrf_token": csrf()})
+    login(*ADMIN)
+
+    card = _card(client.get("/admin").get_data(as_text=True),
+                 _user(conn, "choosy")["id"])
+    assert 'name="bookings" value="keep"' in card
+    assert 'name="bookings" value="cancel"' in card
 
 
 def test_locking_an_account_refuses_deletion(client, conn, csrf, login, register):

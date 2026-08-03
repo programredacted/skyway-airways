@@ -208,16 +208,19 @@ def seeded_bookings(connection, limit=SEEDED_SHOWN):
     """The pre-sold seats the seed invents to make the map look flown.
 
     They hold no account and there are hundreds, so they are capped and kept
-    in their own list: mixed in, they buried the handful that are real.
+    in their own list: mixed in, they buried the handful that are real. A
+    booking left behind by a deleted account is excluded — it has a username
+    on it and gets its own box.
     """
-    return _bookings(connection, "b.user_id IS NULL", limit)
+    return _bookings(
+        connection, "b.user_id IS NULL AND b.former_username IS NULL", limit)
 
 
 def _bookings(connection, where, limit=None):
     return connection.execute(
         """
         SELECT b.reference, b.status, b.price_paid_cents, b.created_at,
-               b.user_id, u.username,
+               b.user_id, b.former_username, u.username,
                p.full_name, p.email,
                s.row_number, s.seat_letter, s.cabin_class,
                f.flight_number, f.origin_code, f.dest_code, f.dest_city,
@@ -243,23 +246,43 @@ def set_locked(connection, user_id, locked):
     return get_by_id(connection, user_id)
 
 
-def delete_account(connection, user_id):
-    """Remove an account, leaving its bookings in place but unowned.
+def ghost_bookings(connection):
+    """Bookings whose account was deleted while they were kept.
 
-    Deleting the person should not silently free the seats they paid for, so
-    the bookings stay CONFIRMED and their references still work at /lookup —
-    they simply stop belonging to an account. Returns True if a row went.
+    A seat deliberately left sold has to stay visible and cancellable, or it is
+    lost among the hundreds the seed pre-sold. `former_username` is what tells
+    the two apart. Newest first, most recently orphaned account first.
+    """
+    return _bookings(connection, "b.user_id IS NULL AND b.former_username IS NOT NULL")
+
+
+def delete_account(connection, user_id, cancel_bookings=False):
+    """Remove an account. Returns True if a row went.
+
+    Its bookings either stay CONFIRMED — the seat was paid for, and the
+    reference still works at /lookup — or are cancelled outright, which is the
+    caller's decision, not this function's. Either way the username is written
+    onto them, so a kept booking can still be found and acted on afterwards.
 
     Refuses a locked account here rather than only in the view: hiding the
     button is a courtesy, this is the actual rule.
     """
     row = get_by_id(connection, user_id)
-    if row is not None and row["is_locked"]:
+    if row is None:
+        return False
+    if row["is_locked"]:
         raise AccountLocked(row["username"])
 
     with db.transaction(connection):
+        if cancel_bookings:
+            connection.execute(
+                """UPDATE bookings SET status = 'CANCELLED'
+                   WHERE user_id = ? AND status = 'CONFIRMED'""",
+                (user_id,),
+            )
         connection.execute(
-            "UPDATE bookings SET user_id = NULL WHERE user_id = ?", (user_id,)
+            "UPDATE bookings SET user_id = NULL, former_username = ? WHERE user_id = ?",
+            (row["username"], user_id),
         )
         cursor = connection.execute("DELETE FROM users WHERE id = ?", (user_id,))
         return cursor.rowcount > 0

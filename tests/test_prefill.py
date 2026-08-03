@@ -34,6 +34,32 @@ def test_the_name_comes_from_the_last_trip_they_took(client, register, book,
     assert 'value="returner@example.com"' in body      # the account, not the trip
 
 
+def test_a_missing_phone_leaves_the_field_empty(client, conn, csrf, register,
+                                                free_seat):
+    """Phone is optional, so it is NULL on the passenger row. An `or` chain
+    hands that back as None, which Jinja prints into the box as the word None
+    for the visitor to delete before they can type."""
+    register(username="nophone", email="nophone@example.com")
+
+    flight_id, seat = free_seat(1)
+    client.post("/bookings", data={
+        "csrf_token": csrf(f"/flights/{flight_id}/passenger?seat_id={seat['id']}"),
+        "flight_id": flight_id, "seat_id": seat["id"],
+        "full_name": "Jimmy Ngo", "email": "nophone@example.com", "phone": "",
+    })
+
+    body = _form(client, free_seat, flight_id=2)
+    assert 'value="None"' not in body
+    assert "None" not in body.split('id="phone"')[1].split(">")[0]
+    assert 'value="Jimmy Ngo"' in body          # the rest still fills
+
+
+def test_no_field_ever_renders_the_word_none(client, register, free_seat):
+    register(username="cleanfields")
+    body = _form(client, free_seat)
+    assert 'value="None"' not in body
+
+
 def test_a_first_booking_fills_only_what_is_known(client, register, free_seat):
     register(username="firsttimer", email="firsttimer@example.com")
     body = _form(client, free_seat)

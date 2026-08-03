@@ -92,6 +92,10 @@ CREATE TABLE IF NOT EXISTS bookings (
     -- The account that made the booking. Nullable so the seeded pre-sold seats,
     -- which belong to no one, still satisfy the constraint.
     user_id          INTEGER          REFERENCES users (id),
+    -- Who held it before their account was deleted. Without this the seat is
+    -- still sold but there is nothing left to say on whose behalf, which makes
+    -- a deliberately-kept booking indistinguishable from a seeded one.
+    former_username  TEXT,
     price_paid_cents INTEGER NOT NULL,
     status           TEXT    NOT NULL DEFAULT 'CONFIRMED'
                              CHECK (status IN ('CONFIRMED', 'CANCELLED')),

@@ -201,6 +201,19 @@ def remember_passenger(form):
         session[PASSENGER_DRAFT_KEY] = draft
 
 
+def first_filled(*candidates):
+    """The first candidate that actually holds something, else "".
+
+    Not an `or` chain: phone is nullable, so the last link can be None, and an
+    `or` chain hands that straight back — which Jinja prints into the field as
+    the word None for the visitor to delete.
+    """
+    for value in candidates:
+        if value:
+            return value
+    return ""
+
+
 def passenger_draft():
     """A peek, not a pop. Registering and then filling in the booking are two
     separate requests and both need this, so it is dropped only once the
@@ -390,9 +403,11 @@ def register_routes(app):
         before = accounts.last_passenger_details(connection, user["id"]) if user else None
 
         values = {
-            "full_name": draft.get("full_name") or (before["full_name"] if before else ""),
-            "email": draft.get("email") or (user["email"] if user else ""),
-            "phone": draft.get("phone") or (before["phone"] if before else ""),
+            "full_name": first_filled(draft.get("full_name"),
+                                      before["full_name"] if before else None),
+            "email": first_filled(draft.get("email"), user["email"] if user else None),
+            "phone": first_filled(draft.get("phone"),
+                                  before["phone"] if before else None),
         }
         return render_template(
             "passenger.html",
@@ -615,6 +630,12 @@ def register_routes(app):
 
         # Seeded demo data stays apart from real activity: mixed together, the
         # ~900 pre-sold seats bury the handful that people actually made.
+        # Bookings kept when their account was deleted, gathered under the name
+        # that held them so the seat can still be found and cancelled.
+        ghosts = {}
+        for trip in accounts.ghost_bookings(connection):
+            ghosts.setdefault(trip["former_username"], []).append(trip)
+
         everyone = accounts.list_accounts(connection, seed.demo_usernames())
         seeded = [row for row in everyone if row["seeded"]]
         return render_template(
@@ -625,6 +646,7 @@ def register_routes(app):
             # account and a passenger account are not the same thing to look at
             staff_accounts=with_trips([row for row in seeded if row["is_admin"]]),
             demo_accounts=with_trips([row for row in seeded if not row["is_admin"]]),
+            ghosts=sorted(ghosts.items()),
             seeded_bookings=accounts.seeded_bookings(connection),
             totals=accounts.booking_totals(connection),
         )
@@ -670,15 +692,29 @@ def register_routes(app):
         if doomed is None:
             abort(404)
 
+        # The form asks rather than assuming: a seat that was paid for is not
+        # obviously the airline's to release, nor obviously the traveller's to
+        # keep once their account is gone.
+        also_cancel = request.form.get("bookings") == "cancel"
+        held = accounts.bookings_for(get_db(), user_id)
+
         try:
-            accounts.delete_account(get_db(), user_id)
+            accounts.delete_account(get_db(), user_id, cancel_bookings=also_cancel)
         except accounts.AccountLocked:
             flash(f"'{doomed['username']}' is locked. Unlock it first.", "error")
             return redirect(url_for("admin", _anchor=f"user-{user_id}"))
 
-        flash(f"Deleted the account '{doomed['username']}'. "
-              "Any bookings it made are still confirmed.", "success")
-        # The row is gone, so back to its table rather than to a dead anchor.
+        if also_cancel:
+            flash(f"Deleted '{doomed['username']}' and cancelled its bookings. "
+                  "Those seats are back on sale.", "success")
+        elif held:
+            flash(f"Deleted '{doomed['username']}'. Its bookings are still "
+                  "confirmed — they are listed under Left behind.", "success")
+            return redirect(url_for("admin", _anchor="left-behind"))
+        else:
+            flash(f"Deleted the account '{doomed['username']}'.", "success")
+
+        # nothing was left behind, so there is no section to send them to
         return redirect(url_for("admin", _anchor="accounts"))
 
     @app.route("/admin/users/<int:user_id>/lock", methods=["POST"])

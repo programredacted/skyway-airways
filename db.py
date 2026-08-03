@@ -47,6 +47,9 @@ MIGRATIONS = {
         ("is_admin", "INTEGER NOT NULL DEFAULT 0"),
         ("is_locked", "INTEGER NOT NULL DEFAULT 0"),
     ],
+    "bookings": [
+        ("former_username", "TEXT"),
+    ],
 }
 
 
