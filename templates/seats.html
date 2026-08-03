@@ -55,11 +55,19 @@
     <div class="cabin-stage">
     <svg class="cabin-wings" viewBox="0 0 900 300" aria-hidden="true" focusable="false">
       {# One path through the middle: the root sits behind the opaque cabin, so
-         there is no join to line up. 110 units of root chord against 864 of
-         span — a deeper chord reads as a fin bolted to a tube. #}
+         there is no join to line up. 110 units of root chord against 888 of
+         span — a deeper chord reads as a fin bolted to a tube.
+
+         The tips are curved rather than cut square: a flat vertical edge out
+         there reads as the wing having been clipped off, and the cabin it
+         belongs to is all soft curves. #}
       <path class="cabin-wings__skin"
-            d="M291 110 L18 246 L18 274 L291 220
-               L609 220 L882 274 L882 246 L609 110 Z"/>
+            d="M291 110
+               L30 244 C 6 252 6 268 30 276
+               L291 220
+               L609 220
+               L870 276 C 894 268 894 252 870 244
+               L609 110 Z"/>
       {# nacelles, longer fore-and-aft than across so they read as pods #}
       <rect class="cabin-wings__pod" x="142" y="150" width="52" height="72" rx="24"/>
       <rect class="cabin-wings__pod" x="706" y="150" width="52" height="72" rx="24"/>

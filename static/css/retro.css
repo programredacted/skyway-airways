@@ -1504,10 +1504,16 @@ a:hover { color: var(--orange-dk); }
 
 .cabin-wings {
   position: absolute;
-  top: 34%;
+  top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  /* -73.3% is where the wing root's trailing edge sits in the viewBox (y 220
+     of 300), so that edge lands on the cabin's midpoint whatever length the
+     aircraft is — around row 12 of a 24-row 707. */
+  transform: translate(-50%, -73.3%);
   pointer-events: none;
+  /* the shell's own shadow, so the right and lower edges read heavier in the
+     same way; matches --shadow rather than inventing a second offset */
+  filter: drop-shadow(6px 6px 0 var(--teal-dk));
   /* Behind the cabin without touching it: the shell is statically positioned,
      so anything positioned here would otherwise paint on top of it. */
   z-index: -1;
@@ -1516,6 +1522,17 @@ a:hover { color: var(--orange-dk); }
      from that edge, which caps the span at 100vw - 312px — the sidebar's
      17.5rem plus the 2rem gap. */
   width: min(260%, calc(100vw - 19.5rem));
+}
+
+/* The cabin's own outline, at the cabin's own weight. non-scaling-stroke
+   because the SVG is scaled to the viewport: without it the line thickens and
+   thins with the window while the shell's 2px border stays put. */
+.cabin-wings__skin,
+.cabin-wings__pod {
+  stroke: var(--ink);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+  stroke-linejoin: round;
 }
 
 .cabin-wings__skin { fill: var(--paper-3); }
