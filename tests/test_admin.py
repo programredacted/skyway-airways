@@ -162,18 +162,39 @@ def test_the_admin_link_only_appears_for_admins(client, csrf, login, register):
     assert 'href="/admin"' in client.get("/flights").get_data(as_text=True)
 
 
-def test_the_panel_lists_every_booking_and_who_holds_it(client, csrf, login,
-                                                        register, book):
+def _card(body, user_id):
+    """The markup of one account's box, from its id to the next box."""
+    start = body.index(f'id="user-{user_id}"')
+    following = body.find('<article class="acct"', start + 1)
+    return body[start:following if following != -1 else len(body)]
+
+
+def test_a_booking_sits_inside_the_card_of_the_account_that_holds_it(
+        client, conn, csrf, login, register, book):
+    """The point of one box per account: the person, their trips, and the
+    buttons for both, without hunting through a second table."""
     register(username="traveller")
     reference = book().headers["Location"].rsplit("/", 1)[-1]
     client.post("/logout", data={"csrf_token": csrf()})
     login(*ADMIN)
 
     body = client.get("/admin").get_data(as_text=True)
-    assert reference in body
-    assert "traveller" in body
-    assert "Jimmy Ngo" in body            # the passenger, not the account
-    assert "no account" in body           # the seeded pre-sold seats
+    card = _card(body, _user(conn, "traveller")["id"])
+
+    assert reference in card
+    assert "Jimmy Ngo" in card                                  # the passenger
+    assert f"/admin/bookings/{reference}/cancel" in card         # cancel it here
+    assert "/delete" in card and "/lock" in card                 # act on the account
+
+
+def test_an_account_with_no_trips_says_so(client, conn, csrf, login, register):
+    register(username="idle")
+    client.post("/logout", data={"csrf_token": csrf()})
+    login(*ADMIN)
+
+    card = _card(client.get("/admin").get_data(as_text=True),
+                 _user(conn, "idle")["id"])
+    assert "No bookings on this account" in card
 
 
 def test_the_seeded_list_says_what_it_is_not_showing(client, conn, csrf, login):
@@ -205,7 +226,10 @@ def test_real_bookings_are_never_capped(client, conn, csrf, login, register, boo
     for row in conn.execute(
             "SELECT reference FROM bookings WHERE user_id IS NOT NULL"):
         assert row["reference"] in body, row["reference"]
-    assert f"All {from_accounts} of them" in body
+
+    # collapsed: the template wraps the line between the count and the noun
+    flat = " ".join(body.split())
+    assert f"holding {from_accounts} booking" in flat
 
 
 def test_seeded_data_is_kept_apart_from_real_activity(client, csrf, login,
@@ -291,6 +315,35 @@ def test_a_cancelled_booking_loses_its_cancel_button(client, csrf, login,
     body = client.get("/admin").get_data(as_text=True)
     assert reference in body                                   # still listed
     assert f"/admin/bookings/{reference}/cancel" not in body    # but not actionable
+
+
+def test_every_action_returns_you_to_what_you_acted_on(client, conn, csrf, login,
+                                                       register, book):
+    """A bare redirect lands at the top, which on a long page means finding
+    your place again after every click."""
+    register(username="anchored")
+    reference = book().headers["Location"].rsplit("/", 1)[-1]
+    client.post("/logout", data={"csrf_token": csrf()})
+    login(*ADMIN)
+
+    user_id = _user(conn, "anchored")["id"]
+    token = csrf("/admin")
+
+    locked = client.post(f"/admin/users/{user_id}/lock", data={"csrf_token": token})
+    assert locked.headers["Location"].endswith(f"#user-{user_id}")
+
+    cancelled = client.post(f"/admin/bookings/{reference}/cancel",
+                            data={"csrf_token": token})
+    assert cancelled.headers["Location"].endswith(f"#booking-{reference}")
+
+    # refusing to delete a locked account should not move you either
+    refused = client.post(f"/admin/users/{user_id}/delete", data={"csrf_token": token})
+    assert refused.headers["Location"].endswith(f"#user-{user_id}")
+
+    # the row is gone after a real delete, so it anchors to the table instead
+    client.post(f"/admin/users/{user_id}/lock", data={"csrf_token": token})
+    deleted = client.post(f"/admin/users/{user_id}/delete", data={"csrf_token": token})
+    assert deleted.headers["Location"].endswith("#accounts")
 
 
 def test_locking_an_account_refuses_deletion(client, conn, csrf, login, register):

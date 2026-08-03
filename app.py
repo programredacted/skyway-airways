@@ -596,15 +596,24 @@ def register_routes(app):
         if bounce:
             return bounce
         connection = get_db()
-        # Seeded demo data and real activity are kept apart: mixed together,
-        # the ~900 pre-sold seats bury the handful that people actually made.
+
+        # An account and the trips it holds belong together: acting on either
+        # means finding the same person twice in two different tables.
+        held = {}
+        for trip in accounts.account_bookings(connection):
+            held.setdefault(trip["user_id"], []).append(trip)
+
+        def with_trips(rows):
+            return [{**row, "trips": held.get(row["id"], [])} for row in rows]
+
+        # Seeded demo data stays apart from real activity: mixed together, the
+        # ~900 pre-sold seats bury the handful that people actually made.
         everyone = accounts.list_accounts(connection, seed.demo_usernames())
         return render_template(
             "admin.html",
             admin=user,
-            accounts=[row for row in everyone if not row["seeded"]],
-            seeded_accounts=[row for row in everyone if row["seeded"]],
-            bookings=accounts.account_bookings(connection),
+            accounts=with_trips([row for row in everyone if not row["seeded"]]),
+            seeded_accounts=with_trips([row for row in everyone if row["seeded"]]),
             seeded_bookings=accounts.seeded_bookings(connection),
             totals=accounts.booking_totals(connection),
         )
@@ -631,7 +640,8 @@ def register_routes(app):
                   "success")
         else:
             flash("That booking was already cancelled.", "error")
-        return redirect(url_for("admin"))
+        # back to the booking, not the top of a long page
+        return redirect(url_for("admin", _anchor=f"booking-{booking['reference']}"))
 
     @app.route("/admin/users/<int:user_id>/delete", methods=["POST"])
     def admin_delete_user(user_id):
@@ -653,11 +663,12 @@ def register_routes(app):
             accounts.delete_account(get_db(), user_id)
         except accounts.AccountLocked:
             flash(f"'{doomed['username']}' is locked. Unlock it first.", "error")
-            return redirect(url_for("admin"))
+            return redirect(url_for("admin", _anchor=f"user-{user_id}"))
 
         flash(f"Deleted the account '{doomed['username']}'. "
               "Any bookings it made are still confirmed.", "success")
-        return redirect(url_for("admin"))
+        # The row is gone, so back to its table rather than to a dead anchor.
+        return redirect(url_for("admin", _anchor="accounts"))
 
     @app.route("/admin/users/<int:user_id>/lock", methods=["POST"])
     def admin_lock_user(user_id):
@@ -675,7 +686,7 @@ def register_routes(app):
         flash(f"'{target['username']}' is now "
               + ("locked and cannot be deleted." if locked else "unlocked."),
               "success")
-        return redirect(url_for("admin"))
+        return redirect(url_for("admin", _anchor=f"user-{user_id}"))
 
     @app.route("/lookup", methods=["GET", "POST"])
     def lookup():

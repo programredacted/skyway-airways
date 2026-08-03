@@ -281,6 +281,43 @@ a:hover { color: var(--orange-dk); }
   justify-content: flex-end;
 }
 
+/* one account and everything it holds */
+.acct {
+  margin-bottom: 1.1rem;
+  background: var(--paper-2);
+  border: var(--rule);
+  /* an action returns you to this card; leave room so it is not flush against
+     the top of the window when it does */
+  scroll-margin-top: 1.5rem;
+}
+
+.acct__head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem 1.2rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.9rem 1.1rem;
+  border-bottom: var(--rule);
+}
+
+.acct__name {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.acct__meta { margin: 0.15rem 0 0; font-size: 0.82rem; color: var(--ink-soft); }
+.acct__empty { margin: 0; padding: 0.9rem 1.1rem; font-size: 0.85rem; color: var(--ink-soft); }
+
+/* the table inside a card carries the card's border, not its own */
+.admin__table--nested { border: none; }
+.admin__table--nested thead th { background: var(--teal-dk); }
+.admin__table--nested tbody tr:last-child td { border-bottom: none; }
+
+.admin__table tbody tr { scroll-margin-top: 1.5rem; }
+
 .admin__section {
   margin: 2.6rem 0 0.4rem;
   font-family: var(--font-display);

@@ -2,170 +2,144 @@
 {% block title %}Accounts &middot; Skyway Airways{% endblock %}
 {% block main_class %}site-main--wide{% endblock %}
 
-{# Real activity and seeded demo data are kept in separate boxes throughout.
-   Mixed together the seed's ~900 pre-sold seats bury the handful of bookings
-   people actually made, which is the only thing this page is useful for. #}
+{# One box per account, holding that account's trips: deleting the person and
+   cancelling their flights are the same job, and splitting them across two
+   tables meant finding the same person twice.
 
-{% macro account_table(rows, caption) %}
-<div class="admin">
-  <table class="admin__table">
-    <caption class="visually-hidden">{{ caption }}</caption>
-    <thead>
-      <tr>
-        <th scope="col">Username</th>
-        <th scope="col">Email</th>
-        <th scope="col">Joined</th>
-        <th scope="col" class="admin__numeric">Bookings</th>
-        <th scope="col"><span class="visually-hidden">Actions</span></th>
+   Seeded demo data stays in its own section. Mixed in, the seed's ~900
+   pre-sold seats bury the handful of bookings people actually made. #}
+
+{% macro booking_rows(rows) %}
+<table class="admin__table admin__table--nested">
+  <thead>
+    <tr>
+      <th scope="col">Ref</th>
+      <th scope="col">Flight</th>
+      <th scope="col">Passenger</th>
+      <th scope="col">Seat</th>
+      <th scope="col" class="admin__numeric">Paid</th>
+      <th scope="col">Status</th>
+      <th scope="col"><span class="visually-hidden">Actions</span></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for trip in rows %}
+      <tr id="booking-{{ trip.reference }}"
+          class="{{ 'is-void' if trip.status == 'CANCELLED' }}">
+        <td><span class="admin__name">{{ trip.reference }}</span></td>
+        <td>
+          {{ trip.flight_number }}
+          <span class="admin__email">
+            {{ trip.origin_code }}&rarr;{{ trip.dest_code }} &middot;
+            {{ trip.departs_at | daystamp }}
+          </span>
+        </td>
+        <td class="admin__email">{{ trip.full_name }}</td>
+        <td class="admin__numeric">{{ trip.row_number }}{{ trip.seat_letter }}</td>
+        <td class="admin__numeric">{{ trip.price_paid_cents | fare }}</td>
+        <td>
+          {% if trip.status == 'CANCELLED' %}
+            <span class="admin__self">Cancelled</span>
+          {% else %}
+            <span class="admin__badge admin__badge--live">Confirmed</span>
+          {% endif %}
+        </td>
+        <td class="admin__actions">
+          {% if trip.status != 'CANCELLED' %}
+            <form method="post"
+                  action="{{ url_for('admin_cancel_booking', reference=trip.reference) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              <button type="submit" class="btn btn--small btn--danger"
+                      data-confirm="Cancel {{ trip.reference }} — {{ trip.flight_number }}, seat {{ trip.row_number }}{{ trip.seat_letter }}? The seat goes back on sale.">
+                Cancel
+              </button>
+            </form>
+          {% endif %}
+        </td>
       </tr>
-    </thead>
-    <tbody>
-      {% for row in rows %}
-        <tr>
-          <td>
-            <span class="admin__name">{{ row.username }}</span>
-            {% if row.is_admin %}<span class="admin__badge">Admin</span>{% endif %}
-            {% if row.is_locked %}
-              <span class="admin__badge admin__badge--locked">Locked</span>
-            {% endif %}
-          </td>
-          <td class="admin__email">{{ row.email }}</td>
-          <td>{{ row.created_at | daystamp }}</td>
-          <td class="admin__numeric">{{ row.booking_count }}</td>
-          <td class="admin__actions">
-            <div class="admin__buttons">
-              {# The lock is offered on every row, your own included: it is the
-                 guard against a mis-click on a crowded table. #}
-              <form method="post"
-                    action="{{ url_for('admin_lock_user', user_id=row.id) }}">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                <button type="submit" class="btn btn--small btn--ghost"
-                        aria-pressed="{{ 'true' if row.is_locked else 'false' }}">
-                  {{ 'Unlock' if row.is_locked else 'Lock' }}
-                </button>
-              </form>
-
-              {% if row.id == admin.id %}
-                <span class="admin__self">This is you</span>
-              {% elif row.is_locked %}
-                <span class="admin__self">Protected</span>
-              {% else %}
-                <form method="post"
-                      action="{{ url_for('admin_delete_user', user_id=row.id) }}">
-                  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                  <button type="submit" class="btn btn--small btn--danger"
-                          data-confirm="Delete the account '{{ row.username }}'? Their {{ row.booking_count }} booking(s) stay confirmed.">
-                    Delete
-                  </button>
-                </form>
-              {% endif %}
-            </div>
-          </td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
+    {% endfor %}
+  </tbody>
+</table>
 {% endmacro %}
 
-{% macro booking_table(rows, caption) %}
-<div class="admin">
-  <table class="admin__table">
-    <caption class="visually-hidden">{{ caption }}</caption>
-    <thead>
-      <tr>
-        <th scope="col">Ref</th>
-        <th scope="col">Account</th>
-        <th scope="col">Passenger</th>
-        <th scope="col">Flight</th>
-        <th scope="col">Seat</th>
-        <th scope="col" class="admin__numeric">Paid</th>
-        <th scope="col">Status</th>
-        <th scope="col"><span class="visually-hidden">Actions</span></th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for trip in rows %}
-        <tr class="{{ 'is-void' if trip.status == 'CANCELLED' }}">
-          <td><span class="admin__name">{{ trip.reference }}</span></td>
-          <td>
-            {% if trip.username %}
-              {{ trip.username }}
-            {% else %}
-              <span class="admin__self">no account</span>
-            {% endif %}
-          </td>
-          <td class="admin__email">{{ trip.full_name }}</td>
-          <td>
-            {{ trip.flight_number }}
-            <span class="admin__email">
-              {{ trip.origin_code }}&rarr;{{ trip.dest_code }} &middot;
-              {{ trip.departs_at | daystamp }}
-            </span>
-          </td>
-          <td class="admin__numeric">{{ trip.row_number }}{{ trip.seat_letter }}</td>
-          <td class="admin__numeric">{{ trip.price_paid_cents | fare }}</td>
-          <td>
-            {% if trip.status == 'CANCELLED' %}
-              <span class="admin__self">Cancelled</span>
-            {% else %}
-              <span class="admin__badge admin__badge--live">Confirmed</span>
-            {% endif %}
-          </td>
-          <td class="admin__actions">
-            {% if trip.status != 'CANCELLED' %}
-              <form method="post"
-                    action="{{ url_for('admin_cancel_booking', reference=trip.reference) }}">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                <button type="submit" class="btn btn--small btn--danger"
-                        data-confirm="Cancel {{ trip.reference }} — {{ trip.flight_number }}, seat {{ trip.row_number }}{{ trip.seat_letter }}? The seat goes back on sale.">
-                  Cancel
-                </button>
-              </form>
-            {% endif %}
-          </td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
+{% macro account_card(row) %}
+{# id so an action returns you to this card rather than the top of the page #}
+<article class="acct" id="user-{{ row.id }}">
+  <header class="acct__head">
+    <div class="acct__who">
+      <h3 class="acct__name">
+        {{ row.username }}
+        {% if row.is_admin %}<span class="admin__badge">Admin</span>{% endif %}
+        {% if row.is_locked %}
+          <span class="admin__badge admin__badge--locked">Locked</span>
+        {% endif %}
+      </h3>
+      <p class="acct__meta">
+        {{ row.email }} &middot; joined {{ row.created_at | daystamp }} &middot;
+        {{ row.trips | length }} booking{{ '' if row.trips | length == 1 else 's' }}
+      </p>
+    </div>
+
+    <div class="admin__buttons">
+      {# offered on your own row too: a mis-click is what it guards against #}
+      <form method="post" action="{{ url_for('admin_lock_user', user_id=row.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <button type="submit" class="btn btn--small btn--ghost"
+                aria-pressed="{{ 'true' if row.is_locked else 'false' }}">
+          {{ 'Unlock' if row.is_locked else 'Lock' }}
+        </button>
+      </form>
+
+      {% if row.id == admin.id %}
+        <span class="admin__self">This is you</span>
+      {% elif row.is_locked %}
+        <span class="admin__self">Protected</span>
+      {% else %}
+        <form method="post" action="{{ url_for('admin_delete_user', user_id=row.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button type="submit" class="btn btn--small btn--danger"
+                  data-confirm="Delete the account '{{ row.username }}'? Their {{ row.trips | length }} booking(s) stay confirmed.">
+            Delete account
+          </button>
+        </form>
+      {% endif %}
+    </div>
+  </header>
+
+  {% if row.trips %}
+    {{ booking_rows(row.trips) }}
+  {% else %}
+    <p class="acct__empty">No bookings on this account.</p>
+  {% endif %}
+</article>
 {% endmacro %}
 
 {% block content %}
 <p class="eyebrow">Crew only</p>
 <h1 class="page-title">Flight operations</h1>
 
-<h2 class="admin__section">Passenger accounts</h2>
+<h2 class="admin__section" id="accounts">Passenger accounts</h2>
 {% if accounts %}
   <p class="lede">
     {{ accounts | length }} account{{ '' if accounts | length == 1 else 's' }}
-    registered here. Deleting one leaves its bookings confirmed and the seats
-    sold — they simply stop belonging to an account.
+    registered here, holding {{ totals.from_accounts }}
+    booking{{ '' if totals.from_accounts == 1 else 's' }} between them.
+    Deleting an account leaves its bookings confirmed and the seats sold — they
+    simply stop belonging to an account. Cancel them first to free the seats.
   </p>
-  {{ account_table(accounts, "Registered accounts, newest first") }}
+  {% for row in accounts %}{{ account_card(row) }}{% endfor %}
 {% else %}
   <p class="empty">Nobody has registered yet.</p>
 {% endif %}
 
-<h2 class="admin__section">Bookings from those accounts</h2>
-{% if bookings %}
-  <p class="lede">
-    All {{ totals.from_accounts }} of them, newest first. Cancelling puts the
-    seat back on sale immediately.
-  </p>
-  {{ booking_table(bookings, "Bookings made from an account") }}
-{% else %}
-  <p class="empty">No bookings have been made from an account yet.</p>
-{% endif %}
-
-<h2 class="admin__section admin__section--quiet">Seeded demo data</h2>
+<h2 class="admin__section admin__section--quiet" id="seeded">Seeded demo data</h2>
 <p class="lede">
   Created by <code>seed.py</code> so the timetable looks flown and the app can
   be demonstrated without registering. Not real activity.
 </p>
 
 <h3 class="admin__subsection">Demo logins</h3>
-{{ account_table(seeded_accounts, "Accounts created by the seed") }}
+{% for row in seeded_accounts %}{{ account_card(row) }}{% endfor %}
 
 <h3 class="admin__subsection">Pre-sold seats</h3>
 <p class="lede">
@@ -175,7 +149,7 @@
     Showing the {{ seeded_bookings | length }} most recent.
   {% endif %}
 </p>
-{{ booking_table(seeded_bookings, "Seats pre-sold by the seed") }}
+<div class="admin">{{ booking_rows(seeded_bookings) }}</div>
 {% endblock %}
 
 {% block scripts %}
