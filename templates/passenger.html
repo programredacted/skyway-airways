@@ -24,6 +24,7 @@
 </aside>
 
 <form class="form" method="post" action="{{ url_for('confirm_booking') }}" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
   <input type="hidden" name="flight_id" value="{{ flight.id }}">
   <input type="hidden" name="seat_id" value="{{ seat.id }}">
 

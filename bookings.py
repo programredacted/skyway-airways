@@ -23,11 +23,12 @@ def utc_now():
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
 
-def create_booking(connection, seat_id, full_name, email, phone=None):
+def create_booking(connection, seat_id, full_name, email, phone=None, user_id=None):
     """Sell one seat to one passenger. Returns the booking reference.
 
     Raises SeatUnavailable if someone else confirmed the seat first — the
     partial unique index on bookings is what actually decides the race.
+    `user_id` ties the booking to an account so it can appear in My Trips.
     """
     with db.transaction(connection):
         seat = connection.execute(
@@ -42,12 +43,12 @@ def create_booking(connection, seat_id, full_name, email, phone=None):
         )
         passenger_id = cursor.lastrowid
 
-        reference = _insert_booking(connection, seat, passenger_id)
+        reference = _insert_booking(connection, seat, passenger_id, user_id)
 
     return reference
 
 
-def _insert_booking(connection, seat, passenger_id):
+def _insert_booking(connection, seat, passenger_id, user_id=None):
     """Insert with a fresh reference, retrying only on a reference collision.
 
     Two unique constraints can fire here. A clash on `reference` is harmless --
@@ -60,11 +61,11 @@ def _insert_booking(connection, seat, passenger_id):
             connection.execute(
                 """
                 INSERT INTO bookings
-                    (reference, flight_id, seat_id, passenger_id, price_paid_cents,
-                     status, created_at)
-                VALUES (?, ?, ?, ?, ?, 'CONFIRMED', ?)
+                    (reference, flight_id, seat_id, passenger_id, user_id,
+                     price_paid_cents, status, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, 'CONFIRMED', ?)
                 """,
-                (reference, seat["flight_id"], seat["id"], passenger_id,
+                (reference, seat["flight_id"], seat["id"], passenger_id, user_id,
                  seat["price_cents"], utc_now()),
             )
             return reference

@@ -1,0 +1,5 @@
+# Test-only dependencies. Deliberately separate from requirements.txt so the
+# deployed service installs nothing it does not need at runtime.
+-r requirements.txt
+
+pytest==8.4.2

@@ -57,6 +57,7 @@
   <p class="pass__sent">A copy has been noted for {{ booking.email }}.</p>
   {% if not cancelled %}
     <form method="post" action="{{ url_for('cancel', reference=booking.reference) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
       <button class="btn btn--ghost" type="submit">Cancel this booking</button>
     </form>
   {% endif %}

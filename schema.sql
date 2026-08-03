@@ -57,6 +57,22 @@ CREATE TABLE IF NOT EXISTS seats (
 
 CREATE INDEX IF NOT EXISTS idx_seats_flight ON seats (flight_id);
 
+-- Accounts. Passwords are only ever stored as a werkzeug hash; nothing in the
+-- app has access to the plaintext after registration.
+CREATE TABLE IF NOT EXISTS users (
+    id            INTEGER PRIMARY KEY,
+    username      TEXT NOT NULL,
+    email         TEXT NOT NULL,
+    password_hash TEXT NOT NULL,
+    created_at    TEXT NOT NULL
+);
+
+-- Case-insensitive uniqueness: "Jimmy" and "jimmy" are the same account.
+CREATE UNIQUE INDEX IF NOT EXISTS one_account_per_username
+    ON users (LOWER(username));
+CREATE UNIQUE INDEX IF NOT EXISTS one_account_per_email
+    ON users (LOWER(email));
+
 CREATE TABLE IF NOT EXISTS passengers (
     id         INTEGER PRIMARY KEY,
     full_name  TEXT NOT NULL,
@@ -71,6 +87,9 @@ CREATE TABLE IF NOT EXISTS bookings (
     flight_id        INTEGER NOT NULL REFERENCES flights (id),
     seat_id          INTEGER NOT NULL REFERENCES seats (id),
     passenger_id     INTEGER NOT NULL REFERENCES passengers (id),
+    -- The account that made the booking. Nullable so the seeded pre-sold seats,
+    -- which belong to no one, still satisfy the constraint.
+    user_id          INTEGER          REFERENCES users (id),
     price_paid_cents INTEGER NOT NULL,
     status           TEXT    NOT NULL DEFAULT 'CONFIRMED'
                              CHECK (status IN ('CONFIRMED', 'CANCELLED')),
@@ -83,3 +102,4 @@ CREATE UNIQUE INDEX IF NOT EXISTS one_active_booking_per_seat
     ON bookings (seat_id) WHERE status = 'CONFIRMED';
 
 CREATE INDEX IF NOT EXISTS idx_bookings_flight ON bookings (flight_id);
+CREATE INDEX IF NOT EXISTS idx_bookings_user ON bookings (user_id);

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Create an account &middot; Skyway Airways{% endblock %}
+
+{% block content %}
+<p class="eyebrow">Join the club</p>
+<h1 class="page-title">Create an account</h1>
+<p class="lede">So your boarding passes are waiting for you next time.</p>
+
+<form class="form" method="post" action="{{ url_for('register', next=next) }}" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+  <div class="form__field {{ 'form__field--error' if errors.username }}">
+    <label for="username">Username <span class="req">required</span></label>
+    <input type="text" id="username" name="username" maxlength="20"
+           value="{{ values.username }}" autocomplete="username" autofocus>
+    <p class="form__help">3 to 20 letters and numbers.</p>
+    {% if errors.username %}<p class="form__error">{{ errors.username }}</p>{% endif %}
+  </div>
+
+  <div class="form__field {{ 'form__field--error' if errors.email }}">
+    <label for="email">Email <span class="req">required</span></label>
+    <input type="email" id="email" name="email" value="{{ values.email }}"
+           autocomplete="email">
+    {% if errors.email %}<p class="form__error">{{ errors.email }}</p>{% endif %}
+  </div>
+
+  <div class="form__field {{ 'form__field--error' if errors.password }}">
+    <label for="password">Password <span class="req">required</span></label>
+    <input type="password" id="password" name="password" autocomplete="new-password">
+    <p class="form__help">At least 8 characters.</p>
+    {% if errors.password %}<p class="form__error">{{ errors.password }}</p>{% endif %}
+  </div>
+
+  <div class="form__field {{ 'form__field--error' if errors.confirm }}">
+    <label for="confirm">Confirm password <span class="req">required</span></label>
+    <input type="password" id="confirm" name="confirm" autocomplete="new-password">
+    {% if errors.confirm %}<p class="form__error">{{ errors.confirm }}</p>{% endif %}
+  </div>
+
+  <button class="btn btn--primary btn--large" type="submit">Create account</button>
+  <p class="form__note">
+    Already flying with us?
+    <a href="{{ url_for('login', next=next) }}">Sign in</a>.
+  </p>
+</form>
+{% endblock %}

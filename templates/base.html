@@ -31,7 +31,17 @@
       <a href="{{ url_for('flight_list') }}">Departures</a>
       <a href="{{ url_for('route_map') }}">Route Map</a>
       <a href="{{ url_for('destination_list') }}">Destinations</a>
-      <a href="{{ url_for('lookup') }}">My Booking</a>
+      {% if current_user %}
+        <span class="site-nav__you">Welcome aboard, {{ current_user.username }}</span>
+        <a href="{{ url_for('my_trips') }}">My Trips</a>
+        <form class="site-nav__out" method="post" action="{{ url_for('logout') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button type="submit">Sign out</button>
+        </form>
+      {% else %}
+        <a href="{{ url_for('lookup') }}">My Booking</a>
+        <a href="{{ url_for('login') }}">Sign in</a>
+      {% endif %}
     </nav>
   </header>
 

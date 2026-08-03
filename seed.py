@@ -153,6 +153,7 @@ def seed_if_empty(connection, seed_date=None):
         # Airports are guarded separately, so a database seeded before this
         # table existed still picks them up on the next start.
         _insert_airports_if_empty(connection)
+        _insert_demo_users_if_empty(connection)
 
         if db.count_rows(connection, "flights") > 0:
             return False
@@ -176,6 +177,30 @@ def _insert_airports_if_empty(connection):
         " VALUES (?, ?, ?, ?, ?)",
         [(code, city, offset, lat, lon)
          for code, (city, offset, lat, lon) in AIRPORTS.items()],
+    )
+    return True
+
+
+# Two accounts so a fresh deploy can be signed into immediately. Passwords are
+# hashed on the way in exactly like a real registration; the plaintext lives
+# only here, in the seed, and is documented in the README.
+DEMO_USERS = [
+    ("demo", "demo@skyway.example", "Jetage1965!"),
+    ("captain", "captain@skyway.example", "Clipper707!"),
+]
+
+
+def _insert_demo_users_if_empty(connection):
+    if db.count_rows(connection, "users") > 0:
+        return False
+
+    from werkzeug.security import generate_password_hash
+
+    created_at = datetime.now().isoformat(timespec="seconds")
+    connection.executemany(
+        "INSERT INTO users (username, email, password_hash, created_at) VALUES (?, ?, ?, ?)",
+        [(username, email, generate_password_hash(password), created_at)
+         for username, email, password in DEMO_USERS],
     )
     return True
 

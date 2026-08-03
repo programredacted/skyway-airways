@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}My trips &middot; Skyway Airways{% endblock %}
+{% block main_class %}site-main--wide{% endblock %}
+
+{% block content %}
+<p class="eyebrow">{{ current_user.username }}</p>
+<h1 class="page-title">My trips</h1>
+
+{% if trips %}
+  <p class="lede">
+    {{ trips | length }} booking{{ '' if trips | length == 1 else 's' }} on your account.
+  </p>
+
+  <div class="trips">
+    {% for trip in trips %}
+      {% set cancelled = trip.status == 'CANCELLED' %}
+      <article class="pass pass--stacked {{ 'pass--void' if cancelled }}">
+        <div class="pass__main">
+          <header class="pass__head">
+            <span class="pass__airline">{{ trip.airline }}</span>
+            <span class="pass__kind">{{ 'Cancelled' if cancelled else 'Boarding Pass' }}</span>
+          </header>
+
+          <div class="pass__route">
+            <div>
+              <p class="pass__code">{{ trip.origin_code }}</p>
+              <p class="pass__city">{{ trip.origin_city }}</p>
+            </div>
+            <span class="pass__plane" aria-hidden="true">✈</span>
+            <div>
+              <p class="pass__code">{{ trip.dest_code }}</p>
+              <p class="pass__city">{{ trip.dest_city }}</p>
+            </div>
+          </div>
+
+          <dl class="pass__grid">
+            <div><dt>Passenger</dt><dd>{{ trip.full_name }}</dd></div>
+            <div><dt>Flight</dt><dd>{{ trip.flight_number }}</dd></div>
+            <div><dt>Date</dt><dd>{{ trip.departs_at | daystamp }}</dd></div>
+            <div><dt>Departs</dt><dd>{{ trip.departs_at | clock }}</dd></div>
+            <div><dt>Class</dt><dd>{{ cabin_label(trip.cabin_class) }}</dd></div>
+            <div><dt>Fare paid</dt><dd>{{ trip.price_paid_cents | fare }}</dd></div>
+          </dl>
+        </div>
+
+        <aside class="pass__stub">
+          <p class="pass__stub-label">Seat</p>
+          <p class="pass__seat">{{ trip.row_number }}{{ trip.seat_letter }}</p>
+          <p class="pass__stub-label">Reference</p>
+          <p class="pass__ref">{{ trip.reference }}</p>
+          {% if cancelled %}<p class="pass__void-stamp">Void</p>{% endif %}
+        </aside>
+      </article>
+
+      <p class="trips__actions">
+        <a class="btn btn--small" href="{{ url_for('boarding_pass', reference=trip.reference) }}">
+          Open boarding pass
+        </a>
+      </p>
+    {% endfor %}
+  </div>
+{% else %}
+  <p class="empty">
+    No trips yet.
+    <a href="{{ url_for('flight_list') }}">Find a flight</a> and your boarding
+    passes will collect here.
+  </p>
+{% endif %}
+{% endblock %}

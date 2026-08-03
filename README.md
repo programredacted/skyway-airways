@@ -78,8 +78,15 @@ run — there is no separate migrate or seed step.
 
 ```bash
 python seed.py                        # rebuild/print the timetable as a departure board
-python -m unittest discover tests     # 28 smoke tests
+
+python -m pip install -r requirements-dev.txt
+python -m pytest -q                   # 33 tests across flights, booking, auth, seat map
 ```
+
+The suite gives every test its own temporary SQLite file, so tests can't see
+each other's bookings and the seed path is exercised on every run. `GOAL.md`
+lists the acceptance criteria each test proves; `LOOPLOG.md` records how they
+were driven to green.
 
 Delete `flights.db` to start over from a clean timetable.
 
@@ -236,6 +243,46 @@ Alternatively, use **New + → Blueprint** and Render will read every setting fr
 [`render.yaml`](render.yaml).
 
 ---
+
+## Accounts
+
+Browsing flights and seat maps is open to everyone; **confirming a booking
+requires an account**. An anonymous visitor who hits Confirm is sent to
+`/login?next=…` and returned to the same flight and seat afterwards.
+
+| Route | |
+|---|---|
+| `/register` | username (3–20 alphanumeric), email, password (8+), confirm |
+| `/login` · `/logout` | Flask session cookie |
+| `/my-trips` | that account's bookings, as a stack of boarding passes |
+
+Two demo accounts exist on a fresh seed:
+
+| Username | Password |
+|---|---|
+| `demo` | `Jetage1965!` |
+| `captain` | `Clipper707!` |
+
+### Security notes, stated honestly
+
+- **Passwords are hashed** with `werkzeug.security` (PBKDF2). The plaintext is
+  never written to the database, and a test asserts the stored value is not the
+  password and that `check_password_hash` verifies it.
+- **Login failures are deliberately vague.** A wrong password and an unknown
+  username produce the same message — saying which was wrong tells an attacker
+  whether an account exists.
+- **CSRF**: every non-GET request must carry a per-session token, checked in a
+  `before_request` hook so no route can forget it. Hand-rolled rather than
+  Flask-WTF to avoid a dependency for ~20 lines.
+- **Session fixation**: the session is cleared before a user is signed in, so a
+  token planted beforehand cannot be reused.
+- **Open redirects**: the `next=` parameter is only honoured for same-site paths.
+- **Caveats worth knowing.** There is no rate limiting on `/login`, so nothing
+  slows down a brute-force attempt. There is no password reset, no email
+  verification, and no "remember me". Session cookies are not marked `Secure`
+  because the app is served over plain HTTP locally — on Render, which is
+  HTTPS-only, they would want `SESSION_COOKIE_SECURE=True`. For a graded student
+  project these are acceptable; for anything real they are not.
 
 ## Known limitations
 

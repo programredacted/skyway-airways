@@ -155,6 +155,47 @@ a:hover { color: var(--orange-dk); }
 
 .site-nav a:hover { color: var(--gold); border-bottom-color: var(--gold); }
 
+.site-nav__you {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: var(--track-mid);
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.site-nav__out { display: inline; }
+
+.site-nav__out button {
+  padding: 0 0 2px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--paper);
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: var(--track-wide);
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.site-nav__out button:hover { color: var(--gold); border-bottom-color: var(--gold); }
+
+.form__help { margin: 0.2rem 0 0; font-size: 0.78rem; color: var(--ink-soft); }
+
+.form__error--banner {
+  margin-bottom: 1rem;
+  padding: 0.7rem 0.9rem;
+  background: #fbeae6;
+  border-left: 6px solid var(--oxblood);
+}
+
+/* stacked boarding passes on My Trips */
+.trips { display: grid; gap: 0.5rem; }
+.pass--stacked { margin-top: 1.5rem; }
+.trips__actions { margin: 0 0 0.5rem; }
+
 /* ------------------------------------------------------- progress steps -- */
 
 .steps { background: var(--paper-2); border-bottom: var(--hairline); }

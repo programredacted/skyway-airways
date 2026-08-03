@@ -6,6 +6,7 @@
 <p class="lede">Enter the six-character reference from your boarding pass.</p>
 
 <form class="form form--narrow" method="post" action="{{ url_for('lookup') }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
   <div class="form__field">
     <label for="reference">Booking reference</label>
     <input type="text" id="reference" name="reference" maxlength="6"

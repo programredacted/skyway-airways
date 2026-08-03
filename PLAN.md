@@ -103,6 +103,34 @@ Constraint: `UNIQUE (flight_id, row_number, seat_letter)`.
 per request — the price a passenger is shown is the exact integer that gets
 charged and stored, so displayed and billed fares can never disagree.
 
+### `users` *(added in revision 2 — accounts)*
+
+| column | type | notes |
+|---|---|---|
+| `id` | INTEGER | PK |
+| `username` | TEXT | NOT NULL, unique **case-insensitively** |
+| `email` | TEXT | NOT NULL, unique case-insensitively |
+| `password_hash` | TEXT | werkzeug PBKDF2 hash — the plaintext is never stored |
+| `created_at` | TEXT | ISO-8601 UTC |
+
+Uniqueness is enforced with `CREATE UNIQUE INDEX ... ON users (LOWER(username))`
+rather than a plain `UNIQUE` column, so `Jimmy` and `jimmy` are the same account.
+
+`bookings` gains a nullable `user_id` FK → `users.id`. Nullable on purpose: the
+seeded pre-sold seats belong to no one, and a `NOT NULL` column would force
+inventing an owner for them.
+
+**Tradeoff:** passwords are hashed with `werkzeug.security`, which ships with
+Flask — no new dependency. CSRF is a hand-rolled per-session token checked in a
+`before_request` hook rather than Flask-WTF, for the same reason: one
+dependency and one config surface avoided for about twenty lines.
+
+### `aircraft` *(revised — premium cabin widths)*
+
+Gains `first_letters` and `business_letters`. First flies 1-1 and Business 2-2,
+so those cabins use a subset of the aircraft's letters; Economy uses them all.
+Without this the seat map could not draw a cabin that narrows towards the nose.
+
 ### `passengers`
 
 | column | type | notes |

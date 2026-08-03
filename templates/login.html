@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Sign in &middot; Skyway Airways{% endblock %}
+
+{% block content %}
+<p class="eyebrow">Welcome back</p>
+<h1 class="page-title">Sign in</h1>
+
+{% if next %}
+  <p class="lede">Sign in and we'll take you straight back to your booking.</p>
+{% endif %}
+
+<form class="form form--narrow" method="post" action="{{ url_for('login') }}" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+
+  {% if error %}<p class="form__error form__error--banner">{{ error }}</p>{% endif %}
+
+  <div class="form__field">
+    <label for="username">Username</label>
+    <input type="text" id="username" name="username" value="{{ username }}"
+           autocomplete="username" autofocus>
+  </div>
+
+  <div class="form__field">
+    <label for="password">Password</label>
+    <input type="password" id="password" name="password" autocomplete="current-password">
+  </div>
+
+  <button class="btn btn--primary btn--large" type="submit">Sign in</button>
+  <p class="form__note">
+    New here? <a href="{{ url_for('register', next=next) }}">Create an account</a>.
+  </p>
+</form>
+{% endblock %}

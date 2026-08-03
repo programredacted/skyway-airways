@@ -1,16 +1,19 @@
-"""Skyway Airways — Flask application factory and routes.
+﻿"""Skyway Airways - Flask application factory and routes.
 
 Routes read through db.py and write through bookings.py; no SQL lives here.
 """
 
 import os
 import re
+import secrets
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from urllib.parse import urlparse
 
 from flask import (Flask, abort, current_app, flash, g, jsonify, redirect,
-                   render_template, request, url_for)
+                   render_template, request, session, url_for)
 
+import accounts
 import bookings
 import db
 import destinations
@@ -40,6 +43,7 @@ def create_app():
 
     prepare_database(app)
     register_teardown(app)
+    register_csrf(app)
     register_filters(app)
     register_context(app)
     register_routes(app)
@@ -102,22 +106,83 @@ def register_filters(app):
 
 
 def register_context(app):
-    """The hall clock hangs on every page, so every template gets its data."""
+    """The hall clock and the signed-in user are on every page."""
 
     @app.context_processor
-    def clock_context():
+    def shared_context():
         if not request.endpoint or request.endpoint == "static":
             return {}
         return {
             "clock": _clock_seed(DEFAULT_CLOCK_OFFSET),
             "clock_airports": db.get_airports(get_db()),
+            "current_user": current_user(),
+            "csrf_token": csrf_token(),
         }
+
+
+# --- accounts and sessions ---------------------------------------------------
+
+def current_user():
+    """The signed-in account for this request, or None. Cached per request."""
+    if "user" not in g:
+        user_id = session.get("user_id")
+        g.user = accounts.get_by_id(get_db(), user_id) if user_id else None
+    return g.user
+
+
+def sign_in(user):
+    """Start a fresh session for this account.
+
+    The old session id is dropped first so a token fixed before login cannot be
+    reused afterwards.
+    """
+    session.clear()
+    session["user_id"] = user["id"]
+
+
+def csrf_token():
+    """A per-session token, minted on first use."""
+    if "csrf" not in session:
+        session["csrf"] = secrets.token_urlsafe(32)
+    return session["csrf"]
+
+
+def register_csrf(app):
+    """Check the token on every state-changing request, before anything else.
+
+    Enforced here rather than per-route: a route that returns early - /login
+    redirecting an already-signed-in visitor, say - would otherwise skip its own
+    check, and any new POST route would have to remember to call it.
+    """
+
+    @app.before_request
+    def verify_csrf():
+        if request.method in ("GET", "HEAD", "OPTIONS"):
+            return None
+        submitted = request.form.get("csrf_token", "")
+        expected = session.get("csrf", "")
+        if not expected or not secrets.compare_digest(submitted, expected):
+            abort(400)
+        return None
+
+
+def safe_next(target):
+    """Only ever redirect to a path on this site.
+
+    An open redirect would let a login link bounce someone to another host.
+    """
+    if not target:
+        return None
+    parsed = urlparse(target)
+    if parsed.scheme or parsed.netloc or not target.startswith("/"):
+        return None
+    return target
 
 
 # --- input validation --------------------------------------------------------
 
 def validate_passenger(form):
-    """Return (cleaned values, errors). Server-side, always — the form's
+    """Return (cleaned values, errors). Server-side, always - the form's
     HTML5 attributes are a convenience, not a guarantee."""
     values = {
         "full_name": form.get("full_name", "").strip(),
@@ -306,6 +371,14 @@ def register_routes(app):
         if seat is None:
             return redirect(url_for("seat_selection", flight_id=flight_id))
 
+        # Browsing is open to everyone; confirming is not. Send an anonymous
+        # visitor to sign in and bring them back to this exact seat.
+        user = current_user()
+        if user is None:
+            flash("Please sign in to confirm your booking.", "error")
+            resume = url_for("passenger_form", flight_id=flight_id, seat_id=seat["id"])
+            return redirect(url_for("login", next=resume))
+
         # Already sold? It may be this passenger submitting twice, so ask
         # _handle_lost_seat rather than assuming a stranger beat them to it.
         if not seat["available"]:
@@ -323,7 +396,8 @@ def register_routes(app):
 
         try:
             reference = bookings.create_booking(
-                connection, seat["id"], values["full_name"], values["email"], values["phone"]
+                connection, seat["id"], values["full_name"], values["email"],
+                values["phone"], user_id=user["id"]
             )
         except bookings.SeatUnavailable:
             return _handle_lost_seat(connection, seat, values["email"], flight_id)
@@ -344,6 +418,70 @@ def register_routes(app):
         else:
             flash("That booking was already cancelled.", "error")
         return redirect(url_for("boarding_pass", reference=reference.upper()))
+
+    # --- accounts ------------------------------------------------------------
+
+    @app.route("/register", methods=["GET", "POST"])
+    def register():
+        if current_user():
+            return redirect(url_for("flight_list"))
+
+        values, errors = {"username": "", "email": ""}, {}
+        target = safe_next(request.args.get("next"))
+
+        if request.method == "POST":
+            try:
+                user = accounts.register(get_db(), request.form)
+            except accounts.RegistrationError as rejected:
+                values = {"username": request.form.get("username", "").strip(),
+                          "email": request.form.get("email", "").strip()}
+                errors = rejected.errors
+            else:
+                sign_in(user)
+                flash(f"Welcome aboard, {user['username']}.", "success")
+                return redirect(target or url_for("flight_list"))
+
+        return render_template("register.html", values=values, errors=errors,
+                               next=target), (400 if errors else 200)
+
+    @app.route("/login", methods=["GET", "POST"])
+    def login():
+        if current_user():
+            return redirect(url_for("flight_list"))
+
+        target = safe_next(request.args.get("next"))
+        error = None
+        username = ""
+
+        if request.method == "POST":
+            username = request.form.get("username", "").strip()
+            user = accounts.authenticate(get_db(), username, request.form.get("password", ""))
+            if user is None:
+                # One message for both cases: naming which was wrong would
+                # confirm whether an account exists.
+                error = "Invalid username or password."
+            else:
+                sign_in(user)
+                flash(f"Welcome aboard, {user['username']}.", "success")
+                return redirect(safe_next(request.form.get("next")) or target
+                                or url_for("flight_list"))
+
+        return render_template("login.html", error=error, username=username,
+                               next=target), (400 if error else 200)
+
+    @app.route("/logout", methods=["POST"])
+    def logout():
+        session.clear()
+        flash("Signed out. Safe travels.", "success")
+        return redirect(url_for("index"))
+
+    @app.route("/my-trips")
+    def my_trips():
+        user = current_user()
+        if user is None:
+            return redirect(url_for("login", next=url_for("my_trips")))
+        return render_template("my_trips.html",
+                               trips=accounts.bookings_for(get_db(), user["id"]))
 
     @app.route("/lookup", methods=["GET", "POST"])
     def lookup():
@@ -418,7 +556,7 @@ def _usable_seat(connection, flight_id, raw_seat_id):
 
 
 def _handle_lost_seat(connection, seat, email, flight_id):
-    """Someone confirmed this seat first — unless it was this passenger.
+    """Someone confirmed this seat first - unless it was this passenger.
 
     A double-submitted form (impatient click, or a resubmitted POST) lands here
     with the same email as the booking that already exists, so we show them
@@ -431,3 +569,5 @@ def _handle_lost_seat(connection, seat, email, flight_id):
     flash(f"Seat {seat['row_number']}{seat['seat_letter']} was taken a moment ago. "
           "Please pick another.", "error")
     return redirect(url_for("seat_selection", flight_id=flight_id))
+
+
