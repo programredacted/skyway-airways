@@ -1521,28 +1521,28 @@ a:hover { color: var(--orange-dk); }
   width: min(260%, calc(100vw - 19.5rem));
 }
 
-/* The cabin's own outline, at the cabin's own weight. non-scaling-stroke
-   because the SVG is scaled to the viewport: without it the line thickens and
-   thins with the window while the shell's 2px border stays put. */
-.cabin-wings__skin,
-.cabin-wings__pod-top {
+/* The silhouette pass. Filled as well as stroked so wing and engine merge
+   into one shape; the fills drawn afterwards cover the half of the stroke
+   that falls inside, leaving 2px showing — the shell's own border weight.
+
+   non-scaling-stroke because the SVG is scaled to the viewport: without it
+   the line thickens and thins with the window while that 2px border does not
+   move, and the two only agree at one window size. */
+.cabin-wings__edge {
+  fill: var(--ink);
   stroke: var(--ink);
-  stroke-width: 2;
+  stroke-width: 4;
   vector-effect: non-scaling-stroke;
   stroke-linejoin: round;
-  stroke-linecap: round;
 }
 
+/* Starboard only, so the weight sits where the shell's own shadow sits:
+   offset right and down, leaving the port side a bare line. */
+.cabin-wings__edge--shadowed { filter: drop-shadow(6px 6px 0 var(--teal-dk)); }
+
 .cabin-wings__skin { fill: var(--paper-3); }
-
-/* Only the starboard wing, so the weight sits where the shell's own shadow
-   sits — offset right and down, leaving the port side a bare line. */
-.cabin-wings__skin--shadowed { filter: drop-shadow(6px 6px 0 var(--teal-dk)); }
-
-/* one step deeper than the wing so the pods read against it, and no outline
-   of their own — only the top edge, which is drawn separately */
-.cabin-wings__pod { fill: #cbbb99; stroke: none; }
-.cabin-wings__pod-top { fill: none; }
+/* one step deeper than the wing so the pods read against it */
+.cabin-wings__pod { fill: #cbbb99; }
 
 @media (max-width: 55rem) {
   /* the sidebar drops below, so the cabin is centred on the page after all */

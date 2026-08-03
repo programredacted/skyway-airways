@@ -61,23 +61,30 @@
          The tips are curved rather than cut square: a flat vertical edge out
          there reads as the wing having been clipped off, and the cabin it
          belongs to is all soft curves. #}
-      {# Two paths, because only one of them carries the shadow: the shell's
-         offset falls to its right, so the left wing is a bare line and the
-         right one is line plus shadow. One path could not do both. #}
+      {# The outline traces the wing and its engine as one silhouette, never
+         each shape separately — an engine with its own ring round it reads as
+         a pill dropped on top rather than a pod slung under.
+
+         Done by drawing each side twice: first solid in ink and stroked, then
+         the same shapes filled over the top. The fills bury every line that
+         falls inside the silhouette and leave only its outer edge, so no union
+         geometry has to be worked out by hand. #}
+      <g class="cabin-wings__edge">
+        <path d="M291 110 L30 244 C 6 252 6 268 30 276 L291 220 Z"/>
+        <rect x="142" y="150" width="52" height="72" rx="24"/>
+      </g>
+      {# only the starboard side carries the shell's offset shadow #}
+      <g class="cabin-wings__edge cabin-wings__edge--shadowed">
+        <path d="M609 220 L870 276 C 894 268 894 252 870 244 L609 110 Z"/>
+        <rect x="706" y="150" width="52" height="72" rx="24"/>
+      </g>
+
       <path class="cabin-wings__skin"
             d="M291 110 L30 244 C 6 252 6 268 30 276 L291 220 Z"/>
-      <path class="cabin-wings__skin cabin-wings__skin--shadowed"
+      <path class="cabin-wings__skin"
             d="M609 220 L870 276 C 894 268 894 252 870 244 L609 110 Z"/>
-
-      {# Nacelles: filled, with a line along the top only. A full outline made
-         them read as pills sitting on the wing rather than pods slung under
-         it; the top is the edge that stands clear of the leading edge. #}
       <rect class="cabin-wings__pod" x="142" y="150" width="52" height="72" rx="24"/>
       <rect class="cabin-wings__pod" x="706" y="150" width="52" height="72" rx="24"/>
-      <path class="cabin-wings__pod-top"
-            d="M142 174 A 24 24 0 0 1 166 150 L170 150 A 24 24 0 0 1 194 174"/>
-      <path class="cabin-wings__pod-top"
-            d="M706 174 A 24 24 0 0 1 730 150 L734 150 A 24 24 0 0 1 758 174"/>
     </svg>
 
     <div class="cabin-shell" id="seat-grid"
