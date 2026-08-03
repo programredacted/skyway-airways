@@ -23,6 +23,51 @@ def test_new_accounts_are_never_admins(conn, register):
     assert _user(conn, "ordinary")["is_admin"] == 0
 
 
+def test_the_admin_username_cannot_be_registered(client, conn, register):
+    """If a visitor claimed it first, the seed would find the name taken and
+    the database would end up with no administrator at all."""
+    response = register(username="admin", email="me@example.com")
+    assert response.status_code == 400
+    assert "reserved" in response.get_data(as_text=True)
+
+    # and the seeded staff account is untouched
+    assert _user(conn, "admin")["is_admin"] == 1
+
+
+def test_reserved_names_are_refused_whatever_the_casing(register):
+    for name in ("Admin", "ROOT", "sTaFf", "crew", "administrator", "skyway"):
+        response = register(username=name, email=f"{name}@example.com")
+        assert response.status_code == 400, name
+        assert "reserved" in response.get_data(as_text=True), name
+
+
+def test_a_reserved_name_does_not_block_an_ordinary_one(conn, register):
+    """The list is exact, not a prefix match — "adminium" is a fine username."""
+    assert register(username="adminium").status_code == 302
+    assert _user(conn, "adminium")["is_admin"] == 0
+
+
+def test_the_seed_leaves_a_claimed_admin_name_alone(conn):
+    """Belt and braces for a database that predates the reserved list: if the
+    name is already taken by an ordinary account, the seed must not promote
+    it. Better no admin than a stranger holding the keys."""
+    import seed
+
+    conn.execute("UPDATE users SET is_admin = 0")
+    conn.execute("DELETE FROM users WHERE LOWER(username) = 'admin'")
+    conn.execute(
+        """
+        INSERT INTO users (username, email, password_hash, created_at, is_admin)
+        VALUES ('admin', 'squatter@example.com', 'x', '2026-01-01T00:00:00', 0)
+        """
+    )
+    conn.commit()
+
+    assert seed._ensure_an_admin_exists(conn) is False
+    assert _user(conn, "admin")["is_admin"] == 0
+    assert conn.execute("SELECT COUNT(*) FROM users WHERE is_admin = 1").fetchone()[0] == 0
+
+
 def test_the_panel_turns_away_visitors_who_are_not_signed_in(client):
     response = client.get("/admin")
     assert response.status_code == 302
