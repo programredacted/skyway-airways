@@ -1511,9 +1511,6 @@ a:hover { color: var(--orange-dk); }
      aircraft is — around row 12 of a 24-row 707. */
   transform: translate(-50%, -73.3%);
   pointer-events: none;
-  /* the shell's own shadow, so the right and lower edges read heavier in the
-     same way; matches --shadow rather than inventing a second offset */
-  filter: drop-shadow(6px 6px 0 var(--teal-dk));
   /* Behind the cabin without touching it: the shell is statically positioned,
      so anything positioned here would otherwise paint on top of it. */
   z-index: -1;
@@ -1528,16 +1525,24 @@ a:hover { color: var(--orange-dk); }
    because the SVG is scaled to the viewport: without it the line thickens and
    thins with the window while the shell's 2px border stays put. */
 .cabin-wings__skin,
-.cabin-wings__pod {
+.cabin-wings__pod-top {
   stroke: var(--ink);
   stroke-width: 2;
   vector-effect: non-scaling-stroke;
   stroke-linejoin: round;
+  stroke-linecap: round;
 }
 
 .cabin-wings__skin { fill: var(--paper-3); }
-/* one step deeper than the wing so the pods read against it */
-.cabin-wings__pod { fill: #cbbb99; }
+
+/* Only the starboard wing, so the weight sits where the shell's own shadow
+   sits — offset right and down, leaving the port side a bare line. */
+.cabin-wings__skin--shadowed { filter: drop-shadow(6px 6px 0 var(--teal-dk)); }
+
+/* one step deeper than the wing so the pods read against it, and no outline
+   of their own — only the top edge, which is drawn separately */
+.cabin-wings__pod { fill: #cbbb99; stroke: none; }
+.cabin-wings__pod-top { fill: none; }
 
 @media (max-width: 55rem) {
   /* the sidebar drops below, so the cabin is centred on the page after all */
