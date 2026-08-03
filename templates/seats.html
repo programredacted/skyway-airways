@@ -92,6 +92,16 @@
         <rect x="706" y="150" width="52" height="72" rx="24"/>
       </g>
 
+      {# the shell's inset ring, carried out along the wing #}
+      <g class="cabin-wings__inline">
+        <path d="M470 110 L291 110 L30 244 C 6 252 6 268 30 276 L291 220 L470 220 Z"/>
+        <rect x="142" y="150" width="52" height="72" rx="24"/>
+      </g>
+      <g class="cabin-wings__inline">
+        <path d="M430 110 L609 110 L870 244 C 894 252 894 268 870 276 L609 220 L430 220 Z"/>
+        <rect x="706" y="150" width="52" height="72" rx="24"/>
+      </g>
+
       <path class="cabin-wings__skin"
             d="M470 110 L291 110 L30 244 C 6 252 6 268 30 276 L291 220 L470 220 Z"/>
       <path class="cabin-wings__skin"
@@ -99,6 +109,12 @@
       <rect class="cabin-wings__pod" x="142" y="150" width="52" height="72" rx="24"/>
       <rect class="cabin-wings__pod" x="706" y="150" width="52" height="72" rx="24"/>
     </svg>
+
+    {# Breaks the shell's border where the wing arrives, so the two read as one
+       piece. Narrow enough to sit inside the shell's 1rem padding, so it can
+       never touch a seat. #}
+    <span class="cabin-wings__join cabin-wings__join--port" aria-hidden="true"></span>
+    <span class="cabin-wings__join cabin-wings__join--starboard" aria-hidden="true"></span>
 
     <div class="cabin-shell" id="seat-grid"
          data-flight-id="{{ flight.id }}"

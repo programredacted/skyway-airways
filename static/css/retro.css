@@ -46,7 +46,13 @@
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 
-html { scroll-behavior: smooth; }
+/* `clip`, not `hidden`: it stops anything wider than the window producing a
+   sideways scrollbar without making the page a scroll container, so the
+   sticky header and selection panel go on working. The seat map's wings are
+   what need it — they are sized to hold their proportion to the cabin rather
+   than to fit, so on a narrow window or at deep zoom the tips run past the
+   edge instead of the aircraft changing shape. */
+html { scroll-behavior: smooth; overflow-x: clip; }
 
 body {
   margin: 0;
@@ -1519,18 +1525,19 @@ a:hover { color: var(--orange-dk); }
   /* Behind the cabin without touching it: the shell is statically positioned,
      so anything positioned here would otherwise paint on top of it. */
   z-index: -1;
-  /* Sized in rem, like the 34rem cabin, so the two hold their proportion when
-     the page is zoomed. A percentage of the column or a share of the viewport
-     does not: zoom shrinks the CSS viewport while the cabin stays 34rem, and
-     the wings were sliding from 1.67x down to 0.72x of it across ordinary
-     zoom levels.
+  /* Sized in rem, like the 34rem cabin, and with nothing capping it — so the
+     two hold their proportion at every zoom level and window size. A share of
+     the viewport cannot: zoom shrinks the CSS viewport while the cabin stays
+     34rem, which slid the span from 1.67x the cabin down to 0.72x.
 
-     The viewport term is only a backstop against clipping. The cabin is
-     centred in the left grid column rather than on the page, so the left edge
-     runs out first: its centre sits (100vw - 312px)/2 from that edge, capping
-     the span at 100vw - 312px — the sidebar's 17.5rem plus the 2rem gap. At
-     75rem that backstop stays out of the way down to about 125% zoom. */
-  width: min(75rem, calc(100vw - 19.5rem));
+     Where there is no room the tips run past the window rather than the
+     aircraft changing shape; `overflow-x: clip` on the root keeps that from
+     producing a scrollbar.
+
+     99rem is the span it already had — 1588px, what the old viewport-capped
+     rule happened to give on a 1900px screen. Fixing the scaling was not a
+     reason to make it smaller. */
+  width: 99rem;
 }
 
 /* The silhouette pass. Filled as well as stroked so wing and engine merge
@@ -1558,12 +1565,36 @@ a:hover { color: var(--orange-dk); }
    border paints 2px and its right edge paints 7px, the shadow overlapping the
    border by one. 4 and 14 give exactly those, since half of every stroke falls
    inside the shape and is buried by the fill that follows. */
-.cabin-wings__ink  { fill: var(--ink);     stroke: var(--ink);     stroke-width: 4; }
-.cabin-wings__teal { fill: var(--teal-dk); stroke: var(--teal-dk); stroke-width: 14; }
+/* Widened so the bands can nest: each layer is drawn over the last, and what
+   shows of any one is the difference between its width and the next. Outward
+   from the fill that ends up on top: 6px paper, 2px ink, 6px teal — the shell's
+   inset ring, its border, and its shadow, in that order. */
+.cabin-wings__ink    { fill: var(--ink);     stroke: var(--ink);     stroke-width: 16; }
+.cabin-wings__teal   { fill: var(--teal-dk); stroke: var(--teal-dk); stroke-width: 28; }
+.cabin-wings__inline { fill: var(--paper);   stroke: var(--paper);   stroke-width: 12; }
+.cabin-wings__inline > * { vector-effect: non-scaling-stroke; }
 
-.cabin-wings__skin { fill: var(--paper-3); }
-/* one step deeper than the wing so the pods read against it */
-.cabin-wings__pod { fill: #cbbb99; }
+/* the shell's own interior, so the wing is the same material as the cabin */
+.cabin-wings__skin { fill: var(--paper-2); }
+.cabin-wings__pod  { fill: #ddd0b4; }
+
+/* The seam. The shell paints its border across the wing root, which is the one
+   line stopping the two reading as a single piece; this covers exactly that
+   strip — border and inset ring — in the interior colour.
+
+   Sized off the wing's own geometry: its root chord is y 110-220 of a 300-unit
+   viewBox on an SVG a third as tall as it is wide, so the chord is 9.17rem
+   deep and its trailing edge lands on the cabin's midpoint. */
+.cabin-wings__join {
+  position: absolute;
+  top: calc(50% - 9.17rem);
+  height: 9.17rem;
+  width: 8px;                 /* the shell's 2px border plus its 6px inset */
+  background: var(--paper-2);
+}
+
+.cabin-wings__join--port      { left: calc(50% - 17rem); }
+.cabin-wings__join--starboard { right: calc(50% - 17rem); }
 
 @media (max-width: 55rem) {
   /* the sidebar drops below, so the cabin is centred on the page after all */
