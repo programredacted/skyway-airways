@@ -1078,6 +1078,13 @@ a:hover { color: var(--orange-dk); }
 
 .seatmap { display: grid; grid-template-columns: minmax(0, 1fr) 17.5rem; gap: 2rem; align-items: start; }
 
+/* The wingtips run past the cabin column and pass behind the selection panel,
+   which is what buys the wings enough clear span to carry an engine and the
+   titles. Clipping on the column instead left 147 units of visible wing for
+   186 units of markings. `clip` rather than `hidden`: it does not establish a
+   scroll container, so the sticky panel inside still sticks. */
+.seatmap { overflow-x: clip; overflow-y: visible; }
+
 .legend {
   display: flex;
   flex-wrap: wrap;
@@ -1118,92 +1125,77 @@ a:hover { color: var(--orange-dk); }
 
 /* ------------------------------------------------ the aircraft, from above -- */
 
-/* The box is the fuselage itself, with no padding: the wings and tailplane are
-   sized as multiples of it, so their roots land on the cabin walls. */
 .airframe {
-  --skin: var(--paper-2);
-  --outline: var(--ink);
+  --hull:   var(--paper-3);   /* the silhouette: one step off the page, no outline */
+  --hull-2: #c4b189;          /* glazing, engines, fin */
   position: relative;
-  max-width: 18.5rem;
+  max-width: 34rem;
   margin: 0 auto;
 }
 
-.airframe__skin { fill: var(--skin); stroke: var(--outline); stroke-width: 3; stroke-linejoin: round; }
-.airframe__glass { fill: var(--teal-dk); stroke: var(--outline); stroke-width: 2; }
-/* cream frames laid over the glazing band, so it reads as six windows */
-.airframe__mullion { stroke: var(--paper); stroke-width: 2; opacity: 0.85; }
-.airframe__detail { fill: none; stroke: var(--outline); stroke-width: 2; opacity: 0.5; }
-.airframe__centreline { stroke: var(--ink-soft); stroke-width: 1.5; stroke-dasharray: 5 7; opacity: 0.5; }
-/* Explicit classes, not `rect + rect`: a sibling selector matched every nacelle
-   after the first and filled one of the two engines cream. */
-.airframe__nacelle { fill: var(--teal-dk); stroke: var(--outline); stroke-width: 2.5; }
-.airframe__intake { fill: var(--paper); opacity: 0.55; }
-.airframe__fin { fill: var(--orange); stroke: var(--outline); stroke-width: 2.5; }
-.airframe__panel { fill: none; stroke: var(--ink-soft); stroke-width: 1.6; opacity: 0.35; }
+/* No stroke anywhere on the silhouette. An outline is what made the airframe
+   compete with the seats, and it is what forced every edge to meet the cabin
+   exactly; a flat fill reads as shape alone. */
+.airframe__hull { fill: var(--hull); }
+.airframe__glass { fill: var(--hull-2); }
+/* thin: at 2.5 the frames took a fifth of the band each and the glazing read
+   as a row of bricks rather than a windscreen */
+.airframe__mullion { stroke: var(--hull); stroke-width: 1.6; }
+.airframe__nacelle { fill: var(--hull-2); }
+.airframe__fin { fill: var(--hull-2); }
 
-/* Sized in viewBox units against a 900-wide box that renders ~2.8x the cabin
-   width — anything larger reads as a headline lying across the seats. */
-.airframe__wordmark {
-  fill: var(--oxblood);
-  font-family: var(--font-display);
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  opacity: 0.8;
+/* Pulled back under the cabin so the silhouette runs continuously behind the
+   shell instead of butting up against it. */
+.airframe__nose, .airframe__tail {
+  display: block;
+  position: relative;
+  z-index: -1;   /* under the cabin, which they overlap at both ends */
+  height: auto;
 }
+.airframe__nose { width: 112%; margin: 0 0 -2.4rem -6%; }
+.airframe__tail { width: 155%; margin: -3.2rem 0 0 -27.5%; }
 
-.airframe__nose, .airframe__tail { display: block; height: auto; }
-.airframe__nose { width: 100%; margin-bottom: -2px; }
-
-/* 170% wide with the cone root at 58.8% of the viewBox, so the cone leaves the
-   cabin at full width and the stabilisers are the part that overhangs. The
-   negative margin re-centres what the extra 70% would otherwise push right. */
-.airframe__tail { width: 170%; margin: -2px 0 0 -35%; }
-
-/* the fuselage: the walls are the border, so the cabin can be any length */
+/* The cabin: the original rounded shell, at the width that kept the seats 44px
+   and legible. The only part of the drawing that carries an outline. */
 .airframe__body {
   position: relative;
-  padding: 0.9rem 0.45rem 1.2rem;
-  background: var(--skin);
-  border-left: 3px solid var(--outline);
-  border-right: 3px solid var(--outline);
+  /* Deliberately no z-index. Setting one makes this a stacking context, and a
+     negative-z child of a stacking context paints *above* that context's own
+     background — which put the wing markings over the seats. */
+  padding: 2.6rem 1rem 1.8rem;
+  background: var(--paper-2);
+  border: var(--rule);
+  border-radius: 46% 46% 8% 8% / 13% 13% 3% 3%;
   text-align: center;
   overflow: visible;
 }
 
-/* the painted livery stripe running the length of the fuselage */
-.airframe__livery {
+/* The fuselage the cabin sits inside. Without it the nose and tail read as
+   domes stuck on either end rather than the ends of one hull, because nothing
+   carries the silhouette down the sides of the cabin. */
+.airframe__body::before {
+  content: "";
   position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  pointer-events: none;
-  /* above the wing root, whose cream fill would otherwise erase the stripes
-     for the height of the wing box and make the cheatline look truncated */
-  z-index: 2;
-  background:
-    linear-gradient(90deg, transparent 0 6px, var(--orange) 6px 12px, transparent 12px) left / 100% no-repeat,
-    linear-gradient(270deg, transparent 0 6px, var(--teal) 6px 12px, transparent 12px) right / 100% no-repeat;
-  opacity: 0.55;
+  inset: 0 -6%;
+  z-index: -1;
+  background: var(--hull);
 }
 
 /* Wings hang off a zero-height anchor, so they line up with the over-wing row
    without pushing any seats apart. */
 .airframe__wingset { position: relative; height: 0; }
 
-/* The wing root is 33.3% of the viewBox, so 300% would make it one containing
-   block wide — but the containing block here is the body's content box, which
-   is 20px inside the walls. 322% puts the root back on the walls exactly. */
+/* Behind the cabin's own background: a negative z-index against a parent that
+   is positioned but creates no stacking context. That is what lets the root
+   pass under the seats unseen, and the span be sized for shape alone. */
 .airframe__wings {
   position: absolute;
-  top: -5.2rem;
+  top: -9rem;
   left: 50%;
-  width: 322%;
+  width: 260%;
   transform: translateX(-50%);
   pointer-events: none;   /* decorative: must never swallow a seat click */
-  z-index: 0;
+  z-index: -1;
 }
 
 .cabin-divider {
@@ -1226,11 +1218,11 @@ a:hover { color: var(--orange-dk); }
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 0.22rem;
+  gap: 0.3rem;
   margin-bottom: 0.32rem;
 }
 
-.seat-row__number { flex: none; width: 1.15rem; font-family: var(--font-mono); font-size: 0.72rem; color: var(--ink-soft); }
+.seat-row__number { flex: none; width: 1.6rem; font-family: var(--font-mono); font-size: 0.72rem; color: var(--ink-soft); }
 
 /* premium cabins fly fewer seats across, at a longer pitch */
 .seat-row--first { margin-bottom: 0.75rem; }
@@ -1254,18 +1246,14 @@ a:hover { color: var(--orange-dk); }
   color: var(--oxblood);
 }
 
-/* 31px on desktop, where a pointer is precise and a shorter cabin lets the
-   wings read at aircraft proportions; the narrow breakpoint puts it back to
-   44px for touch. Both clear the 24px minimum target size.
-
-   `flex: none` matters: a row carries its number on both sides, so the natural
-   width ran over the fuselage and flex quietly shrank every seat's width but
-   not its height, leaving them 31x34. Now a bad size overflows visibly. */
+/* `flex: none` matters: a row carries its number on both sides, so if the row
+   ever outgrows the cabin, flex quietly shrinks every seat's width but not its
+   height, leaving them 31x34. Now a bad size overflows visibly instead. */
 .seat {
   position: relative;
   flex: none;
-  width: 1.95rem;
-  height: 1.95rem;
+  width: 2.75rem;
+  height: 2.75rem;          /* 44px touch target at the default font size */
   padding: 0;
   border: 1px solid var(--ink);
   border-radius: 6px 6px 2px 2px;
@@ -1312,7 +1300,7 @@ a:hover { color: var(--orange-dk); }
   100% { box-shadow: none; }
 }
 
-.seat-aisle { flex: none; width: 1.15rem; }
+.seat-aisle { flex: none; width: 1.4rem; }
 
 /* ------------------------------------------------- live selection panel -- */
 
@@ -1715,23 +1703,6 @@ a:hover { color: var(--orange-dk); }
 
 /* ----------------------------------------------------------- responsive -- */
 
-/* A wing root tied to the fuselage means the span is fixed at ~840px, so below
-   this width the aircraft can no longer fit. Rather than shrink it into a
-   sliver, the wings and stabilisers fold away and the cabin takes the room
-   back — seats return to a 44px touch target, which is what matters here. */
-@media (max-width: 60rem) {
-  .airframe { max-width: 23.5rem; }
-  .airframe__wingset, .airframe__tail { display: none; }
-  .airframe__body {
-    border-radius: 0 0 14px 14px;
-    border-bottom: 3px solid var(--outline);
-  }
-  .seat { width: 2.75rem; height: 2.75rem; }
-  .seat-row { gap: 0.24rem; }
-  .seat-row__number { width: 1.2rem; }
-  .seat-aisle { width: 1.1rem; }
-}
-
 @media (max-width: 55rem) {
   .guide { grid-template-columns: 1fr; gap: 1.5rem; }
   .guide__poster { max-width: 20rem; }
@@ -1818,7 +1789,7 @@ a:hover { color: var(--orange-dk); }
     background-size: 18px 14px;
   }
   .airframe { max-width: 100%; }
-  .airframe__body { padding: 0.7rem 0.15rem 1rem; }
+  .airframe__body { padding: 1.6rem 0.35rem 1rem; border-radius: 22% 22% 6% 6% / 5% 5% 2% 2%; }
   /* The exit label is decorative here; the red seat underline still marks the
      row and the aria-label stays on the element. `right` must be reset — left
      at -3.6rem it sat outside the viewport and widened the whole document. */

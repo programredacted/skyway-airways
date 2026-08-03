@@ -63,7 +63,6 @@
            data-flight-id="{{ flight.id }}"
            data-base-fare="{{ flight.base_fare_cents }}"
            role="group" aria-label="Seat map for flight {{ flight.flight_number }}">
-        <span class="airframe__livery" aria-hidden="true"></span>
 
         {% for row in rows %}
           {% if loop.first or row.cabin_class != rows[loop.index0 - 1].cabin_class %}
@@ -72,7 +71,7 @@
 
           {# wings sit alongside the first over-wing row and add no height #}
           {% if row.row_number == exit_rows[0] %}
-            {{ airframe.wings(airline) }}
+            {{ airframe.wings() }}
           {% endif %}
 
           <div class="seat-row {{ 'seat-row--exit' if row.row_number in exit_rows }}

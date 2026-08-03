@@ -27,6 +27,23 @@ def test_seats_are_buttons_so_they_stay_keyboard_reachable(client):
     assert 'aria-pressed="false"' in body
 
 
+def test_gap_positions_carry_nothing_that_could_be_booked(client):
+    """A cabin gap is drawn as a `.seat` so the columns line up, which made it
+    look selectable: clicking the space between two first-class seats set
+    seat_id=undefined and bounced the booking back to the seat map. Real seats
+    are the ones carrying an id, and that is what the script now matches on."""
+    body = client.get("/flights/1/seats").get_data(as_text=True)
+
+    assert 'class="seat seat--empty"' in body, "expected gap cells on this aircraft"
+    # a gap is inert: no id, no value to submit, and not a button
+    gaps = body.count('<span class="seat seat--empty" aria-hidden="true"></span>')
+    assert gaps == body.count('class="seat seat--empty"')
+
+    script = open("static/js/seatmap.js", encoding="utf-8").read()
+    assert '.seat[data-seat-id]' in script
+    assert 'closest(".seat")' not in script, "a bare .seat match picks up gaps"
+
+
 def test_sold_seats_are_disabled_for_a_browser_without_javascript(client, conn):
     body = client.get("/flights/1/seats").get_data(as_text=True)
     sold = [s for s in database.get_seats(conn, 1) if not s["available"]]
