@@ -29,15 +29,8 @@
   var selected = null;
   var REFRESH_MS = 30000;
 
-  // A row is emitted at the aircraft's full width, so positions that do not
-  // exist in a cabin are still present as `.seat.seat--empty` spans to keep the
-  // columns lined up. Only cells carrying a seat id are real; matching on
-  // `.seat` alone let a click on the space between two first-class seats
-  // "select" nothing, set seat_id=undefined and bounce the booking back here.
-  var REAL_SEAT = ".seat[data-seat-id]";
-
   function seats() {
-    return Array.prototype.slice.call(grid.querySelectorAll(REAL_SEAT));
+    return Array.prototype.slice.call(grid.querySelectorAll(".seat"));
   }
 
   function money(cents) {
@@ -113,42 +106,23 @@
 
   var ARROWS = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -1, ArrowDown: 1 };
 
-  function isReal(cell) {
-    return cell.matches(REAL_SEAT);
-  }
-
   function moveFocus(current, key) {
     var row = current.closest(".seat-row");
-    // Gaps are counted, so a column stays a column across cabins — but focus
-    // must skip over them, since a span cannot take focus and the arrow key
-    // would otherwise do nothing at all.
     var inRow = Array.prototype.slice.call(row.querySelectorAll(".seat"));
     var column = inRow.indexOf(current);
-    var step = ARROWS[key];
 
     if (key === "ArrowLeft" || key === "ArrowRight") {
-      for (var i = column + step; i >= 0 && i < inRow.length; i += step) {
-        if (isReal(inRow[i])) return inRow[i].focus();
-      }
+      var next = inRow[column + ARROWS[key]];
+      if (next) next.focus();
       return;
     }
 
     // Up/down keep the same column and step to the neighbouring row.
     var rows = Array.prototype.slice.call(grid.querySelectorAll(".seat-row"));
-    var target = rows[rows.indexOf(row) + step];
+    var target = rows[rows.indexOf(row) + ARROWS[key]];
     if (!target) return;
-
-    var cells = Array.prototype.slice.call(target.querySelectorAll(".seat"));
-    var landing = cells[Math.min(column, cells.length - 1)];
-    if (landing && isReal(landing)) return landing.focus();
-
-    // that column does not exist in the next cabin; take the nearest that does
-    var real = cells.filter(isReal);
-    if (!real.length) return;
-    real.sort(function (a, b) {
-      return Math.abs(cells.indexOf(a) - column) - Math.abs(cells.indexOf(b) - column);
-    });
-    real[0].focus();
+    var targetSeats = target.querySelectorAll(".seat");
+    (targetSeats[Math.min(column, targetSeats.length - 1)] || targetSeats[0]).focus();
   }
 
   // --- live availability -----------------------------------------------------
@@ -223,20 +197,20 @@
     });
 
     grid.addEventListener("click", function (event) {
-      var seat = event.target.closest(REAL_SEAT);
+      var seat = event.target.closest(".seat");
       if (seat) select(seat);
     });
 
     grid.addEventListener("keydown", function (event) {
       if (!ARROWS[event.key]) return;
-      var seat = event.target.closest(REAL_SEAT);
+      var seat = event.target.closest(".seat");
       if (!seat) return;
       event.preventDefault();
       moveFocus(seat, event.key);
     });
 
     grid.addEventListener("mouseover", function (event) {
-      var seat = event.target.closest(REAL_SEAT);
+      var seat = event.target.closest(".seat");
       if (!seat) return;
       hoverNote.textContent = seat.dataset.label + " · " +
         seat.dataset.cabinLabel + " · " + money(Number(seat.dataset.price)) +

@@ -1,9 +1,6 @@
 {% extends "base.html" %}
-{% import "_airframe.html" as airframe %}
 {% block title %}Seat map &middot; {{ flight.flight_number }}{% endblock %}
 {% block steps %}{% with step = 2 %}{% include "_steps.html" %}{% endwith %}{% endblock %}
-{# the wings need more room than the standard 66rem column gives them #}
-{% block main_class %}site-main--wide{% endblock %}
 
 {% block content %}
 <p class="crumbs">
@@ -52,64 +49,42 @@
       <span class="seatmap__stamp" id="refresh-stamp" aria-hidden="true"></span>
     </div>
 
-    {# The cabin is drawn as an aircraft seen from above. Seats stay as real HTML
-       <button> elements inside the fuselage rather than SVG <g>s, so they keep
-       native focus, tab order and disabled semantics for free; the airframe is
-       decorative SVG behind them with pointer-events off. #}
-    <div class="airframe">
-      {{ airframe.nose() }}
+    <div class="cabin-shell" id="seat-grid"
+         data-flight-id="{{ flight.id }}"
+         data-base-fare="{{ flight.base_fare_cents }}"
+         role="group" aria-label="Seat map for flight {{ flight.flight_number }}">
+      <p class="cabin-shell__nose">Nose</p>
 
-      <div class="airframe__body" id="seat-grid"
-           data-flight-id="{{ flight.id }}"
-           data-base-fare="{{ flight.base_fare_cents }}"
-           role="group" aria-label="Seat map for flight {{ flight.flight_number }}">
+      {% for row in rows %}
+        {% if loop.first or row.cabin_class != rows[loop.index0 - 1].cabin_class %}
+          <p class="cabin-shell__divider">{{ cabin_label(row.cabin_class) }}</p>
+        {% endif %}
+        <div class="seat-row" data-row="{{ row.row_number }}">
+          <span class="seat-row__number" aria-hidden="true">{{ row.row_number }}</span>
+          {% for seat in row.seats %}
+            <button type="submit"
+                    name="seat_id"
+                    value="{{ seat.id }}"
+                    class="seat cabin--{{ seat.cabin_class | lower }} {{ 'seat--taken' if not seat.available }}"
+                    {{ 'disabled' if not seat.available }}
+                    aria-pressed="false"
+                    data-seat-id="{{ seat.id }}"
+                    data-label="{{ seat.label }}"
+                    data-cabin="{{ seat.cabin_class }}"
+                    data-cabin-label="{{ cabin_label(seat.cabin_class) }}"
+                    data-price="{{ seat.price_cents }}"
+                    title="{{ seat.label }} · {{ cabin_label(seat.cabin_class) }} · {{ seat.price_cents | fare }}{{ ' · Sold' if not seat.available }}"
+                    aria-label="Seat {{ seat.label }}, {{ cabin_label(seat.cabin_class) }}, {{ seat.price_cents | fare }}{{ ', sold' if not seat.available }}">
+              <span class="seat__letter" aria-hidden="true">{{ seat.letter }}</span>
+              <span class="seat__code" aria-hidden="true">{{ seat.label }}</span>
+            </button>
+            {% if seat.aisle_after %}<span class="seat-aisle" aria-hidden="true"></span>{% endif %}
+          {% endfor %}
+          <span class="seat-row__number" aria-hidden="true">{{ row.row_number }}</span>
+        </div>
+      {% endfor %}
 
-        {% for row in rows %}
-          {% if loop.first or row.cabin_class != rows[loop.index0 - 1].cabin_class %}
-            <p class="cabin-divider">{{ cabin_label(row.cabin_class) }}</p>
-          {% endif %}
-
-          {# wings sit alongside the first over-wing row and add no height #}
-          {% if row.row_number == exit_rows[0] %}
-            {{ airframe.wings() }}
-          {% endif %}
-
-          <div class="seat-row {{ 'seat-row--exit' if row.row_number in exit_rows }}
-                      seat-row--{{ row.cabin_class | lower }}"
-               data-row="{{ row.row_number }}">
-            <span class="seat-row__number" aria-hidden="true">{{ row.row_number }}</span>
-            {% for seat in row.seats %}
-              {% if seat.gap %}
-                <span class="seat seat--empty" aria-hidden="true"></span>
-              {% else %}
-                <button type="submit"
-                        name="seat_id"
-                        value="{{ seat.id }}"
-                        class="seat cabin--{{ seat.cabin_class | lower }} {{ 'seat--taken' if not seat.available }}"
-                        {{ 'disabled' if not seat.available }}
-                        aria-pressed="false"
-                        data-seat-id="{{ seat.id }}"
-                        data-label="{{ seat.label }}"
-                        data-cabin="{{ seat.cabin_class }}"
-                        data-cabin-label="{{ cabin_label(seat.cabin_class) }}"
-                        data-price="{{ seat.price_cents }}"
-                        title="{{ seat.label }} · {{ cabin_label(seat.cabin_class) }} · {{ seat.price_cents | fare }}{{ ' · Sold' if not seat.available }}"
-                        aria-label="Seat {{ seat.label }}, {{ cabin_label(seat.cabin_class) }}, {{ seat.price_cents | fare }}{{ ', sold' if not seat.available }}">
-                  <span class="seat__letter" aria-hidden="true">{{ seat.letter }}</span>
-                  <span class="seat__code" aria-hidden="true">{{ seat.label }}</span>
-                </button>
-              {% endif %}
-              {% if seat.aisle_after %}<span class="seat-aisle" aria-hidden="true"></span>{% endif %}
-            {% endfor %}
-            <span class="seat-row__number" aria-hidden="true">{{ row.row_number }}</span>
-            {% if row.row_number in exit_rows %}
-              <span class="seat-row__exit" aria-label="Exit row">Exit</span>
-            {% endif %}
-          </div>
-        {% endfor %}
-      </div>
-
-      {{ airframe.tail() }}
+      <p class="cabin-shell__tail">Tail</p>
     </div>
   </form>
 

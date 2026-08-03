@@ -39,27 +39,19 @@ AIRPORTS = {
 
 # Cabin bands are row ranges: rows 1..first_class_last_row are First, the next
 # rows up to business_last_row are Business, everything behind that is Economy.
-# first_letters / business_letters give the premium cabins their wider arrangement:
-# First 1-1, Business 2-2, Economy the full width.
 AIRCRAFT = [
     {"model": "Boeing 707-320B", "seat_letters": "ABCDEF", "aisle_after": "C",
-     "total_rows": 24, "first_class_last_row": 3, "business_last_row": 8,
-     "first_letters": "AF", "business_letters": "ABEF"},
+     "total_rows": 24, "first_class_last_row": 3, "business_last_row": 8},
     {"model": "Douglas DC-8-62", "seat_letters": "ABCDEF", "aisle_after": "C",
-     "total_rows": 22, "first_class_last_row": 2, "business_last_row": 6,
-     "first_letters": "AF", "business_letters": "ABEF"},
+     "total_rows": 22, "first_class_last_row": 2, "business_last_row": 6},
     {"model": "Convair 880", "seat_letters": "ABCD", "aisle_after": "B",
-     "total_rows": 18, "first_class_last_row": 2, "business_last_row": 5,
-     "first_letters": "AD", "business_letters": "ABCD"},
+     "total_rows": 18, "first_class_last_row": 2, "business_last_row": 5},
     {"model": "Boeing 727-100", "seat_letters": "ABCDEF", "aisle_after": "C",
-     "total_rows": 20, "first_class_last_row": 2, "business_last_row": 5,
-     "first_letters": "AF", "business_letters": "ABEF"},
+     "total_rows": 20, "first_class_last_row": 2, "business_last_row": 5},
     {"model": "Boeing 747-100", "seat_letters": "ABCDEFGHJ", "aisle_after": "C,F",
-     "total_rows": 28, "first_class_last_row": 3, "business_last_row": 9,
-     "first_letters": "AJ", "business_letters": "ABHJ"},
+     "total_rows": 28, "first_class_last_row": 3, "business_last_row": 9},
     {"model": "Lockheed L-1011 TriStar", "seat_letters": "ABCDEFGH", "aisle_after": "B,F",
-     "total_rows": 26, "first_class_last_row": 3, "business_last_row": 8,
-     "first_letters": "AH", "business_letters": "ABGH"},
+     "total_rows": 26, "first_class_last_row": 3, "business_last_row": 8},
 ]
 
 # days_out is relative to the seed date, so the timetable never goes stale.
@@ -213,12 +205,11 @@ def _insert_aircraft(connection):
             """
             INSERT INTO aircraft
                 (model, seat_letters, aisle_after, total_rows,
-                 first_class_last_row, business_last_row, first_letters, business_letters)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                 first_class_last_row, business_last_row)
+            VALUES (?, ?, ?, ?, ?, ?)
             """,
             (plane["model"], plane["seat_letters"], plane["aisle_after"],
-             plane["total_rows"], plane["first_class_last_row"], plane["business_last_row"],
-             plane["first_letters"], plane["business_letters"]),
+             plane["total_rows"], plane["first_class_last_row"], plane["business_last_row"]),
         )
         ids[plane["model"]] = cursor.lastrowid
     return ids
@@ -259,15 +250,6 @@ def _insert_flight(connection, spec, aircraft_ids, seed_date):
     return cursor.lastrowid
 
 
-def letters_for_cabin(plane, cabin_class):
-    """Which seats exist in a row of this cabin. First flies 1-1, Business 2-2."""
-    if cabin_class == "FIRST":
-        return plane["first_letters"]
-    if cabin_class == "BUSINESS":
-        return plane["business_letters"]
-    return plane["seat_letters"]
-
-
 def _insert_seats(connection, flight_id, spec, aircraft_ids):
     """One row per physical seat, priced by cabin at seed time."""
     plane = next(p for p in AIRCRAFT if p["model"] == spec["aircraft"])
@@ -275,7 +257,7 @@ def _insert_seats(connection, flight_id, spec, aircraft_ids):
     for row_number in range(1, plane["total_rows"] + 1):
         cabin_class = cabin_class_for_row(row_number, plane)
         price_cents = fare_for_class(spec["fare"], cabin_class)
-        for letter in letters_for_cabin(plane, cabin_class):
+        for letter in plane["seat_letters"]:
             rows.append((flight_id, row_number, letter, cabin_class, price_cents))
 
     connection.executemany(

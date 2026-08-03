@@ -1,18 +1,19 @@
-"""Criterion 14: the plane-shaped cabin renders with a working seat grid."""
+"""Criterion 14: the cabin shell renders with a working seat grid."""
 
 import db as database
 import seatmap
 
 
-def test_seat_map_page_renders_the_airframe_and_a_seat_grid(client, conn):
+def test_seat_map_page_renders_the_cabin_shell_and_a_seat_grid(client, conn):
     """Criterion 14."""
     page = client.get("/flights/1/seats")
     assert page.status_code == 200
 
     body = page.get_data(as_text=True)
 
-    # the airframe: nose, fuselage, wings, tail
-    for part in ("airframe__nose", "airframe__body", "airframe__wings", "airframe__tail"):
+    # the shell, nose to tail
+    for part in ("cabin-shell", "cabin-shell__nose", "cabin-shell__tail",
+                 "cabin-shell__divider"):
         assert part in body, part
 
     # and a real seat grid inside it
@@ -27,60 +28,43 @@ def test_seats_are_buttons_so_they_stay_keyboard_reachable(client):
     assert 'aria-pressed="false"' in body
 
 
-def test_gap_positions_carry_nothing_that_could_be_booked(client):
-    """A cabin gap is drawn as a `.seat` so the columns line up, which made it
-    look selectable: clicking the space between two first-class seats set
-    seat_id=undefined and bounced the booking back to the seat map. Real seats
-    are the ones carrying an id, and that is what the script now matches on."""
-    body = client.get("/flights/1/seats").get_data(as_text=True)
-
-    assert 'class="seat seat--empty"' in body, "expected gap cells on this aircraft"
-    # a gap is inert: no id, no value to submit, and not a button
-    gaps = body.count('<span class="seat seat--empty" aria-hidden="true"></span>')
-    assert gaps == body.count('class="seat seat--empty"')
-
-    script = open("static/js/seatmap.js", encoding="utf-8").read()
-    assert '.seat[data-seat-id]' in script
-    assert 'closest(".seat")' not in script, "a bare .seat match picks up gaps"
-
-
 def test_sold_seats_are_disabled_for_a_browser_without_javascript(client, conn):
     body = client.get("/flights/1/seats").get_data(as_text=True)
     sold = [s for s in database.get_seats(conn, 1) if not s["available"]]
     assert body.count("disabled") >= len(sold)
 
 
-def test_premium_cabins_fly_a_narrower_arrangement(conn):
-    """First 1-1, Business 2-2, Economy the full width."""
-    aircraft = database.get_aircraft_for_flight(conn, 1)
-    rows = seatmap.build_rows(database.get_seats(conn, 1), aircraft)
-
-    def seats_in(cabin):
-        row = next(r for r in rows if r["cabin_class"] == cabin)
-        return sum(1 for cell in row["seats"] if not cell["gap"])
-
-    assert seats_in("FIRST") == len(aircraft["first_letters"])
-    assert seats_in("BUSINESS") == len(aircraft["business_letters"])
-    assert seats_in("ECONOMY") == len(aircraft["seat_letters"])
-    assert seats_in("FIRST") < seats_in("BUSINESS") < seats_in("ECONOMY")
-
-
-def test_every_row_is_emitted_at_full_width_so_the_cabin_keeps_its_shape(conn):
+def test_every_cabin_flies_the_full_width_of_the_aircraft(conn):
+    """No gaps in this layout: every row seats the aircraft's full letter set,
+    so a seat position never renders as empty space a click could land on."""
     aircraft = database.get_aircraft_for_flight(conn, 1)
     width = len(aircraft["seat_letters"])
     for row in seatmap.build_rows(database.get_seats(conn, 1), aircraft):
         assert len(row["seats"]) == width, row["row_number"]
+        assert all(cell.get("id") for cell in row["seats"]), row["row_number"]
 
 
-def test_exit_rows_sit_at_the_wings(conn):
+def test_rows_are_grouped_nose_to_tail_by_cabin(conn):
     aircraft = database.get_aircraft_for_flight(conn, 1)
-    rows = seatmap.exit_rows(aircraft)
-    assert len(rows) == 2
-    assert rows[1] == rows[0] + 1
-    assert aircraft["business_last_row"] < rows[0] <= aircraft["total_rows"]
+    rows = seatmap.build_rows(database.get_seats(conn, 1), aircraft)
+
+    assert [row["row_number"] for row in rows] == sorted(r["row_number"] for r in rows)
+    seen = []
+    for row in rows:
+        if row["cabin_class"] not in seen:
+            seen.append(row["cabin_class"])
+    assert seen == ["FIRST", "BUSINESS", "ECONOMY"]
 
 
-def test_the_json_seat_api_omits_the_gaps(client, conn):
+def test_an_aisle_is_flagged_after_the_right_letters(conn):
+    aircraft = database.get_aircraft_for_flight(conn, 1)
+    expected = set(aircraft["aisle_after"].split(","))
+    row = seatmap.build_rows(database.get_seats(conn, 1), aircraft)[0]
+    flagged = {cell["letter"] for cell in row["seats"] if cell["aisle_after"]}
+    assert flagged == expected
+
+
+def test_the_json_seat_api_matches_the_page(client, conn):
     payload = client.get("/api/flights/1/seats").get_json()
     assert payload["total_seats"] == len(database.get_seats(conn, 1))
     for row in payload["rows"]:

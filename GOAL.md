@@ -62,10 +62,14 @@ Run the suite with:
 - [x] 13. The seed script is idempotent: running it twice yields no duplicate
       flights.
       → `test_flights.py::test_seeding_twice_adds_no_duplicate_flights`
-- [x] 14. The plane-shaped seat map renders: the route returns 200 and contains
-      the SVG airframe and a working seat grid.
-      → `test_seatmap.py::test_seat_map_page_renders_the_airframe_and_a_seat_grid`
-      (plus 7 more covering cabin arrangement, exit rows and every aircraft type)
+- [x] 14. The seat map renders: the route returns 200 and contains the cabin
+      shell, nose to tail, with a working seat grid inside it.
+      → `test_seatmap.py::test_seat_map_page_renders_the_cabin_shell_and_a_seat_grid`
+      (plus 6 more covering cabin order, aisles, the JSON API and every aircraft)
+
+      The SVG airframe this criterion originally described was reverted on
+      request: the outlined cabin shell reads better and does not shrink the
+      seats to make room for wings.
 
 ## Test layout
 
