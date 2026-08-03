@@ -22,7 +22,7 @@
   <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
   <meta name="theme-color" content="#0c4145">
 
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/retro.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/retro.css') }}">
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
@@ -84,8 +84,8 @@
     <p class="site-footer__fine">A student project. No real flights, no real fares.</p>
   </footer>
 
-  <script src="{{ url_for('static', filename='js/splitflap.js') }}" defer></script>
-  <script src="{{ url_for('static', filename='js/clock.js') }}" defer></script>
+  <script src="{{ asset('js/splitflap.js') }}" defer></script>
+  <script src="{{ asset('js/clock.js') }}" defer></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

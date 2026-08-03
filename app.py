@@ -106,14 +106,32 @@ def register_filters(app):
     app.jinja_env.globals["cabin_label"] = cabin_label
 
 
+def asset(filename):
+    """A static URL that changes whenever the file does.
+
+    `Cache-Control: no-cache` asks the browser to revalidate, but a page served
+    from the back/forward or memory cache can still paint against a stylesheet
+    from before the last edit — which is how a newly added SVG rendered as an
+    unstyled black block in the middle of the seat map. A URL carrying the
+    file's timestamp cannot go stale.
+    """
+    stamp = 0
+    try:
+        stamp = int((Path(current_app.static_folder) / filename).stat().st_mtime)
+    except OSError:
+        pass                       # missing file: let url_for 404 as it would
+    return url_for("static", filename=filename, v=stamp)
+
+
 def register_context(app):
     """The hall clock and the signed-in user are on every page."""
 
     @app.context_processor
     def shared_context():
         if not request.endpoint or request.endpoint == "static":
-            return {}
+            return {"asset": asset}
         return {
+            "asset": asset,
             "clock": _clock_seed(DEFAULT_CLOCK_OFFSET),
             "clock_airports": db.get_airports(get_db()),
             "current_user": current_user(),
