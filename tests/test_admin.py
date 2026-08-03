@@ -241,12 +241,19 @@ def test_seeded_data_is_kept_apart_from_real_activity(client, csrf, login,
 
     body = client.get("/admin").get_data(as_text=True)
 
-    # the demo logins live under their own heading, not with the real accounts
-    people = body.index("Passenger accounts")
-    fixtures = body.index("Seeded demo data")
+    # the seeded logins live under their own heading, not with the real accounts
+    people = body.index("Registered by visitors")
+    fixtures = body.index("Built in by the seed")
     assert people < body.index("genuine") < fixtures, "real account in the wrong box"
     assert fixtures < body.index("demo@skyway.example"), "demo login in the wrong box"
     assert people < body.index(reference) < fixtures, "real booking in the wrong box"
+
+    # and the seeded ones split again: staff apart from demo passengers
+    staff = body.index("Staff</h3>")
+    passengers = body.index("Demo passengers")
+    assert fixtures < staff < passengers
+    assert staff < body.index("admin@skyway.example") < passengers, "admin misplaced"
+    assert passengers < body.index("captain@skyway.example"), "captain misplaced"
 
 
 def test_an_admin_can_cancel_someone_elses_booking(client, conn, csrf, login,

@@ -118,11 +118,16 @@
 <p class="eyebrow">Crew only</p>
 <h1 class="page-title">Flight operations</h1>
 
-<h2 class="admin__section" id="accounts">Passenger accounts</h2>
+{# Everything below is replaced in place by admin.js after an action, so the
+   page never reloads and never jumps. Without the script the forms submit
+   normally and the server's redirect anchors back to the row instead. #}
+<div id="admin-content">
+
+<h2 class="admin__section" id="accounts">Registered by visitors</h2>
 {% if accounts %}
   <p class="lede">
     {{ accounts | length }} account{{ '' if accounts | length == 1 else 's' }}
-    registered here, holding {{ totals.from_accounts }}
+    signed up through the site, holding {{ totals.from_accounts }}
     booking{{ '' if totals.from_accounts == 1 else 's' }} between them.
     Deleting an account leaves its bookings confirmed and the seats sold — they
     simply stop belonging to an account. Cancel them first to free the seats.
@@ -132,14 +137,21 @@
   <p class="empty">Nobody has registered yet.</p>
 {% endif %}
 
-<h2 class="admin__section admin__section--quiet" id="seeded">Seeded demo data</h2>
+<h2 class="admin__section admin__section--quiet" id="seeded">Built in by the seed</h2>
 <p class="lede">
-  Created by <code>seed.py</code> so the timetable looks flown and the app can
-  be demonstrated without registering. Not real activity.
+  Created by <code>seed.py</code> so the app can be demonstrated without
+  registering and the timetable looks flown. Not visitor activity.
 </p>
 
-<h3 class="admin__subsection">Demo logins</h3>
-{% for row in seeded_accounts %}{{ account_card(row) }}{% endfor %}
+<h3 class="admin__subsection">Staff</h3>
+{% if staff_accounts %}
+  {% for row in staff_accounts %}{{ account_card(row) }}{% endfor %}
+{% else %}
+  <p class="empty">No staff account. Run <code>seed.py</code> to create one.</p>
+{% endif %}
+
+<h3 class="admin__subsection">Demo passengers</h3>
+{% for row in demo_accounts %}{{ account_card(row) }}{% endfor %}
 
 <h3 class="admin__subsection">Pre-sold seats</h3>
 <p class="lede">
@@ -150,8 +162,10 @@
   {% endif %}
 </p>
 <div class="admin">{{ booking_rows(seeded_bookings) }}</div>
+</div>
 {% endblock %}
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/confirm.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/admin.js') }}" defer></script>
 {% endblock %}

@@ -61,15 +61,18 @@
 
   {% block steps %}{% endblock %}
 
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      <div class="flashes">
-        {% for category, message in messages %}
-          <p class="flash flash--{{ category }}">{{ message }}</p>
-        {% endfor %}
-      </div>
-    {% endif %}
-  {% endwith %}
+  {# Always present, even when empty: a page updated in place needs somewhere
+     to put a new message without inventing the container. #}
+  {# No stray whitespace inside: `.flashes:empty` has to actually match when
+     there is nothing to say, or the container keeps its margin and the page
+     shifts under anything updated in place. #}
+  <div class="flashes" id="flashes" role="status" aria-live="polite">
+    {%- with messages = get_flashed_messages(with_categories=true) -%}
+      {%- for category, message in messages -%}
+        <p class="flash flash--{{ category }}">{{ message }}</p>
+      {%- endfor -%}
+    {%- endwith -%}
+  </div>
 
   <main class="site-main {% block main_class %}{% endblock %}" id="main">
     {% block content %}{% endblock %}

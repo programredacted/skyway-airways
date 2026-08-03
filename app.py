@@ -609,11 +609,15 @@ def register_routes(app):
         # Seeded demo data stays apart from real activity: mixed together, the
         # ~900 pre-sold seats bury the handful that people actually made.
         everyone = accounts.list_accounts(connection, seed.demo_usernames())
+        seeded = [row for row in everyone if row["seeded"]]
         return render_template(
             "admin.html",
             admin=user,
             accounts=with_trips([row for row in everyone if not row["seeded"]]),
-            seeded_accounts=with_trips([row for row in everyone if row["seeded"]]),
+            # the seeded logins split again by what they can do: a staff
+            # account and a passenger account are not the same thing to look at
+            staff_accounts=with_trips([row for row in seeded if row["is_admin"]]),
+            demo_accounts=with_trips([row for row in seeded if not row["is_admin"]]),
             seeded_bookings=accounts.seeded_bookings(connection),
             totals=accounts.booking_totals(connection),
         )

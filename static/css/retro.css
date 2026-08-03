@@ -641,6 +641,9 @@ a:hover { color: var(--orange-dk); }
 /* ------------------------------------------------------ flash messages --- */
 
 .flashes { max-width: 66rem; margin: 1.25rem auto 0; padding: 0 1.75rem; }
+/* the container is always in the markup so it can be filled in place; with no
+   messages in it, it should take up no room */
+.flashes:empty { margin: 0; }
 
 .flash {
   margin: 0 0 0.5rem;
