@@ -1523,22 +1523,23 @@ a:hover { color: var(--orange-dk); }
 
 /* The silhouette pass. Filled as well as stroked so wing and engine merge
    into one shape; the fills drawn afterwards cover the half of the stroke
-   that falls inside, leaving 2px showing — the shell's own border weight.
+   that falls inside, so the weight showing is half of stroke-width.
 
    non-scaling-stroke because the SVG is scaled to the viewport: without it
-   the line thickens and thins with the window while that 2px border does not
-   move, and the two only agree at one window size. */
+   the line thickens and thins with the window while the shell's border does
+   not move, and the two only agree at one window size. */
 .cabin-wings__edge {
   fill: var(--ink);
   stroke: var(--ink);
-  stroke-width: 4;
   vector-effect: non-scaling-stroke;
   stroke-linejoin: round;
 }
 
-/* Starboard only, so the weight sits where the shell's own shadow sits:
-   offset right and down, leaving the port side a bare line. */
-.cabin-wings__edge--shadowed { filter: drop-shadow(6px 6px 0 var(--teal-dk)); }
+/* The cabin's two weights, taken literally: its border is 2px on the port
+   side, and on the starboard side that border plus its 6px shadow reads as
+   8px. Doubled here because half of each stroke is buried by the fill. */
+.cabin-wings__edge { stroke-width: 4; }
+.cabin-wings__edge--heavy { stroke-width: 16; }
 
 .cabin-wings__skin { fill: var(--paper-3); }
 /* one step deeper than the wing so the pods read against it */
