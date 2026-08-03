@@ -19,7 +19,7 @@ MINIMUM_PASSWORD_LENGTH = 8
 
 
 class RegistrationError(Exception):
-    """Carries per-field messages back to the form."""
+    """Carries per-field messages back to a form. Also raised by change_password."""
 
     def __init__(self, errors):
         super().__init__("registration rejected")
@@ -88,6 +88,40 @@ def authenticate(connection, username, password):
     if row is None or not check_password_hash(row["password_hash"], password or ""):
         return None
     return row
+
+
+def change_password(connection, user_id, form):
+    """Replace the stored hash.
+
+    The current password is required even though the caller is already signed
+    in: a session left open on a shared machine should not be enough to lock
+    the owner out of their own account.
+    """
+    row = get_by_id(connection, user_id)
+    current = form.get("current_password", "")
+    new = form.get("new_password", "")
+    confirm = form.get("confirm_password", "")
+    errors = {}
+
+    if row is None or not check_password_hash(row["password_hash"], current):
+        errors["current_password"] = "That isn't your current password."
+
+    if len(new) < MINIMUM_PASSWORD_LENGTH:
+        errors["new_password"] = f"At least {MINIMUM_PASSWORD_LENGTH} characters."
+    elif new != confirm:
+        errors["confirm_password"] = "The two passwords don't match."
+    elif new == current:
+        errors["new_password"] = "That's already your password."
+
+    if errors:
+        raise RegistrationError(errors)
+
+    with db.transaction(connection):
+        connection.execute(
+            "UPDATE users SET password_hash = ? WHERE id = ?",
+            (generate_password_hash(new), user_id),
+        )
+    return get_by_id(connection, user_id)
 
 
 def get_by_id(connection, user_id):

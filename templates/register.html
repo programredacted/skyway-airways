@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% import "_password.html" as pw %}
 {% block title %}Create an account &middot; Skyway Airways{% endblock %}
 
 {% block content %}
@@ -24,18 +25,11 @@
     {% if errors.email %}<p class="form__error">{{ errors.email }}</p>{% endif %}
   </div>
 
-  <div class="form__field {{ 'form__field--error' if errors.password }}">
-    <label for="password">Password <span class="req">required</span></label>
-    <input type="password" id="password" name="password" autocomplete="new-password">
-    <p class="form__help">At least 8 characters.</p>
-    {% if errors.password %}<p class="form__error">{{ errors.password }}</p>{% endif %}
-  </div>
+  {{ pw.field("password", "password", "Password", "new-password",
+              help="At least 8 characters.", error=errors.password) }}
 
-  <div class="form__field {{ 'form__field--error' if errors.confirm }}">
-    <label for="confirm">Confirm password <span class="req">required</span></label>
-    <input type="password" id="confirm" name="confirm" autocomplete="new-password">
-    {% if errors.confirm %}<p class="form__error">{{ errors.confirm }}</p>{% endif %}
-  </div>
+  {{ pw.field("confirm", "confirm", "Confirm password", "new-password",
+              error=errors.confirm) }}
 
   <button class="btn btn--primary btn--large" type="submit">Create account</button>
   <p class="form__note">
@@ -43,4 +37,8 @@
     <a href="{{ url_for('login', next=next) }}">Sign in</a>.
   </p>
 </form>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/password.js') }}" defer></script>
 {% endblock %}

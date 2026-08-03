@@ -481,6 +481,29 @@ def register_routes(app):
         return render_template("my_trips.html",
                                trips=accounts.bookings_for(get_db(), user["id"]))
 
+    @app.route("/account", methods=["GET", "POST"])
+    def account():
+        user = current_user()
+        if user is None:
+            return redirect(url_for("login", next=url_for("account")))
+
+        errors = {}
+        if request.method == "POST":
+            try:
+                accounts.change_password(get_db(), user["id"], request.form)
+            except accounts.RegistrationError as rejected:
+                errors = rejected.errors
+            else:
+                flash("Password changed.", "success")
+                return redirect(url_for("account"))
+
+        return render_template(
+            "account.html",
+            user=user,
+            errors=errors,
+            trips=accounts.bookings_for(get_db(), user["id"]),
+        ), (400 if errors else 200)
+
     @app.route("/lookup", methods=["GET", "POST"])
     def lookup():
         if request.method == "POST":

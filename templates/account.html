@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% import "_password.html" as pw %}
+{% block title %}Your account &middot; Skyway Airways{% endblock %}
+
+{% block content %}
+<p class="eyebrow">Passenger record</p>
+<h1 class="page-title">Your account</h1>
+
+<div class="account">
+  <section class="account__card" aria-labelledby="account-details">
+    <h2 class="account__heading" id="account-details">Details</h2>
+
+    <dl class="account__list">
+      <div>
+        <dt>Username</dt>
+        <dd class="account__value">{{ user.username }}</dd>
+      </div>
+      <div>
+        <dt>Email</dt>
+        <dd class="account__value">{{ user.email }}</dd>
+      </div>
+      <div>
+        <dt>Member since</dt>
+        <dd>{{ user.created_at | daystamp }}</dd>
+      </div>
+      <div>
+        <dt>Trips booked</dt>
+        <dd>
+          {{ trips | length }}
+          {%- if trips %} &middot; <a href="{{ url_for('my_trips') }}">view them</a>{% endif %}
+        </dd>
+      </div>
+      <div>
+        <dt>Password</dt>
+        <dd>
+          <span class="account__masked" aria-hidden="true">&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;</span>
+          <span class="visually-hidden">Hidden</span>
+        </dd>
+      </div>
+    </dl>
+
+    {# Being straight about this rather than showing a fake value: the column
+       holds a PBKDF2 hash, and there is no operation that turns it back into
+       the password. Changing it is the recovery path. #}
+    <p class="account__note">
+      We store your password as a one-way hash, so nobody can read it back —
+      not you, not us, not anyone who gets hold of the database. If you have
+      forgotten it, set a new one below.
+    </p>
+  </section>
+
+  <section class="account__card" aria-labelledby="account-password">
+    <h2 class="account__heading" id="account-password">Change password</h2>
+
+    <form class="form" method="post" action="{{ url_for('account') }}" novalidate>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+      {{ pw.field("current_password", "current_password", "Current password",
+                  "current-password", error=errors.current_password) }}
+
+      {{ pw.field("new_password", "new_password", "New password", "new-password",
+                  help="At least 8 characters.", error=errors.new_password) }}
+
+      {{ pw.field("confirm_password", "confirm_password", "Confirm new password",
+                  "new-password", error=errors.confirm_password) }}
+
+      <button class="btn btn--primary" type="submit">Change password</button>
+    </form>
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/password.js') }}" defer></script>
+{% endblock %}

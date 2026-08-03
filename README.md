@@ -255,6 +255,16 @@ requires an account**. An anonymous visitor who hits Confirm is sent to
 | `/register` | username (3–20 alphanumeric), email, password (8+), confirm |
 | `/login` · `/logout` | Flask session cookie |
 | `/my-trips` | that account's bookings, as a stack of boarding passes |
+| `/account` | username, email, member since, trips booked, and a password change |
+
+Every password field carries a Show/Hide button. It is rendered hidden and
+revealed by `password.js`, so a browser without JavaScript is never offered a
+control that could not work; the field is a plain `<input type="password">`
+either way.
+
+The account page shows no password, because there is none to show — see the
+security notes below. Changing it is the recovery path, and doing so requires
+the current password even though you are already signed in.
 
 Two demo accounts exist on a fresh seed:
 

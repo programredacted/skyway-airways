@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% import "_password.html" as pw %}
 {% block title %}Sign in &middot; Skyway Airways{% endblock %}
 
 {% block content %}
@@ -21,14 +22,15 @@
            autocomplete="username" autofocus>
   </div>
 
-  <div class="form__field">
-    <label for="password">Password</label>
-    <input type="password" id="password" name="password" autocomplete="current-password">
-  </div>
+  {{ pw.field("password", "password", "Password", "current-password", required=False) }}
 
   <button class="btn btn--primary btn--large" type="submit">Sign in</button>
   <p class="form__note">
     New here? <a href="{{ url_for('register', next=next) }}">Create an account</a>.
   </p>
 </form>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/password.js') }}" defer></script>
 {% endblock %}

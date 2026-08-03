@@ -196,6 +196,97 @@ a:hover { color: var(--orange-dk); }
 .pass--stacked { margin-top: 1.5rem; }
 .trips__actions { margin: 0 0 0.5rem; }
 
+/* ------------------------------------------------------------- account -- */
+
+.account {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
+  gap: 1.5rem;
+  align-items: start;
+  max-width: 52rem;
+}
+
+.account__card {
+  padding: 1.4rem 1.5rem 1.6rem;
+  background: var(--paper-2);
+  border: var(--rule);
+  box-shadow: var(--shadow);
+}
+
+.account__heading {
+  margin: 0 0 1.1rem;
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: var(--track-wide);
+  text-transform: uppercase;
+  color: var(--teal-dk);
+}
+
+.account__list { margin: 0; }
+
+.account__list > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 1rem;
+  justify-content: space-between;
+  padding: 0.6rem 0;
+  border-bottom: var(--hairline);
+}
+
+.account__list > div:last-child { border-bottom: none; }
+
+.account__list dt {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: var(--track-mid);
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.account__list dd { margin: 0; text-align: right; }
+
+/* the two things worth reading at a glance */
+.account__value { font-family: var(--font-mono); font-size: 1.02rem; }
+
+.account__masked { font-family: var(--font-mono); letter-spacing: 0.16em; color: var(--ink-soft); }
+
+.account__note {
+  margin: 1.1rem 0 0;
+  padding-left: 0.9rem;
+  border-left: 4px solid var(--gold);
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+.account .form { max-width: none; }
+
+/* -------------------------------------------------- password visibility -- */
+
+.pw { display: flex; gap: 0.5rem; align-items: stretch; }
+.pw input { flex: 1 1 auto; min-width: 0; }
+
+.pw__toggle {
+  flex: none;
+  width: 4.2rem;
+  padding: 0 0.4rem;
+  background: var(--paper);
+  border: var(--rule);
+  border-radius: var(--radius);
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: var(--track-mid);
+  text-transform: uppercase;
+  color: var(--teal-dk);
+  cursor: pointer;
+}
+
+.pw__toggle:hover { background: var(--gold); color: var(--ink); }
+.pw__toggle[aria-pressed="true"] { background: var(--teal-dk); color: var(--paper); }
+
 /* ------------------------------------------------------- progress steps -- */
 
 .steps { background: var(--paper-2); border-bottom: var(--hairline); }
