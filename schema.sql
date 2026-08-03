@@ -5,11 +5,15 @@
 CREATE TABLE IF NOT EXISTS aircraft (
     id                    INTEGER PRIMARY KEY,
     model                 TEXT    NOT NULL UNIQUE,
-    seat_letters          TEXT    NOT NULL,  -- e.g. "ABCDEF", left to right
+    seat_letters          TEXT    NOT NULL,  -- the full width, e.g. "ABCDEF", left to right
     aisle_after           TEXT    NOT NULL,  -- letters an aisle follows, e.g. "C" or "C,F"
     total_rows            INTEGER NOT NULL,
     first_class_last_row  INTEGER NOT NULL,  -- rows 1..N are First
-    business_last_row     INTEGER NOT NULL   -- next rows are Business, remainder Economy
+    business_last_row     INTEGER NOT NULL,  -- next rows are Business, remainder Economy
+    -- Premium cabins are not the full width: First flies 1-1 and Business 2-2, so
+    -- they use a subset of the letters and leave the middle of the row empty.
+    first_letters         TEXT    NOT NULL,
+    business_letters      TEXT    NOT NULL
 );
 
 -- Airports carry the two things the timetable itself cannot: a clock offset for

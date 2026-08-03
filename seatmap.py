@@ -8,24 +8,41 @@ from pricing import CABIN_ORDER, CLASS_MULTIPLIERS, cabin_label
 
 
 def build_rows(seats, aircraft):
-    """Group seats into cabin-ordered rows, flagging where an aisle follows."""
+    """Group seats into cabin-ordered rows, flagging where an aisle follows.
+
+    Every row is emitted at the aircraft's full width. First and Business fly
+    fewer seats across, so their missing positions come back as gaps rather than
+    being dropped — without them the premium rows would centre themselves and
+    the cabin would lose its shape.
+    """
     aisle_letters = set(aircraft["aisle_after"].split(","))
+    width = list(aircraft["seat_letters"])
     rows = []
 
     for row_number in range(1, aircraft["total_rows"] + 1):
-        in_row = [seat for seat in seats if seat["row_number"] == row_number]
+        in_row = {seat["seat_letter"]: seat for seat in seats
+                  if seat["row_number"] == row_number}
         if not in_row:
             continue
+
+        cells = []
+        for letter in width:
+            seat = in_row.get(letter)
+            cells.append(_seat_cell(seat, aisle_letters) if seat
+                         else {"gap": True, "letter": letter,
+                               "aisle_after": letter in aisle_letters})
+
         rows.append({
             "row_number": row_number,
-            "cabin_class": in_row[0]["cabin_class"],
-            "seats": [_seat_cell(seat, aisle_letters) for seat in in_row],
+            "cabin_class": next(iter(in_row.values()))["cabin_class"],
+            "seats": cells,
         })
     return rows
 
 
 def _seat_cell(seat, aisle_letters):
     return {
+        "gap": False,
         "id": seat["id"],
         "label": f"{seat['row_number']}{seat['seat_letter']}",
         "letter": seat["seat_letter"],
@@ -34,6 +51,16 @@ def _seat_cell(seat, aisle_letters):
         "available": bool(seat["available"]),
         "aisle_after": seat["seat_letter"] in aisle_letters,
     }
+
+
+def exit_rows(aircraft):
+    """The two over-wing rows, where the wings meet the fuselage.
+
+    Placed just behind the Business cabin, which is where the wing box sits on
+    most of this fleet.
+    """
+    first_exit = min(aircraft["business_last_row"] + 2, aircraft["total_rows"] - 1)
+    return [first_exit, first_exit + 1]
 
 
 def build_cabins(summary_rows):
@@ -66,9 +93,13 @@ def seat_payload(flight, aircraft, seats, summary_rows):
             "base_fare_cents": flight["base_fare_cents"],
         },
         "cabins": build_cabins(summary_rows),
-        "rows": rows,
-        "total_seats": sum(len(row["seats"]) for row in rows),
+        "rows": [
+            {**row, "seats": [cell for cell in row["seats"] if not cell["gap"]]}
+            for row in rows
+        ],
+        "total_seats": sum(1 for row in rows for cell in row["seats"] if not cell["gap"]),
         "seats_available": sum(
-            1 for row in rows for seat in row["seats"] if seat["available"]
+            1 for row in rows for cell in row["seats"]
+            if not cell["gap"] and cell["available"]
         ),
     }

@@ -1,0 +1,59 @@
+{# Top-down aircraft parts drawn around the seat grid.
+
+   Three separate SVGs rather than one: the fuselage has to stretch to however
+   many rows the aircraft has, and a single SVG would either distort the nose
+   and tail or lock the cabin to one length. The nose and tail keep their own
+   aspect ratio; the fuselage between them is a CSS box that grows. #}
+
+{% macro nose() -%}
+<svg class="airframe__nose" viewBox="0 0 240 108" aria-hidden="true" focusable="false">
+  {# tapered nose cone, meeting the fuselage walls exactly at the bottom edge #}
+  <path class="airframe__skin" d="M120 2 C 168 20 206 58 214 106 L26 106 C 34 58 72 20 120 2 Z"/>
+  {# cockpit windshield #}
+  <path class="airframe__glass" d="M120 22 C 141 32 156 48 162 64 L78 64 C 84 48 99 32 120 22 Z"/>
+  <g class="airframe__pane">
+    <path d="M120 28 L120 62 L86 62 C 92 48 105 35 120 28 Z"/>
+    <path d="M124 28 C 139 35 152 48 158 62 L124 62 Z"/>
+  </g>
+  {# nose gear door and centreline #}
+  <rect class="airframe__detail" x="112" y="76" width="16" height="22" rx="3"/>
+  <line class="airframe__centreline" x1="120" y1="8" x2="120" y2="106"/>
+</svg>
+{%- endmacro %}
+
+{% macro wings(wordmark) -%}
+<div class="airframe__wingset" aria-hidden="true">
+  <svg class="airframe__wings" viewBox="0 0 900 300" focusable="false">
+    {# swept wings, leading edge raked back, joined under the fuselage #}
+    <path class="airframe__skin" d="M330 34 L570 34 L570 128 L878 236 L878 268 L556 214
+                                    L548 258 L352 258 L344 214 L22 268 L22 236 L330 128 Z"/>
+    {# engine nacelles, each a pod with a bright intake band #}
+    <g>
+      <rect class="airframe__nacelle" x="150" y="196" width="96" height="44" rx="20"/>
+      <rect class="airframe__nacelle" x="654" y="196" width="96" height="44" rx="20"/>
+      <rect class="airframe__intake" x="150" y="212" width="96" height="6"/>
+      <rect class="airframe__intake" x="654" y="212" width="96" height="6"/>
+    </g>
+    {# the airline wordmark, painted along the port wing and raked with it #}
+    <text class="airframe__wordmark" x="104" y="228"
+          transform="rotate(19 104 228)">{{ wordmark }}</text>
+    {# flap lines #}
+    <g class="airframe__panel">
+      <line x1="344" y1="214" x2="60" y2="252"/>
+      <line x1="556" y1="214" x2="840" y2="252"/>
+    </g>
+  </svg>
+</div>
+{%- endmacro %}
+
+{% macro tail() -%}
+<svg class="airframe__tail" viewBox="0 0 640 200" aria-hidden="true" focusable="false">
+  {# horizontal stabilisers, then the tapering tail cone between them #}
+  <path class="airframe__skin" d="M244 2 L396 2 L396 44 L622 108 L622 134 L392 96
+                                  L378 150 L262 150 L248 96 L18 134 L18 108 L244 44 Z"/>
+  <path class="airframe__skin" d="M262 148 C 286 178 354 178 378 148 Z"/>
+  {# the fin, seen edge-on from above #}
+  <rect class="airframe__fin" x="310" y="20" width="20" height="140" rx="8"/>
+  <line class="airframe__centreline" x1="320" y1="6" x2="320" y2="172"/>
+</svg>
+{%- endmacro %}

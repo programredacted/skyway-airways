@@ -1075,42 +1075,129 @@ a:hover { color: var(--orange-dk); }
 
 .seatmap__nojs { margin-top: 1rem; font-size: 0.85rem; color: var(--ink-soft); }
 
-.cabin-shell {
-  max-width: 34rem;
+/* ------------------------------------------------ the aircraft, from above -- */
+
+.airframe {
+  --skin: var(--paper-2);
+  --outline: var(--ink);
+  position: relative;
+  max-width: 30rem;
   margin: 0 auto;
-  padding: 1.6rem 1rem;
-  overflow-x: auto;
-  background: var(--paper-2);
-  border: var(--rule);
-  border-radius: 46% 46% 8% 8% / 13% 13% 3% 3%;
-  text-align: center;
-  box-shadow: inset 0 0 0 6px var(--paper), var(--shadow);
+  padding: 0 4.5rem;   /* room for the wings and stabilisers to reach out */
 }
 
-.cabin-shell__nose, .cabin-shell__tail {
-  margin: 0.4rem 0;
+.airframe__skin { fill: var(--skin); stroke: var(--outline); stroke-width: 3; stroke-linejoin: round; }
+.airframe__glass { fill: var(--teal-dk); stroke: var(--outline); stroke-width: 2.5; }
+.airframe__pane { fill: #6f9ba8; }
+.airframe__detail { fill: none; stroke: var(--outline); stroke-width: 2; opacity: 0.5; }
+.airframe__centreline { stroke: var(--ink-soft); stroke-width: 1.5; stroke-dasharray: 5 7; opacity: 0.5; }
+/* Explicit classes, not `rect + rect`: a sibling selector matched every nacelle
+   after the first and filled one of the two engines cream. */
+.airframe__nacelle { fill: var(--teal-dk); stroke: var(--outline); stroke-width: 2.5; }
+.airframe__intake { fill: var(--paper); opacity: 0.55; }
+.airframe__fin { fill: var(--orange); stroke: var(--outline); stroke-width: 2.5; }
+.airframe__panel { stroke: var(--ink-soft); stroke-width: 1.6; opacity: 0.35; }
+
+/* Sized in viewBox units against a 900-wide box that renders ~2.3x the cabin
+   width — anything larger reads as a headline lying across the seats. */
+.airframe__wordmark {
+  fill: var(--oxblood);
   font-family: var(--font-display);
-  font-size: 0.66rem;
-  font-weight: 600;
-  letter-spacing: 0.3em;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
-  color: var(--ink-soft);
+  opacity: 0.8;
 }
 
-.cabin-shell__divider {
-  margin: 1.35rem 0 0.6rem;
-  padding-top: 0.5rem;
+.airframe__nose, .airframe__tail { display: block; width: 100%; height: auto; }
+.airframe__nose { margin-bottom: -2px; }
+.airframe__tail { margin-top: -2px; }
+
+/* the fuselage: the walls are the border, so the cabin can be any length */
+.airframe__body {
+  position: relative;
+  padding: 0.9rem 0.6rem 1.2rem;
+  background: var(--skin);
+  border-left: 3px solid var(--outline);
+  border-right: 3px solid var(--outline);
+  text-align: center;
+  overflow: visible;
+}
+
+/* the painted livery stripe running the length of the fuselage */
+.airframe__livery {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, transparent 0 6px, var(--orange) 6px 12px, transparent 12px) left / 100% no-repeat,
+    linear-gradient(270deg, transparent 0 6px, var(--teal) 6px 12px, transparent 12px) right / 100% no-repeat;
+  opacity: 0.55;
+}
+
+/* Wings hang off a zero-height anchor, so they line up with the over-wing row
+   without pushing any seats apart. */
+.airframe__wingset { position: relative; height: 0; }
+
+.airframe__wings {
+  position: absolute;
+  top: -3.4rem;
+  left: 50%;
+  width: 230%;
+  transform: translateX(-50%);
+  pointer-events: none;   /* decorative: must never swallow a seat click */
+  z-index: 0;
+}
+
+.cabin-divider {
+  position: relative;
+  z-index: 1;
+  margin: 1.1rem 0 0.5rem;
+  padding-top: 0.45rem;
   border-top: 1px dashed var(--ink-soft);
   font-family: var(--font-display);
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 600;
   letter-spacing: var(--track-wide);
   text-transform: uppercase;
   color: var(--teal-dk);
 }
 
-.seat-row { display: flex; justify-content: center; align-items: center; gap: 0.3rem; margin-bottom: 0.32rem; }
+.seat-row {
+  position: relative;
+  z-index: 1;   /* seats sit above the wings */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.3rem;
+  margin-bottom: 0.32rem;
+}
+
 .seat-row__number { width: 1.6rem; font-family: var(--font-mono); font-size: 0.72rem; color: var(--ink-soft); }
+
+/* premium cabins fly fewer seats across, at a longer pitch */
+.seat-row--first { margin-bottom: 0.75rem; }
+.seat-row--business { margin-bottom: 0.5rem; }
+
+/* a seat position that does not exist in this cabin */
+.seat--empty { background: none; border: none; box-shadow: none; cursor: default; }
+
+.seat-row--exit .seat { box-shadow: 0 2px 0 var(--oxblood); }
+
+.seat-row__exit {
+  position: absolute;
+  right: -3.6rem;
+  font-family: var(--font-display);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--oxblood);
+}
 
 .seat {
   position: relative;
@@ -1650,10 +1737,30 @@ a:hover { color: var(--orange-dk); }
     background-image: radial-gradient(circle at 7px 7px, var(--paper) 5px, transparent 5.5px);
     background-size: 18px 14px;
   }
-  .cabin-shell { border-radius: 0; padding: 1rem 0.35rem; }
-  .seat-row { gap: 0.2rem; }
-  .seat-row__number { width: 1.05rem; }
-  .seat-aisle { width: 0.8rem; }
+  /* Below 480px the wings and stabilisers fold away; the fuselage and its seats
+     stay at full size and remain fully usable. */
+  .airframe { padding: 0; }
+  .airframe__wingset, .airframe__tail { display: none; }
+  .airframe__body {
+    padding: 0.7rem 0.15rem 1rem;
+    border-radius: 0 0 14px 14px;
+    border-bottom: 3px solid var(--outline);
+  }
+  /* The exit label is decorative here; the red seat underline still marks the
+     row and the aria-label stays on the element. `right` must be reset — left
+     at -3.6rem it sat outside the viewport and widened the whole document. */
+  .seat-row__exit {
+    position: absolute;
+    right: auto;
+    left: 0;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .seat-row { gap: 0.14rem; }
+  .seat-row__number { width: 0.95rem; font-size: 0.62rem; }
+  .seat-aisle { width: 0.6rem; }
   .search { padding: 1.1rem; }
   .search__field, .search select, .search input { width: 100%; }
 

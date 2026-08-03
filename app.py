@@ -252,7 +252,9 @@ def register_routes(app):
             "seats.html",
             flight=flight,
             aircraft=aircraft,
+            airline=app.config["AIRLINE_NAME"],
             rows=seatmap.build_rows(db.get_seats(connection, flight_id), aircraft),
+            exit_rows=seatmap.exit_rows(aircraft),
             cabins=seatmap.build_cabins(db.get_cabin_summary(connection, flight_id)),
         )
 
