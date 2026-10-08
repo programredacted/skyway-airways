@@ -995,6 +995,14 @@ a:hover { color: var(--orange-dk); }
 .tag--delayed { background: var(--gold); color: var(--ink); }
 .tag--full { background: var(--oxblood); color: var(--paper); }
 .tag--low { background: var(--orange); color: var(--paper); }
+/* Seats the signed-in visitor holds. Outlined so it never reads as a status. */
+.tag--yours {
+  margin-top: 0.3rem;
+  color: var(--gold);
+  box-shadow: inset 0 0 0 1px var(--gold);
+  text-decoration: none;
+}
+.tag--yours:hover { background: var(--gold); color: var(--ink); }
 
 /* ------------------------------------------------------------ route map -- */
 

@@ -311,5 +311,23 @@ def bookings_for(connection, user_id):
     ).fetchall()
 
 
+def seats_held(connection, user_id):
+    """{flight_id: seat count} for this account's CONFIRMED bookings.
+
+    The departure board marks those rows, so a visitor scanning the timetable
+    can see which flights they are already on without opening My Trips.
+    """
+    rows = connection.execute(
+        """
+        SELECT flight_id, COUNT(*) AS seats
+        FROM bookings
+        WHERE user_id = ? AND status = 'CONFIRMED'
+        GROUP BY flight_id
+        """,
+        (user_id,),
+    ).fetchall()
+    return {row["flight_id"]: row["seats"] for row in rows}
+
+
 def _now():
     return datetime.now(timezone.utc).isoformat(timespec="seconds")

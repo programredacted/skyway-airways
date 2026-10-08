@@ -88,6 +88,10 @@
           <a href="{{ url_for('flight_detail', flight_id=flight.id) }}"
              ><span data-flap>{{ flight.flight_number }}</span></a>
           <small>{{ flight.aircraft_model }}</small>
+          {% if held[flight.id] %}
+            <a class="tag tag--yours" href="{{ url_for('my_trips') }}"
+               >{{ held[flight.id] }} {{ 'seat' if held[flight.id] == 1 else 'seats' }} booked</a>
+          {% endif %}
         </td>
         <td class="flap">
           <span data-flap>{{ flight.departs_at | clock }}</span>
