@@ -162,7 +162,13 @@
      that route selected on the map until the panel is dismissed. */
   function openGuide(code, action, pick) {
     if (!panel) return false;
-    if (openCode === code) {
+    // Clicking what is already selected lets go of it. Judged by the selection,
+    // not the guide's city: SFO's guide is opened both by the SFO dot and by the
+    // Chicago-San Francisco route, and picking one after the other should move
+    // the selection, not shut the panel.
+    var same = pick ? (selection && selection.element === pick.element)
+                    : !selection;
+    if (openCode === code && same) {
       closeGuide();
       return false;      // it toggled shut; the caller should not sync filters
     }
@@ -256,7 +262,11 @@
         // frees the other two, since it names no route and no day.
         syncFilters(port.dataset.code, "", "");
       }
+      return;
     }
+    // Open sea, land or grid: nothing there to pick, so let go of whatever is
+    // picked. Filters typed by hand stay; only the ones a selection set go.
+    if (panel && !panel.hidden) closeGuide();
   });
 
   // --- the From / To / Date filters ------------------------------------------

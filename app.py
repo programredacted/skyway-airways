@@ -290,11 +290,13 @@ def register_routes(app):
         """The departure board, optionally filtered by the search form."""
         connection = get_db()
         criteria = _search_criteria()
+        user = current_user()
         return render_template(
             "flights.html",
             flights=db.get_flights(connection, **criteria),
             airports=db.get_airports(connection),
             criteria=criteria,
+            held=accounts.seats_held(connection, user["id"]) if user else {},
             # The whole network is drawn above the board, not just the filtered
             # rows: it is there to navigate by, so it should show what exists.
             map=routemap.build(db.get_routes(connection)),
