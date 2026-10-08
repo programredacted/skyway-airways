@@ -80,7 +80,7 @@ run — there is no separate migrate or seed step.
 python seed.py                        # rebuild/print the timetable as a departure board
 
 python -m pip install -r requirements-dev.txt
-python -m pytest -q                   # 33 tests across flights, booking, auth, seat map
+python -m pytest -q                   # 144 tests across 16 files
 ```
 
 The suite gives every test its own temporary SQLite file, so tests can't see
@@ -172,7 +172,7 @@ which releases the seat back to the map while keeping the booking in history.
 | Front end | Vanilla JS + CSS | No React, no bundler, no npm |
 | Fonts | Jost / Karla / Space Mono | Futura-alike for signage, clean body, mono for the board |
 | Server | gunicorn | 1 worker, 4 threads |
-| Tests | stdlib `unittest` | No extra dependency |
+| Tests | pytest | Test-only, in `requirements-dev.txt`; never installed on Render |
 
 Runtime dependencies are **Flask and gunicorn only**.
 
@@ -180,21 +180,26 @@ Runtime dependencies are **Flask and gunicorn only**.
 
 ```
 app.py          Flask factory and every route
+accounts.py     registration, sign-in, password changes, the staff panel's queries
 db.py           connections, transactions, all read queries
 bookings.py     booking creation and cancellation (the only writes)
 seed.py         fleet, timetable, airports, idempotent seeding
 seatmap.py      shapes seat rows into the grid + JSON payload
 routemap.py     projects flights onto the SVG route map
+worldmap.py     coastline outlines the route map is drawn over
+destinations.py per-city guide copy and poster palettes
 pricing.py      cabin multipliers and fare formatting
 schema.sql      tables, indexes, the partial unique index
 templates/      Jinja2 templates
-static/js/      seatmap, splitflap (shared tiles), clock, departures, routemap
-tests/          28 smoke tests
+static/js/      seatmap, splitflap (shared tiles), clock, departures, routemap,
+                password, admin, confirm
+tests/          pytest suite, one temporary database per test
 ```
 
 ### Database
 
-`airports` → `flights` ← `aircraft`, `flights` → `seats` → `bookings` ← `passengers`
+`airports` → `flights` ← `aircraft`, `flights` → `seats` → `bookings` ← `passengers`,
+and `bookings` ← `users` for bookings made from an account
 
 Availability is **derived, never stored**: a seat is free when no `CONFIRMED`
 booking points at it. There is no `is_booked` flag to drift out of sync. Money
@@ -300,9 +305,9 @@ mixed together the seed's ~900 pre-sold seats bury the handful of bookings
 people actually made. Four groups: accounts people registered, the bookings
 those accounts hold, the demo logins, and the pre-sold seats.
 
-Bookings from accounts are never capped. The pre-sold ones are capped at 40 and
-the page says how many it is not showing — a list that stops without saying so
-reads as though it covered everything.
+Bookings from accounts are never capped. The pre-sold ones show the 40 most
+recent, with the total and a link to show every one — a list that stops without
+saying so reads as though it covered everything.
 
 Every account row carries a **Lock** toggle. A locked account cannot be
 deleted, and that is enforced in `accounts.delete_account`, not just by hiding
@@ -354,9 +359,6 @@ Deliberate scope decisions, not oversights:
   database resets on deploy and on restart after idle. Bookings made during a
   session persist for that session. Moving to Render Postgres would fix this;
   the schema barely changes.
-- **No CSRF tokens.** There are no accounts, no money and no session state worth
-  forging. Flask-WTF would add a dependency and config surface for no real gain
-  here.
 - **No payment step.** Confirmation is a booking reference.
 - **One seat per booking.** Party bookings would need a booking-group table.
 - **Free tier cold starts** take ~50 seconds after 15 minutes idle.
