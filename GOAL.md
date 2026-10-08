@@ -6,6 +6,11 @@ not by inspection.
 
 **Status: 14 / 14 criteria met. 33 tests, 0 failures, 0 blocked.**
 
+This is the record of the `/loop` run that first drove the suite to green, so
+the counts below are as they stood then. The suite has since grown to 144 tests
+across 16 files as accounts, the staff panel and cancelling were added; every
+proving test named here is still part of it.
+
 Run the suite with:
 
 ```

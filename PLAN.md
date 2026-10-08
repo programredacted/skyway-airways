@@ -131,6 +131,10 @@ Gains `first_letters` and `business_letters`. First flies 1-1 and Business 2-2,
 so those cabins use a subset of the aircraft's letters; Economy uses them all.
 Without this the seat map could not draw a cabin that narrows towards the nose.
 
+*Reverted.* Both columns went out with the aircraft-silhouette seat map in
+`047df65`; `schema.sql` has neither, and every cabin uses the aircraft's full
+seat letters.
+
 ### `passengers`
 
 | column | type | notes |
